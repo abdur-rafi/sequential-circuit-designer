@@ -1,8 +1,8 @@
 
 export const defaultStateNodeConfig : defaultStateNodeConfig = {
-    radius : 40,
+    radius : 45,
     color : 'cadetBLue',
-    gap : 12
+    gap : 14
 }
 
 export const defalutIONodeConfig : defalutIONodeConfig = {
@@ -10,8 +10,8 @@ export const defalutIONodeConfig : defalutIONodeConfig = {
     outNodeColor : 'brown'
 }
 export const canvasConfig : canvasConfig = {
-    height : '800px',
-    width : '800px'
+    height : '90vh',
+    width : '700px'
 }
 
 interface colorConfig{

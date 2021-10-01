@@ -1,0 +1,108 @@
+.root{
+    height: calc(100%);
+    width: calc(100%);
+}
+
+.canvas{  
+    width: calc(100vw - 50px);
+    height : calc(100vh - 90px);
+    grid-column: 1;
+    grid-row: 1;
+    padding: 0px;
+    margin: 0px;
+    border: 0px ;
+    border: inset 3px rgb(132, 172, 233);
+}
+.canvasContainer{
+    display: grid;
+    align-items: center;
+    justify-content: center;
+
+
+}
+.addNodeButtonContainer{
+    position: absolute;
+    bottom : 50px;
+    right : 100px;
+    display: inline-block;
+    z-index: 10;
+    .addNodeButton{
+
+        &:hover {
+            opacity: .7;
+        }
+        color: black;
+        font-weight: bold;
+        background-color: lime;
+        width: 100px;
+        height: 40px;
+        border-radius: 20px;
+        margin: 0px;
+        padding: 0px;
+        border: none;
+        
+    }
+}
+.menuContainer{
+    position: absolute;
+    display: inline-block;
+    right: 10px;
+    top : 45vh;
+    z-index: 15;
+    transform: rotate(-90deg);
+    .menu{
+        font-weight: bold;
+        background-color: lime;
+        padding: 10px 15px;
+        border-radius: 10px 10px 0px 0px;
+        border: none;
+    }
+    &:hover{
+        opacity: .7;
+    }
+}
+
+.sideBarContainer{
+    position: absolute;
+    top : 30vh;
+    right : 22px;
+    z-index: 20;
+
+    .sideBar{
+        // color : red;
+        background-color: grey;
+        height: 40vh;
+        width: 200px;
+        border-radius: 10px 0px 10px 10px;
+        .crossIconContainer{
+            text-align: right;
+
+            .crossIcon{
+                margin : 5px;
+                &:hover{
+                    opacity: .6;
+                }
+            }
+        }
+    }
+}
+
+.topBarContainer{
+    // background-color: red;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    .topBar{
+        // background-color: blue;
+        padding-left: 25px;
+    }
+    .grabIcon{
+        color: black;
+        &:hover{
+            opacity: .6;
+        }
+    }
+    .grabIconActive{
+        color : blue
+    }
+}
