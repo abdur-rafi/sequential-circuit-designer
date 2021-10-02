@@ -70,7 +70,8 @@
 
     .sideBar{
         // color : red;
-        background-color: grey;
+        // background-color: grey;
+        border: inset 4px rgb(170, 168, 168);
         height: 40vh;
         width: 200px;
         border-radius: 10px 0px 10px 10px;
@@ -85,6 +86,54 @@
             }
         }
     }
+    .stateNodeContainer{
+        margin: 5px;
+        // background-color: blue;
+        .inNodeContainer , .outNodeContainer, .radiusContainer{
+            // background-color: green;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            .arrowIcon{
+                // color: brown;
+                padding: 5px;
+                background-color: rgb(222, 222, 231);
+                border-radius: 15px;
+                margin: 0px 2px;
+                &:hover{
+                    opacity: .7;
+                }
+            }
+        }
+        .colorContainer{
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            input{
+                width: 30px;
+            }
+            // background-color: red;
+            .colorBlockContainer{
+                // background-color: red;
+                height: 30px;
+                display: flex;
+                align-items: center;
+                .colorBlock{
+                    margin-left: 5px;
+                    display: inline-block;
+                    height: 15px;
+                    width: 15px;
+                    border-radius: 10px;
+                }
+            }
+            
+        }
+
+    }
+    .ioNodeContainer{
+        background-color: green;
+    }
 }
 
 .topBarContainer{
@@ -93,16 +142,64 @@
     display: flex;
     align-items: center;
     .topBar{
+        display: flex;
+        flex-direction: row;
+        flex-grow: 1;
+        justify-content: space-between;
+        // background-color: red;
         // background-color: blue;
         padding-left: 25px;
+        padding-right: 25px;
     }
-    .grabIcon{
+    // .grabIcon{
+    //     color: black;
+    //     font-size : 25px;
+    //     padding: 5px;
+    //     &:hover{
+    //         opacity: .6;
+    //     }
+    //     border-radius: 4px;
+    // }
+    // .grabIconActive{
+    //     background-color : rgb(154, 154, 240);
+    // }
+    .selectIcon , .edgeIcon , .grabIcon{
         color: black;
+        font-size : 25px;
+        padding: 5px;
+        width: 30px;
         &:hover{
             opacity: .6;
         }
+        border-radius: 4px;
     }
-    .grabIconActive{
-        color : blue
+    .selectIconActive ,.edgeIconActive, .grabIconActive{
+        background-color : rgb(154, 154, 240);
+    }
+
+    .edgeIcon{
+        text-align: center;
+    }
+
+    // .edgeIcon{
+    //     padding-left: 10px;
+    //     padding-right: 10px;
+    // }
+
+    .leftSideContainer{
+        display: flex;
+        flex-direction: row;
+    }
+    // .rightSideContainer{
+    //     // background-color: red;
+    // }
+    .inputVarContainer{
+        padding : 5px;
+        label{
+            padding-right: 5px;
+        }
+        input{
+            width: 30px;
+        }
     }
 }

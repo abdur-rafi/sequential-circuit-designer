@@ -8,6 +8,7 @@ export interface StateNode{
     center : Point,
     radius : number,
     gap : number,
+    ioNodeDiameter : number,
     ioNodes : IONode[],
     color : string
 
@@ -30,3 +31,4 @@ export interface Edge{
     pointsSet : Set<string>,
     color : string
 }
+export type MouseMode = 'addNode' | 'drag' | 'edge' | 'select';
