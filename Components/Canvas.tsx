@@ -519,7 +519,7 @@ class Canvas extends React.Component<Props, State>{
                 this.selectedNode = selected.entity;
                 this.selectedIndex = selected.index;
 
-                if(this.state.mouseMode == 'edge' && 'type' in selected.entity){
+                if(this.state.mouseMode == 'edge' && 'type' in selected.entity && selected.entity.type === 'in'){
                     this.edgeStartNode = selected.entity;
                 }   
                 if(this.state.mouseMode === 'drag' || this.state.mouseMode === 'select'){
@@ -659,7 +659,7 @@ class Canvas extends React.Component<Props, State>{
                 }
                 let selected = this.checkInsideNode(testPoint);
                 if(selected.entity != null && 'type' in selected.entity
-                    && this.edgeStartNode.originNode !== selected.entity.originNode){
+                    && selected.entity.type === 'out'){
                         let from = this.edgeStartNode;
                         let to = selected.entity;
                         let edge = createEdge(from, to, this.tempEdgePoints);
@@ -701,8 +701,8 @@ class Canvas extends React.Component<Props, State>{
         }
         else if(this.state.mouseMode === 'edge'){
             if(this.edgeStartNode != null){
-                console.log(e);
-                console.log(this.stateNodes);
+                // console.log(e);
+                // console.log(this.stateNodes);
                 let tempContext = this.tempCanvasRef.current?.getContext('2d');
                 if(tempContext == null) return;
                 tempContext.beginPath();
