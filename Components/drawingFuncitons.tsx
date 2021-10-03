@@ -15,14 +15,15 @@ export function createIONodeObject(stateNode : StateNode, angle : number, type :
     }
 }
 
-export function createStateNodeObject(inNodesCount : number, outNodesCount : number, center : Point) : StateNode{
+export function createStateNodeObject(inNodesCount : number, outNodesCount : number, center : Point, label : string) : StateNode{
     let stateNode : StateNode = {
         center : center,
         radius : defaultStateNodeConfig.radius, 
         gap : defaultStateNodeConfig.gap,
         color : defaultStateNodeConfig.color,
         ioNodes : [],
-        ioNodeDiameter : defaultStateNodeConfig.ioNodeDiameter
+        ioNodeDiameter : defaultStateNodeConfig.ioNodeDiameter,
+        label : label
     }
     
     let gap = (Math.PI * 2) / (inNodesCount + outNodesCount);
@@ -121,7 +122,7 @@ export function createEdge(from : IONode, to : IONode, tempEdgePoints: Point[]) 
         to : to,
         points : tempEdgePoints,
         pointsSet : s,
-        color : 'darkgrey'
+        color : '#004d00'
     }
     return edge;
     

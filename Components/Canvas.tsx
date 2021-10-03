@@ -8,6 +8,43 @@ import SideBar from './SideBar';
 import TopBar from './topBar';
 import { defalutIONodeConfig } from '../defaultConfigs';
 
+
+// From stackoverflow
+class StringIdGenerator {
+    _chars : string;
+    _nextId : [number];
+    constructor(chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') {
+        this._chars = chars;
+        this._nextId = [0];
+    }
+    next() {
+        const r = [];
+        for (const char of this._nextId) {
+            r.unshift(this._chars[char]);
+        }
+        this._increment();
+        return r.join('');
+    }
+  
+    _increment() {
+        for (let i = 0; i < this._nextId.length; i++) {
+            const val = ++this._nextId[i];
+            if (val >= this._chars.length) {
+            this._nextId[i] = 0;
+            } else {
+            return;
+            }
+        }
+        this._nextId.push(0);
+    }
+  
+    *[Symbol.iterator]() {
+        while (true) {
+            yield this.next();
+        }
+    }
+  }
+
 interface Props{
 
 }
@@ -16,8 +53,10 @@ interface State{
     showSideBar : boolean,
     stateNodeToSideBar : StateNode | null,
     ioNodeToSideBar : IONode | null,
-    mouseMode : MouseMode
+    mouseMode : MouseMode,
+    numberOfInpVars : number
 }
+
 
 class Canvas extends React.Component<Props, State>{
 
@@ -31,6 +70,9 @@ class Canvas extends React.Component<Props, State>{
     tempEdgePoints : Point[];
     edgeStartNode : IONode | null;
     tempStateNode : StateNode | null;
+    stateLabels : StringIdGenerator;
+    nextLabel : string;
+
 
     constructor(props : Props){
         super(props);
@@ -40,27 +82,46 @@ class Canvas extends React.Component<Props, State>{
 
         this.stateNodes = [];
         this.edges = [];
-
+        this.stateLabels = new StringIdGenerator();
 
         this.selectedNode = null;
         this.selectedIndex = -1;
         this.tempEdgePoints = []
         this.edgeStartNode = null;
         this.tempStateNode = null;
+        this.nextLabel = this.stateLabels.next();
 
         this.state = {
             showSideBar : false,
             ioNodeToSideBar : null,
             stateNodeToSideBar : null,
-            mouseMode : 'edge'
+            mouseMode : 'edge',
+            numberOfInpVars : 2
         }
 
-        this.AddNode = this.AddNode.bind(this);
+        this.changeNumberOfInputVars = this.changeNumberOfInputVars.bind(this);
         this.toggleSideBar = this.toggleSideBar.bind(this);
         this.setMouseMode = this.setMouseMode.bind(this);
         this.setMouseMode = this.setMouseMode.bind(this);
         this.addIoNodeWithStateChange = this.addIoNodeWithStateChange.bind(this);
         this.changeStateNodeRadius = this.changeStateNodeRadius.bind(this);
+    }
+
+    drawLabel(center : Point, label : string, context : CanvasRenderingContext2D | null | undefined){
+        if(context == null)
+            context = this.nodeCanvasRef.current?.getContext('2d');
+        if(!context) return;
+        context.font = '24px serif'
+        context.fillStyle = 'black';
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.fillText(label, center.x, center.y);
+    }
+
+    changeNumberOfInputVars(vars : number){
+        this.setState({
+            numberOfInpVars : vars
+        })
     }
 
     changeStateNodeRadius(stateNode : StateNode, radius : number){
@@ -102,9 +163,12 @@ class Canvas extends React.Component<Props, State>{
 
     setMouseMode(mode : MouseMode){
         this.resetModeVars();
-        this.setState({
-            mouseMode : mode
-        })
+        this.setState(old=>({
+            mouseMode : mode,
+            showSideBar : false,
+            ioNodeToSideBar : null,
+            stateNodeToSideBar : null
+        }))
     }
 
     checkIfStateNodeContainsEdge(state : StateNode) : boolean{
@@ -138,15 +202,18 @@ class Canvas extends React.Component<Props, State>{
             ioNode.center.y += y;
         }
         this.drawStateNode(stateNode);
-        this.focusOnNode(stateNode.center, stateNode.radius, stateNode.color);
+        this.focusOnNode(stateNode.center, stateNode.radius, stateNode.color,stateNode.label);
     }
 
 
-    focusOnNode(center : Point, radius : number, fillColor : string){
+    focusOnNode(center : Point, radius : number, fillColor : string, label? : string){
         let context = this.nodeCanvasRef.current?.getContext('2d');
         if(context == null) return;
         clearCircle(context, center, radius + context.lineWidth);
         drawCircle(context, center, radius, 'blue',fillColor);
+        if(label)
+            this.drawLabel(center, label, context);
+        
     }
 
     checkInsideNode(testPoint : Point) :
@@ -227,7 +294,21 @@ class Canvas extends React.Component<Props, State>{
             drawCircle(context, state.center, state.radius, 'black', state.color);
             state.ioNodes.forEach(ioNode => {
                 drawCircle(context!, ioNode.center, ioNode.radius, 'black', ioNode.color);
+                // context!.font = 'bold 10px serif';
+                // context!.fillStyle = 'black';
+                // context!.textAlign = 'start';
+                // context!.textBaseline = 'middle';
+                // let b = (ioNode.angle > Math.PI / 2 && ioNode.angle < Math.PI * 1.5);
+                // context!.direction = b ? 'rtl' : 'ltr'; 
+                // context?.fillText('0000', ioNode.center.x + (b ? -defalutIONodeConfig.inputLabelGap : defalutIONodeConfig.inputLabelGap), ioNode.center.y);
+                // context?.save();
+                // context?.translate(state.center.x, state.center.y);
+                // context?.rotate(ioNode.angle);
+                // context!.font = 'bold 10px serif';
+                // context?.fillText('0000' ,state.radius - 2, 0);
+                // context?.restore();
             })
+            this.drawLabel(state.center, state.label , context);
         }
     }
 
@@ -285,7 +366,10 @@ class Canvas extends React.Component<Props, State>{
 
     resetModeVars(){
         if(this.selectedNode ){
-            this.removeFocusCircle(this.selectedNode);
+            let label;
+            if('label' in this.selectedNode)
+                label = this.selectedNode.label;
+            this.removeFocusCircle(this.selectedNode,label);
         }
         this.selectedIndex = -1;
         this.selectedNode = null;
@@ -294,11 +378,6 @@ class Canvas extends React.Component<Props, State>{
         this.edgeStartNode = null;
     }
 
-    AddNode(){
-        this.setState({
-            mouseMode : 'addNode'
-        })
-    }
 
     toggleSideBar(){
         this.setState(old=>({
@@ -308,12 +387,15 @@ class Canvas extends React.Component<Props, State>{
 
     
 
-    removeFocusCircle(node : StateNode | IONode){
+    removeFocusCircle(node : StateNode | IONode, label? : string){
         let context = this.nodeCanvasRef.current?.getContext('2d');
         if(context == null) 
             return;
         clearCircle(context, node.center, node.radius + context.lineWidth);
         drawCircle(context, node.center, node.radius, 'black', node.color);
+        if(label){
+            this.drawLabel(node.center, label, context);
+        }
     }
 
 
@@ -335,8 +417,12 @@ class Canvas extends React.Component<Props, State>{
                         showSideBar : false,
                         ioNodeToSideBar : null
                     })
-                    if(prevSelected != null)
-                        this.removeFocusCircle(prevSelected);
+                    if(prevSelected != null){
+                        let label;
+                        if('label' in prevSelected)
+                            label = prevSelected.label;
+                        this.removeFocusCircle(prevSelected, label);
+                    }
                 }
                 return;
             }
@@ -352,7 +438,10 @@ class Canvas extends React.Component<Props, State>{
                     this.edgeStartNode = selected.entity;
                 }   
                 if(this.state.mouseMode === 'drag' || this.state.mouseMode === 'select'){
-                    this.focusOnNode(selected.entity.center, selected.entity.radius, selected.entity.color);
+                    let label;
+                    if('label' in selected.entity)
+                        label = selected.entity.label;
+                    this.focusOnNode(selected.entity.center, selected.entity.radius, selected.entity.color, label);
                     if(this.state.mouseMode === 'select'){
                         if('type' in selected.entity){
                             this.setState({
@@ -369,7 +458,10 @@ class Canvas extends React.Component<Props, State>{
                             })
                         }
                         if(prevSelected != null){
-                            this.removeFocusCircle(prevSelected);
+                            let label;
+                            if('label' in prevSelected)
+                                label = prevSelected.label;
+                            this.removeFocusCircle(prevSelected, label);
                         }
                     }
                 }
@@ -384,7 +476,10 @@ class Canvas extends React.Component<Props, State>{
         }
         else if(this.state.mouseMode === 'drag'){
             if(this.selectedNode != null){
-                this.removeFocusCircle(this.selectedNode);
+                let label;
+                if('label' in this.selectedNode)
+                    label = this.selectedNode.label;
+                this.removeFocusCircle(this.selectedNode, label);
                 // let context = this.nodeCanvasRef.current!.getContext('2d');
                 // if(context === null) return;
                 // clearCircle(context, this.selectedNode.center, this.selectedNode.radius + context.lineWidth);
@@ -396,7 +491,7 @@ class Canvas extends React.Component<Props, State>{
     }
 
 
-    nodeCanvasMouseMove(e : MouseEvent){
+    nodeCanvasMouseMove(e : MouseEvent){ 
 
         if(this.state.mouseMode === 'addNode' || this.state.mouseMode === 'select' || this.state.mouseMode === 'edge')
             return;
@@ -415,7 +510,7 @@ class Canvas extends React.Component<Props, State>{
 
     tempCanvasMouseMove(e : MouseEvent){
         if(this.state.mouseMode === 'addNode'){
-            let state = createStateNodeObject(1, 0, {x : e.offsetX, y : e.offsetY});
+            let state = createStateNodeObject(Math.pow(2, this.state.numberOfInpVars), 1, {x : e.offsetX, y : e.offsetY}, this.nextLabel);
             let canvas = this.tempCanvasRef.current;
             let context = canvas!.getContext('2d');
             clearCanvas(this.tempCanvasRef);
@@ -489,6 +584,7 @@ class Canvas extends React.Component<Props, State>{
                 this.setState({
                     mouseMode : 'edge'
                 })
+                this.nextLabel = this.stateLabels.next();
                 return;
             }
         }
@@ -529,14 +625,16 @@ class Canvas extends React.Component<Props, State>{
 
         if(nodeContext == null || edgeContext == null || tempContext == null) return;
 
-        edgeContext.lineWidth = 3;
+        edgeContext.lineWidth = 2;
         
 
-        let stateNode = createStateNodeObject(4, 3, {x :250, y : 250});
-        let stateNode2 = createStateNodeObject(2, 3, {x : 100, y : 100})
-        this.stateNodes.push(stateNode);
-        this.stateNodes.push(stateNode2);
-        this.stateNodes.forEach(s => this.drawStateNode(s))
+        // let stateNode = createStateNodeObject(4, 3, {x :250, y : 250}, this.nextLabel);
+        // this.nextLabel = this.stateLabels.next();
+        // let stateNode2 = createStateNodeObject(2, 3, {x : 100, y : 100}, this.nextLabel);
+        // this.nextLabel = this.stateLabels.next();
+        // this.stateNodes.push(stateNode);
+        // this.stateNodes.push(stateNode2);
+        // this.stateNodes.forEach(s => this.drawStateNode(s))
         // console.log(this.stateNodes);
 
         tempCanvas.addEventListener('mousedown', e=>{
@@ -560,7 +658,7 @@ class Canvas extends React.Component<Props, State>{
         return (
             <div className={styles.root}>
                 <div className={styles.topBarContainer}>
-                    <TopBar setMouseMode = {this.setMouseMode} mouseMode = {this.state.mouseMode}/>
+                    <TopBar changeNumberOfInputVars = {this.changeNumberOfInputVars} numberOfInputVars = {this.state.numberOfInpVars} setMouseMode = {this.setMouseMode} mouseMode = {this.state.mouseMode}/>
                 </div>
                 <div className={styles.canvasContainer}>
                     <canvas ref = {this.nodeCanvasRef} className={styles.canvas} />
@@ -569,12 +667,12 @@ class Canvas extends React.Component<Props, State>{
                         zIndex : 5
                     }} />
                 </div>
-                <div onClick={this.AddNode} className={styles.addNodeButtonContainer}>
+                <div onClick={()=>this.setMouseMode('addNode')} className={styles.addNodeButtonContainer}>
                     <button className={styles.addNodeButton}>Add Node</button>
                 </div>
-                {!this.state.showSideBar && <div className={styles.menuContainer}>
+                {/* {!this.state.showSideBar && <div className={styles.menuContainer}>
                     <button onClick = {this.toggleSideBar} className = {styles.menu}> Menu</button>
-                </div>}
+                </div>} */}
                 
                 {
                     this.state.showSideBar &&

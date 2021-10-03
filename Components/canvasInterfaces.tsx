@@ -10,7 +10,8 @@ export interface StateNode{
     gap : number,
     ioNodeDiameter : number,
     ioNodes : IONode[],
-    color : string
+    color : string,
+    label : string
 
 }
 export interface IONode{

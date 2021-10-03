@@ -1,14 +1,15 @@
 
 export const defaultStateNodeConfig : defaultStateNodeConfig = {
-    radius : 45,
-    color : '#26734d',
+    radius : 30,
+    color : '#ffffff',
     gap : 4,
-    ioNodeDiameter : 10
+    ioNodeDiameter : 8,
 }
 
 export const defalutIONodeConfig : defalutIONodeConfig = {
     inNodeColor : '#00ff00',
-    outNodeColor : '#cc6600'
+    outNodeColor : '#cc6600',
+    inputLabelGap : 8
 }
 export const canvasConfig : canvasConfig = {
     height : '90vh',
@@ -22,7 +23,8 @@ interface colorConfig{
 
 interface defalutIONodeConfig{
     inNodeColor : string,
-    outNodeColor : string
+    outNodeColor : string,
+    inputLabelGap : number
 }
 
 interface defaultStateNodeConfig {

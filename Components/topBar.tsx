@@ -5,7 +5,9 @@ import {GrSelect} from 'react-icons/gr'
 import { MouseMode } from "./canvasInterfaces";
 interface Props{
     setMouseMode : (mode : MouseMode)=>void
-    mouseMode : 'addNode' | 'drag' | 'edge' | 'select'
+    mouseMode : 'addNode' | 'drag' | 'edge' | 'select',
+    numberOfInputVars : number,
+    changeNumberOfInputVars : (vars : number)=> void
 }
 interface State{
 
@@ -22,8 +24,8 @@ class TopBar extends React.Component<Props, State>{
                         <IoHandRightOutline
                         className={styles.grabIcon + ' ' + (this.props.mouseMode === 'drag' ? styles.grabIconActive : '')}
                         onClick = {()=>{
-                            // if(this.props.mouseMode === 'drag')
-                            //     this.props.setMouseMode('edge');
+                            if(this.props.mouseMode === 'drag')
+                                return;
                             // else
                             this.props.setMouseMode('drag');
                         }}
@@ -35,8 +37,8 @@ class TopBar extends React.Component<Props, State>{
                         <GrSelect
                             className={styles.selectIcon + ' ' + (this.props.mouseMode === 'select' ? styles.selectIconActive : '')}
                             onClick = {()=>{
-                                // if(this.props.mouseMode === 'select')
-                                //     this.props.setMouseMode('edge');
+                                if(this.props.mouseMode === 'select')
+                                    return;
                                 // else
                                 this.props.setMouseMode('select');
                             }}
@@ -45,6 +47,8 @@ class TopBar extends React.Component<Props, State>{
                     <div className = {styles.edgeIconContainer}>
                         <div className = {styles.edgeIcon + ' ' + (this.props.mouseMode === 'edge' ? styles.selectIconActive : '')}
                         onClick = {()=>{
+                            if(this.props.mouseMode === 'edge')
+                                return;
                             this.props.setMouseMode('edge')
                         }}>
                             E
@@ -54,7 +58,13 @@ class TopBar extends React.Component<Props, State>{
                 <div className = {styles.rightSideContainer}>
                     <div className = {styles.inputVarContainer}>
                         <label> #inp vars</label>
-                        <input type='number' />
+                        <input type='number' value={this.props.numberOfInputVars}
+                        onChange = {(e)=>{
+                            let n = parseInt(e.target.value);
+                            if(n > 4 || n < 1) return;
+                            this.props.changeNumberOfInputVars(n);
+                            
+                            }} />
                     </div>
                 </div>
 
