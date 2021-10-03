@@ -9,7 +9,8 @@ export const defaultStateNodeConfig : defaultStateNodeConfig = {
 export const defalutIONodeConfig : defalutIONodeConfig = {
     inNodeColor : '#00ff00',
     outNodeColor : '#cc6600',
-    inputLabelGap : 8
+    inputLabelGap : 8,
+    inputLabelSize : 10
 }
 export const canvasConfig : canvasConfig = {
     height : '90vh',
@@ -24,7 +25,8 @@ interface colorConfig{
 interface defalutIONodeConfig{
     inNodeColor : string,
     outNodeColor : string,
-    inputLabelGap : number
+    inputLabelGap : number,
+    inputLabelSize : number
 }
 
 interface defaultStateNodeConfig {

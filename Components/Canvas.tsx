@@ -72,6 +72,8 @@ class Canvas extends React.Component<Props, State>{
     tempStateNode : StateNode | null;
     stateLabels : StringIdGenerator;
     nextLabel : string;
+    tempStateNodeCenter : Point;
+    inputCombTextLength : number;
 
 
     constructor(props : Props){
@@ -89,6 +91,10 @@ class Canvas extends React.Component<Props, State>{
         this.tempEdgePoints = []
         this.edgeStartNode = null;
         this.tempStateNode = null;
+        this.tempStateNodeCenter = {
+            x : -1, y : -1
+        }
+        this.inputCombTextLength = 0;
         this.nextLabel = this.stateLabels.next();
 
         this.state = {
@@ -126,9 +132,7 @@ class Canvas extends React.Component<Props, State>{
 
     changeStateNodeRadius(stateNode : StateNode, radius : number){
         if(this.checkIfStateNodeContainsEdge(stateNode)) return;
-        let context = this.nodeCanvasRef.current?.getContext('2d');
-        if(context == null) return;
-        clearCircle(context, stateNode.center, stateNode.radius + stateNode.gap + stateNode.ioNodeDiameter + context.lineWidth);
+        this.eraseStateNode(stateNode, this.nodeCanvasRef);
         let r = radius + stateNode.gap + stateNode.ioNodeDiameter / 2;
         for(let i = 0; i < stateNode.ioNodes.length; ++i){
             let ioNode = stateNode.ioNodes[i];
@@ -138,7 +142,7 @@ class Canvas extends React.Component<Props, State>{
             }
         }
         stateNode.radius = radius;
-        this.drawStateNode(stateNode, context); 
+        this.drawStateNode(stateNode, this.nodeCanvasRef); 
         this.setState({
             stateNodeToSideBar : stateNode
         })
@@ -178,9 +182,10 @@ class Canvas extends React.Component<Props, State>{
         return false;
     }
 
-    checkCollisionWithStateNodes(l1 : Point, r1 : Point) : boolean{
+    checkCollisionWithStateNodes(l1 : Point, r1 : Point , stateNodeP? : StateNode) : boolean{
         for(let i = 0; i < this.stateNodes.length; ++i){
             let stateNode = this.stateNodes[i];
+            if(stateNode === stateNodeP) continue; 
             let p = getCornerPoints(stateNode);
             console.log(p);
             if(doRectanglesOverlap(l1, r1, p.l, p.r)){
@@ -190,10 +195,9 @@ class Canvas extends React.Component<Props, State>{
         return false;
     }
 
-    translateStateNode(stateNode : StateNode,x : number, y : number){
-        let context = this.nodeCanvasRef.current?.getContext('2d');
-        if(context == null) return;
-        clearCircle(context,stateNode.center, stateNode.radius + stateNode.gap + stateNode.ioNodeDiameter + context.lineWidth);
+    translateStateNode(stateNode : StateNode,x : number, y : number, canvas : React.RefObject<HTMLCanvasElement>){
+        // this.eraseStateNode(stateNode, this.tempCanvasRef);
+        // clearCanvas(canvas);
         stateNode.center.x += x;
         stateNode.center.y += y;
         for(let i = 0; i < stateNode.ioNodes.length; ++i){
@@ -201,8 +205,8 @@ class Canvas extends React.Component<Props, State>{
             ioNode.center.x += x;
             ioNode.center.y += y;
         }
-        this.drawStateNode(stateNode);
-        this.focusOnNode(stateNode.center, stateNode.radius, stateNode.color,stateNode.label);
+        this.drawStateNode(stateNode, canvas);
+        // this.focusOnNode(stateNode.center, stateNode.radius, stateNode.color,stateNode.label);
     }
 
 
@@ -286,33 +290,81 @@ class Canvas extends React.Component<Props, State>{
         // edgeContext.beginPath();
     }
 
-    drawStateNode(state : StateNode, context? : CanvasRenderingContext2D | null){
-        if(context == undefined)
-            context = this.nodeCanvasRef.current?.getContext('2d');
+    drawInputLabel(ioNode : IONode, canvas : React.RefObject<HTMLCanvasElement>){
+        let context = canvas.current?.getContext('2d');
+        if(!context) return;
+        context!.font = 'bold ' + defalutIONodeConfig.inputLabelSize + 'px serif';
+        context!.fillStyle = 'black';
+        context!.textAlign = 'start';
+        context!.textBaseline = 'middle';
+        let b = (ioNode.angle > Math.PI / 2 && ioNode.angle < Math.PI * 1.5);
+        context!.direction = b ? 'rtl' : 'ltr'; 
+        context?.fillText(ioNode.inputComb, ioNode.center.x + (b ? -defalutIONodeConfig.inputLabelGap : defalutIONodeConfig.inputLabelGap), ioNode.center.y);
+        
+    }
+
+    drawStateNode(state : StateNode, canvas : React.RefObject<HTMLCanvasElement>){
+        let context = canvas.current?.getContext('2d');
+        if(!context) return;
         if(context != null){
             context.lineWidth = 1.5;
             drawCircle(context, state.center, state.radius, 'black', state.color);
             state.ioNodes.forEach(ioNode => {
                 drawCircle(context!, ioNode.center, ioNode.radius, 'black', ioNode.color);
-                // context!.font = 'bold 10px serif';
-                // context!.fillStyle = 'black';
-                // context!.textAlign = 'start';
-                // context!.textBaseline = 'middle';
-                // let b = (ioNode.angle > Math.PI / 2 && ioNode.angle < Math.PI * 1.5);
-                // context!.direction = b ? 'rtl' : 'ltr'; 
-                // context?.fillText('0000', ioNode.center.x + (b ? -defalutIONodeConfig.inputLabelGap : defalutIONodeConfig.inputLabelGap), ioNode.center.y);
+                if(ioNode.type === 'in')
+                    this.drawInputLabel(ioNode, canvas);
                 // context?.save();
+                // context!.fillStyle = 'black';
                 // context?.translate(state.center.x, state.center.y);
                 // context?.rotate(ioNode.angle);
                 // context!.font = 'bold 10px serif';
-                // context?.fillText('0000' ,state.radius - 2, 0);
+                // context!.textAlign = 'start';
+                // context!.textBaseline = 'middle';
+                // context!.direction = 'ltr';
+                // context?.fillText('0000' ,state.radius + 20, 0);
                 // context?.restore();
             })
             this.drawLabel(state.center, state.label , context);
         }
     }
 
-    
+    calculateInputTextRectangle(ioNode : IONode) : {
+        l1 : Point, r1 : Point
+    }
+    {
+        let fSize = defalutIONodeConfig.inputLabelSize;
+        let x1 = ioNode.center.x;
+        let y1 = ioNode.center.y - fSize / 2;
+        let w = ioNode.radius + ioNode.originNode.inputCombTextLength + defalutIONodeConfig.inputLabelGap;
+        if(ioNode.angle > Math.PI * .5 && ioNode.angle < Math.PI * 1.5){
+            return({
+                l1 : {
+                    x : x1 - w,
+                    y : y1
+                },
+                r1 : {
+                    x : x1,
+                    y : y1 + fSize 
+                }
+            })
+            // w = -w;
+        }
+        else{
+            return({
+                r1 : {
+                    x : x1 + w,
+                    y : y1 + fSize
+                },
+                l1 : {
+                    x : x1,
+                    y : y1 
+                }
+            })
+        }
+        // context.fillStyle = 'red';
+        // context.clearRect(x1, y1,w, fSize);
+        // context.fill();
+    }
 
 
     rotateIoNode(selectedNode : IONode, e : MouseEvent){
@@ -325,10 +377,13 @@ class Canvas extends React.Component<Props, State>{
         let diff = (20 * Math.PI) / 180;
         diff = calculateDelTheta(selectedNode) / 2;
         let n = stateNode.ioNodes.length;
+        let rect1 = this.calculateInputTextRectangle(createIONodeObject(stateNode, angle,'in', '',''));
         for(let i = 0; i < n; ++i){
             if(i == this.selectedIndex) continue;
             let ioNode = stateNode.ioNodes[i];
             if(checkCollision(ioNode.angle,angle, diff)) return;
+            let rect2 = this.calculateInputTextRectangle(ioNode);
+            if(doRectanglesOverlap(rect1.l1, rect1.r1, rect2.l1, rect2.r1)) return;
         }
 
         let i = (this.selectedIndex + 1 ) ;
@@ -349,18 +404,24 @@ class Canvas extends React.Component<Props, State>{
         this.selectedIndex = selected;
         
         let context = this.nodeCanvasRef.current?.getContext('2d');
-        if(context === null) return;
-
-        if(context != null){
-            let newCenter = calculateIONodeCenter(stateNode, angle);
-            clearCircle(context, selectedNode.center,
-                selectedNode.radius + context.lineWidth);
-            selectedNode.center = newCenter;
-            selectedNode.angle = angle;
-            drawCircle(context, newCenter, selectedNode.radius, 'blue',
+        if(context == null) return;
+        
+        let newCenter = calculateIONodeCenter(stateNode, angle);
+        this.eraseIONode(selectedNode, this.nodeCanvasRef);
+        selectedNode.center = newCenter;
+        selectedNode.angle = angle;
+        drawCircle(context, newCenter, selectedNode.radius, 'blue',
                 selectedNode.color);
-        }
-
+        
+        let ioNode = selectedNode;
+        this.drawInputLabel(ioNode, this.nodeCanvasRef);
+        // context!.font = 'bold 10px serif';
+        // context!.fillStyle = 'black';
+        // context!.textAlign = 'start';
+        // context!.textBaseline = 'middle';
+        // let b = (ioNode.angle > Math.PI / 2 && ioNode.angle < Math.PI * 1.5);
+        // context!.direction = b ? 'rtl' : 'ltr'; 
+        // context?.fillText('0000', ioNode.center.x + (b ? -defalutIONodeConfig.inputLabelGap : defalutIONodeConfig.inputLabelGap), ioNode.center.y);
     }
 
 
@@ -396,6 +457,30 @@ class Canvas extends React.Component<Props, State>{
         if(label){
             this.drawLabel(node.center, label, context);
         }
+    }
+
+    eraseStateNode(stateNode : StateNode, canvas : React.RefObject<HTMLCanvasElement>){
+        let context = canvas.current?.getContext('2d');
+        if(!context) return;
+        clearCircle(context, stateNode.center, stateNode.radius + stateNode.gap + stateNode.ioNodeDiameter + context.lineWidth + stateNode.inputCombTextLength);
+    }
+
+    eraseIONode(ioNode : IONode, canvas : React.RefObject<HTMLCanvasElement> ){
+        let context = canvas.current?.getContext('2d');
+        if(!context) return;
+        clearCircle(context, ioNode.center, ioNode.radius + context.lineWidth );
+        let fSize = parseInt(context.font);
+        console.log(fSize);
+        fSize = 10;
+        let x1 = ioNode.center.x;
+        let y1 = ioNode.center.y - fSize / 2;
+        let w = ioNode.radius + ioNode.originNode.inputCombTextLength + defalutIONodeConfig.inputLabelGap;
+        if(ioNode.angle > Math.PI * .5 && ioNode.angle < Math.PI * 1.5)
+            w = -w;
+        // context.fillStyle = 'red';
+        context.clearRect(x1, y1,w, fSize);
+        // context.fill();
+
     }
 
 
@@ -439,8 +524,16 @@ class Canvas extends React.Component<Props, State>{
                 }   
                 if(this.state.mouseMode === 'drag' || this.state.mouseMode === 'select'){
                     let label;
-                    if('label' in selected.entity)
+                    if('label' in selected.entity){
                         label = selected.entity.label;
+                        if(this.state.mouseMode === 'drag'){
+                            this.eraseStateNode(selected.entity, this.nodeCanvasRef);
+                            this.drawStateNode(selected.entity, this.tempCanvasRef);
+                            this.tempStateNodeCenter.x = selected.entity.center.x;
+                            this.tempStateNodeCenter.y = selected.entity.center.y;
+                            return;
+                        }
+                    }
                     this.focusOnNode(selected.entity.center, selected.entity.radius, selected.entity.color, label);
                     if(this.state.mouseMode === 'select'){
                         if('type' in selected.entity){
@@ -464,6 +557,7 @@ class Canvas extends React.Component<Props, State>{
                             this.removeFocusCircle(prevSelected, label);
                         }
                     }
+
                 }
             }  
         }   
@@ -477,13 +571,22 @@ class Canvas extends React.Component<Props, State>{
         else if(this.state.mouseMode === 'drag'){
             if(this.selectedNode != null){
                 let label;
-                if('label' in this.selectedNode)
+                if('label' in this.selectedNode){
                     label = this.selectedNode.label;
-                this.removeFocusCircle(this.selectedNode, label);
-                // let context = this.nodeCanvasRef.current!.getContext('2d');
-                // if(context === null) return;
-                // clearCircle(context, this.selectedNode.center, this.selectedNode.radius + context.lineWidth);
-                // drawCircle(context, this.selectedNode.center, this.selectedNode.radius, 'black', this.selectedNode.color);
+                    // this.eraseStateNode(this.selectedNode,this.tempCanvasRef);
+                    let p = getCornerPoints(this.selectedNode);
+                    if(this.checkCollisionWithStateNodes(p.l, p.r, this.selectedNode)){
+                        let deltaX = this.tempStateNodeCenter.x - this.selectedNode.center.x;
+                        let deltaY = this.tempStateNodeCenter.y - this.selectedNode.center.y;
+                        this.translateStateNode(this.selectedNode, deltaX, deltaY, this.nodeCanvasRef);
+                        
+                    }
+                    else
+                        this.drawStateNode(this.selectedNode, this.nodeCanvasRef); 
+                    clearCanvas(this.tempCanvasRef);
+                }
+                else
+                    this.removeFocusCircle(this.selectedNode, label);
                 this.selectedNode = null;
                 this.selectedIndex = -1;
             }
@@ -500,26 +603,31 @@ class Canvas extends React.Component<Props, State>{
             if('type' in this.selectedNode && this.selectedNode.edges.length === 0){
                 this.rotateIoNode(this.selectedNode, e);
             }
-            else if('ioNodes' in this.selectedNode){
-                if(!this.checkIfStateNodeContainsEdge(this.selectedNode)){
-                    this.translateStateNode(this.selectedNode, e.movementX, e.movementY);
-                }
-            }
         }
     }
 
     tempCanvasMouseMove(e : MouseEvent){
         if(this.state.mouseMode === 'addNode'){
-            let state = createStateNodeObject(Math.pow(2, this.state.numberOfInpVars), 1, {x : e.offsetX, y : e.offsetY}, this.nextLabel);
-            let canvas = this.tempCanvasRef.current;
-            let context = canvas!.getContext('2d');
+            let state = createStateNodeObject(Math.pow(2, this.state.numberOfInpVars), 1, {x : e.offsetX, y : e.offsetY}, this.nextLabel, this.inputCombTextLength, this.state.numberOfInpVars);
             clearCanvas(this.tempCanvasRef);
-            this.drawStateNode(state, context);
+            this.drawStateNode(state, this.tempCanvasRef);
             this.tempStateNode = state;
             return;
             
         }
-        else if(this.state.mouseMode === 'drag' || this.state.mouseMode === 'select'){
+        else if(this.state.mouseMode === 'drag'){
+            if(this.selectedNode === null) return;
+            if('type' in this.selectedNode){
+                return;
+            }
+            else if('ioNodes' in this.selectedNode){
+                if(!this.checkIfStateNodeContainsEdge(this.selectedNode)){
+                    clearCanvas(this.tempCanvasRef);
+                    this.translateStateNode(this.selectedNode, e.movementX, e.movementY, this.tempCanvasRef);
+                }
+            }
+        }
+        else if(this.state.mouseMode === 'select'){
             return;
         }
         else if(this.state.mouseMode === 'edge'){
@@ -578,7 +686,7 @@ class Canvas extends React.Component<Props, State>{
                 }
                 this.stateNodes.push(this.tempStateNode);
                 clearCanvas(this.tempCanvasRef);
-                this.drawStateNode(this.tempStateNode);
+                this.drawStateNode(this.tempStateNode, this.nodeCanvasRef);
                 this.tempStateNode = null;
                 // this.state.mouseMode = 'edge';
                 this.setState({
@@ -606,6 +714,7 @@ class Canvas extends React.Component<Props, State>{
 
 
     componentDidMount(){ 
+        
         const nodeCanvas = this.nodeCanvasRef.current;
         const edgeCanvas = this.edgeCanvasRef.current;
         const tempCanvas = this.tempCanvasRef.current;
@@ -622,8 +731,26 @@ class Canvas extends React.Component<Props, State>{
         tempCanvas.height = tempCanvas.clientHeight;
         tempCanvas.width = tempCanvas.clientWidth;
 
+        // window.onresize = ()=>{
+        //     console.log('herer');
+        //     clearCanvas(this.nodeCanvasRef);
+        //     clearCanvas(this.tempCanvasRef);
+        //     clearCanvas(this.edgeCanvasRef);
+        //     this.stateNodes.forEach(s=>{
+        //         this.drawStateNode(s, this.nodeCanvasRef);
+        //     })
+        //     this.edges.forEach(e=>{
+        //         this.drawEdge(e);
+        //     })
+        // }
 
         if(nodeContext == null || edgeContext == null || tempContext == null) return;
+
+        let str = '';
+        for(let i = 0; i < Math.pow(2, this.state.numberOfInpVars);++i)
+            str += '0'
+
+        this.inputCombTextLength = nodeContext.measureText(str).width;
 
         edgeContext.lineWidth = 2;
         

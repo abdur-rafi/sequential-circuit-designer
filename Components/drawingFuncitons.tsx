@@ -3,7 +3,7 @@ import {Point, StateNode, IONode, Edge} from './canvasInterfaces'
 import {defalutIONodeConfig, defaultStateNodeConfig} from '../defaultConfigs'
 import React from 'react';
 
-export function createIONodeObject(stateNode : StateNode, angle : number, type : 'in' | 'out',color : string) : IONode{
+export function createIONodeObject(stateNode : StateNode, angle : number, type : 'in' | 'out',color : string, inputComb : string) : IONode{
     return{
         angle : angle,
         center : calculateIONodeCenter(stateNode, angle),
@@ -11,11 +11,12 @@ export function createIONodeObject(stateNode : StateNode, angle : number, type :
         originNode : stateNode,
         radius : stateNode.ioNodeDiameter / 2,
         type : type,
-        edges : []
+        edges : [],
+        inputComb : inputComb
     }
 }
 
-export function createStateNodeObject(inNodesCount : number, outNodesCount : number, center : Point, label : string) : StateNode{
+export function createStateNodeObject(inNodesCount : number, outNodesCount : number, center : Point, label : string, inputCombTextLength : number, numberOfInputVars : number) : StateNode{
     let stateNode : StateNode = {
         center : center,
         radius : defaultStateNodeConfig.radius, 
@@ -23,18 +24,23 @@ export function createStateNodeObject(inNodesCount : number, outNodesCount : num
         color : defaultStateNodeConfig.color,
         ioNodes : [],
         ioNodeDiameter : defaultStateNodeConfig.ioNodeDiameter,
-        label : label
+        label : label,
+        inputCombTextLength : inputCombTextLength
     }
     
     let gap = (Math.PI * 2) / (inNodesCount + outNodesCount);
     let s = 0;
-    for(let i = 1; i <= inNodesCount; ++i){
-        let node = createIONodeObject(stateNode, s, 'in', defalutIONodeConfig['inNodeColor']);
+    for(let i = 0; i < inNodesCount; ++i){
+        let inpComb = i.toString(2);
+        while(inpComb.length !=  numberOfInputVars ){
+            inpComb = '0' + inpComb;
+        }
+        let node = createIONodeObject(stateNode, s, 'in', defalutIONodeConfig['inNodeColor'], inpComb);
         s += gap;
         stateNode.ioNodes.push(node);
     }
     for(let i = 1; i <= outNodesCount; ++i){
-        let node = createIONodeObject(stateNode, s, 'out', defalutIONodeConfig['outNodeColor']);
+        let node = createIONodeObject(stateNode, s, 'out', defalutIONodeConfig['outNodeColor'], '');
         s += gap;
         stateNode.ioNodes.push(node);
     }
@@ -139,12 +145,12 @@ export function getCornerPoints(stateNode : StateNode):{
     r : Point
 }{
     let l2 = {
-        x : stateNode.center.x - stateNode.radius -  stateNode.gap - stateNode.ioNodeDiameter,
-        y : stateNode.center.y - stateNode.radius -  stateNode.gap - stateNode.ioNodeDiameter
+        x : stateNode.center.x - stateNode.radius -  stateNode.gap - stateNode.ioNodeDiameter - stateNode.inputCombTextLength,
+        y : stateNode.center.y - stateNode.radius -  stateNode.gap - stateNode.ioNodeDiameter- stateNode.inputCombTextLength
     }
     let r2 = {
-        x : stateNode.center.x + stateNode.radius +  stateNode.gap + stateNode.ioNodeDiameter,
-        y : stateNode.center.y + stateNode.radius +  stateNode.gap + stateNode.ioNodeDiameter
+        x : stateNode.center.x + stateNode.radius +  stateNode.gap + stateNode.ioNodeDiameter + stateNode.inputCombTextLength,
+        y : stateNode.center.y + stateNode.radius +  stateNode.gap + stateNode.ioNodeDiameter + stateNode.inputCombTextLength
     }
     return {
         l : l2,
@@ -183,7 +189,7 @@ export function addIoNode(stateNode : StateNode, type : 'in' | 'out') : IONode |
             continue;
         }
         let ioNode = createIONodeObject(stateNode, between, type,
-            type == 'in' ? defalutIONodeConfig.inNodeColor : defalutIONodeConfig.outNodeColor);
+            type == 'in' ? defalutIONodeConfig.inNodeColor : defalutIONodeConfig.outNodeColor,'');
         
         ioNodes.splice(i+1,0,ioNode);
         console.log(stateNode);
@@ -194,6 +200,6 @@ export function addIoNode(stateNode : StateNode, type : 'in' | 'out') : IONode |
 
 export function calculateDelTheta(ioNode : IONode) : number{
     let stateNode = ioNode.originNode;
-    return (stateNode.ioNodeDiameter * 2.5) / (stateNode.radius + stateNode.gap + stateNode.ioNodeDiameter / 2);
+    return (stateNode.ioNodeDiameter * 2.75) / (stateNode.radius + stateNode.gap + stateNode.ioNodeDiameter / 2);
 
 }

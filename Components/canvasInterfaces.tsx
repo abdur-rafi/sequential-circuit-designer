@@ -11,7 +11,8 @@ export interface StateNode{
     ioNodeDiameter : number,
     ioNodes : IONode[],
     color : string,
-    label : string
+    label : string,
+    inputCombTextLength : number
 
 }
 export interface IONode{
@@ -22,7 +23,7 @@ export interface IONode{
     type : 'in' | 'out',
     color : string,
     edges : Edge[]
-
+    inputComb : string
 }
 
 export interface Edge{
