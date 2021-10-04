@@ -65,16 +65,17 @@
 .sideBarContainer{
     position: absolute;
     top : 30vh;
-    right : 22px;
+    right : 30px;
     z-index: 20;
 
     .sideBar{
         // color : red;
-        // background-color: grey;
-        border: inset 4px rgb(170, 168, 168);
-        height: 40vh;
+        background-color: grey;
+        border: solid 2px rgb(170, 168, 168);
+        height: 200px;
         width: 200px;
         border-radius: 10px 0px 10px 10px;
+        border-radius: 10px;
         .crossIconContainer{
             text-align: right;
 
@@ -86,7 +87,7 @@
             }
         }
     }
-    .stateNodeContainer{
+    .stateNodeContainer, .ioNodeContainer{
         margin: 5px;
         // background-color: blue;
         .inNodeContainer , .outNodeContainer, .radiusContainer{
@@ -125,14 +126,12 @@
                     height: 15px;
                     width: 15px;
                     border-radius: 10px;
+                    border: solid 1px black ;
                 }
             }
             
         }
 
-    }
-    .ioNodeContainer{
-        background-color: green;
     }
 }
 

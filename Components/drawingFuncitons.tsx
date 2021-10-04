@@ -42,7 +42,6 @@ export function clearCircle(canvas : React.RefObject<HTMLCanvasElement>, center 
     let context = canvas.current?.getContext('2d');
     if(!context) return;
     context.beginPath();
-    // context.lineWidth = 1;
     context.strokeStyle = 'white';
     context.arc(center.x, center.y,  radius , 0, Math.PI * 2);
     context.fillStyle = 'white';
@@ -109,6 +108,14 @@ export function clearCanvas(canvasRef : React.RefObject<HTMLCanvasElement>){
 
 }
 
+function distanceBetweenTwoPoints(p1 : Point, p2 : Point){
+    return Math.sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
+}
+
+export function doCirclesCollide(c1 : Point, r1 : number, c2 : Point, r2 : number){
+    let centerDist = distanceBetweenTwoPoints(c1, c2);
+    return centerDist <= (r1 + r2 );
+}
 
 
 export function calculateDelTheta(ioNode : IONode) : number{

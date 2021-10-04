@@ -12,7 +12,8 @@ export interface StateNode{
     ioNodes : IONode[],
     color : string,
     label : string,
-    inputCombTextLength : number
+    inputCombTextLength : number,
+    minRadius : number
 
 }
 export interface IONode{
