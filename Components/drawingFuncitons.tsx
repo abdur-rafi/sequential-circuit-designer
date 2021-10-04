@@ -73,27 +73,7 @@ export function pointToString(p : Point){
     return p.x.toString() + ',' + p.y.toString();
 }
 
-export function createEdge(from : IONode, to : IONode, tempEdgePoints: Point[]) : Edge{
-    let s = new Set<string>();
-    tempEdgePoints = tempEdgePoints.filter(p =>{
-        return !(checkInsideCircle(to.center,to.radius,p)
-        || checkInsideCircle(from.center, from.radius,p))
-    })
-    tempEdgePoints.forEach(p=>{
-        s.add(pointToString(p));
-    })
-    tempEdgePoints.splice(0, 0, from.center);
-    tempEdgePoints.push(to.center);
-    let edge : Edge = {
-        from : from,
-        to : to,
-        points : tempEdgePoints,
-        pointsSet : s,
-        color : '#004d00'
-    }
-    return edge;
-    
-}
+
 
 export function doRectanglesOverlap(l1 : Point, r1 : Point, l2 : Point, r2 : Point): boolean{
     return (l1.x < r2.x && r1.x > l2.x && r1.y > l2.y && l1.y < r2.y);
