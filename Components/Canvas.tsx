@@ -7,8 +7,8 @@ import styles from '../styles/design.module.scss'
 import SideBar from './SideBar';
 import TopBar from './topBar';
 import { canvasConfig, defalutIONodeConfig, defaultStateNodeConfig } from '../defaultConfigs';
-
-
+import Design from './results';
+import Lingk from 'next/link'
 // From stackoverflow
 class StringIdGenerator {
     _chars : string;
@@ -54,7 +54,8 @@ interface State{
     stateNodeToSideBar : StateNode | null,
     ioNodeToSideBar : IONode | null,
     mouseMode : MouseMode,
-    numberOfInpVars : number
+    numberOfInpVars : number,
+    synthesis : boolean 
 }
 
 
@@ -109,7 +110,8 @@ class Canvas extends React.Component<Props, State>{
             ioNodeToSideBar : null,
             stateNodeToSideBar : null,
             mouseMode : 'edge',
-            numberOfInpVars : 2
+            numberOfInpVars : 2,
+            synthesis : false
         }
 
         this.changeNumberOfInputVars = this.changeNumberOfInputVars.bind(this);
@@ -120,6 +122,13 @@ class Canvas extends React.Component<Props, State>{
         this.changeStateNodeRadius = this.changeStateNodeRadius.bind(this);
         this.changeStateColor = this.changeStateColor.bind(this);
         this.changeIoNodeColor = this.changeIoNodeColor.bind(this);
+        this.changeSynthesis = this.changeSynthesis.bind(this);
+    }
+
+    changeSynthesis( s : boolean){
+        this.setState({
+            synthesis : s
+        })
     }
 
     createEdge(from : IONode, to : IONode, tempEdgePoints: Point[]) : Edge{
@@ -354,18 +363,6 @@ class Canvas extends React.Component<Props, State>{
         return false;
     }
 
-    // checkCollisionWithStateNodes(l1 : Point, r1 : Point , stateNodeP? : StateNode) : boolean{
-    //     for(let i = 0; i < this.stateNodes.length; ++i){
-    //         let stateNode = this.stateNodes[i];
-    //         if(stateNode === stateNodeP) continue; 
-    //         let p = getCornerPoints(stateNode);
-    //         console.log(p);
-    //         if(doRectanglesOverlap(l1, r1, p.l, p.r)){
-    //             return true;
-    //         }
-    //     }
-    //     return false;
-    // }
 
     getBoundaryRadius(state: StateNode){
         return state.radius + state.gap + state.ioNodeDiameter + state.inputCombTextLength;
@@ -783,6 +780,33 @@ class Canvas extends React.Component<Props, State>{
         }
     }
 
+    getOutNode(stateNode : StateNode) : IONode{
+        for(let j = 0; j < stateNode.ioNodes.length; ++j){
+            if(stateNode.ioNodes[j].type === 'out') return stateNode.ioNodes[j];
+        }
+        return this.createIONodeObject(stateNode, 1, 'out','','');
+    }
+
+    createTestGraph(){
+        for(let i = 0; i < 5; ++i){
+            let state = this.createStateNodeObject(this.getMaxNumberOfStates(), 1, {x : 100 + i * 100, y : 100 + i * 100}, defaultStateNodeConfig.minRadius, this.nextLabel, this.inputCombTextLength, this.state.numberOfInpVars);
+            this.nextLabel = this.stateLabels.next();
+            state = this.getMinSizeStateNode(state);
+            this.stateNodes.push(state);
+            this.drawStateNode(state, this.nodeCanvasRef);
+            
+            for(let j = 0; j < state.ioNodes.length; ++j){
+                let ioNode = state.ioNodes[j];
+                let outNode = this.getOutNode(state);
+                let e = this.createEdge(ioNode,outNode,[]);
+                ioNode.edges.push(e);
+                outNode.edges.push(e);
+                this.drawEdge(e);
+                this.edges.push(e);
+            }
+        }
+    }
+
     canvasOnMouseDown(e : MouseEvent){
         if(this.state.mouseMode === 'addNode' && this.tempStateNode){
             if(this.isSpaceAvailableForTempNode()){
@@ -1031,6 +1055,7 @@ class Canvas extends React.Component<Props, State>{
         tempCanvas.height = tempCanvas.clientHeight;
         tempCanvas.width = tempCanvas.clientWidth;
 
+
         window.addEventListener('keydown', e=>{
             console.log(e);
             if(e.key === 'Delete'){
@@ -1055,6 +1080,8 @@ class Canvas extends React.Component<Props, State>{
         })
 
         if(nodeContext == null || edgeContext == null || tempContext == null) return;
+
+        // this.createTestGraph();
 
         let str = '';
         for(let i = 0; i < this.state.numberOfInpVars;++i)
@@ -1096,31 +1123,48 @@ class Canvas extends React.Component<Props, State>{
         })
     }    
 
+    
+
     render() : React.ReactNode{
         return (
             <div className={styles.root}>
-                <div className={styles.topBarContainer}>
-                    <TopBar changeNumberOfInputVars = {this.changeNumberOfInputVars} numberOfInputVars = {this.state.numberOfInpVars} setMouseMode = {this.setMouseMode} mouseMode = {this.state.mouseMode}/>
-                </div>
-                <div className={styles.canvasContainer}>
-                    <canvas ref = {this.nodeCanvasRef} className={styles.canvas} />
-                    <canvas ref={this.edgeCanvasRef} className={styles.canvas} />
-                    <canvas ref={this.tempCanvasRef} className={styles.canvas} style={{
-                        zIndex : 5
-                    }} />
-                </div>
-                <div onClick={()=>this.setMouseMode('addNode')} className={styles.addNodeButtonContainer}>
-                    <button className={styles.addNodeButton}>Add Node</button>
-                </div>
-                {/* {!this.state.showSideBar && <div className={styles.menuContainer}>
-                    <button onClick = {this.toggleSideBar} className = {styles.menu}> Menu</button>
-                </div>} */}
-                
                 {
-                    this.state.showSideBar &&
-                <div className = {styles.sideBarContainer}>
-                    <SideBar changeIoNodeColor = {this.changeIoNodeColor} changeStateColor = {this.changeStateColor} changeStateNodeRadius = {this.changeStateNodeRadius} addIoNodeWithStateChange = {this.addIoNodeWithStateChange} ioNode = {this.state.ioNodeToSideBar} stateNode = {this.state.stateNodeToSideBar} toggleSideBar = {this.toggleSideBar} />
+                    
+                    <div style={{
+                        display : this.state.synthesis ? 'none' : 'block'
+                    }}>
+                    <div className={styles.topBarContainer}>
+                        <TopBar changeNumberOfInputVars = {this.changeNumberOfInputVars} numberOfInputVars = {this.state.numberOfInpVars} setMouseMode = {this.setMouseMode} mouseMode = {this.state.mouseMode}/>
+                    </div>
+                    <div className={styles.canvasContainer}>
+                        <canvas ref = {this.nodeCanvasRef} className={styles.canvas} />
+                        <canvas ref={this.edgeCanvasRef} className={styles.canvas} />
+                        <canvas ref={this.tempCanvasRef} className={styles.canvas} style={{
+                            zIndex : 5
+                        }} />
+                    </div>
+                    <div onClick={()=>this.setState({synthesis : true})} className={styles.synthesisButtonContainer}>
+                        <button className={styles.synthesisButton}>
+                            synthesis
+                            {/* <Link to='/synthesize' > </Link> */}
+                        </button>
+                    </div>
+
+                    <div onClick={()=>this.setMouseMode('addNode')} className={styles.addNodeButtonContainer}>
+                        <button className={styles.addNodeButton}>Add Node</button>
+                    </div>
+                    
+                    
+                    {
+                        this.state.showSideBar &&
+                    <div className = {styles.sideBarContainer}>
+                        <SideBar changeIoNodeColor = {this.changeIoNodeColor} changeStateColor = {this.changeStateColor} changeStateNodeRadius = {this.changeStateNodeRadius} addIoNodeWithStateChange = {this.addIoNodeWithStateChange} ioNode = {this.state.ioNodeToSideBar} stateNode = {this.state.stateNodeToSideBar} toggleSideBar = {this.toggleSideBar} />
+                    </div>}
                 </div>}
+                    {
+                        this.state.synthesis &&
+                        <Design changeSynthesis={this.changeSynthesis} numberOfInpVar = {this.state.numberOfInpVars} stateNodes={this.stateNodes} edges = {this.edges} />    
+                    }
             </div>
             
         )

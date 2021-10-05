@@ -1,7 +1,4 @@
-.root{
-    height: calc(100%);
-    width: calc(100%);
-}
+
 
 .canvas{  
     width: calc(100vw - 50px);
@@ -20,13 +17,13 @@
 
 
 }
-.addNodeButtonContainer{
+.addNodeButtonContainer, .synthesisButtonContainer{
     position: absolute;
     bottom : 50px;
     right : 100px;
     display: inline-block;
     z-index: 10;
-    .addNodeButton{
+    .addNodeButton, .synthesisButton{
 
         &:hover {
             opacity: .7;
@@ -43,6 +40,12 @@
         
     }
 }
+
+.synthesisButtonContainer{
+    // position: absolute;
+    left : 100px;
+}
+
 .menuContainer{
     position: absolute;
     display: inline-block;
@@ -70,7 +73,7 @@
 
     .sideBar{
         // color : red;
-        background-color: grey;
+        background-color: rgb(128, 128, 128);
         border: solid 2px rgb(170, 168, 168);
         height: 200px;
         width: 200px;
@@ -202,3 +205,25 @@
         }
     }
 }
+.stateTableContainer, .stateAssignmentContainer, .transitionTableContainer{
+    table, th, td{
+        border: solid 1px black;
+        border-collapse: collapse;
+        padding: 10px;
+        text-align: center;
+    }
+    table{
+        margin: 20px;
+    }
+}
+.transitionTableContainer{
+    padding-bottom: 20px;
+}
+
+// .stateAssignmentContainer{
+//     table, td, th{
+//         border: solid 1px black;
+//         border-collapse: collapse;
+//         padding: 10px;
+//     }
+// }

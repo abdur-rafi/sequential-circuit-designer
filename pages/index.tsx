@@ -3,7 +3,7 @@ function Index(){
 
     return(
         <div>
-            <a href='design'> Design</a>
+            <a href='statediagram'> Design</a>
         </div>
     )
 
