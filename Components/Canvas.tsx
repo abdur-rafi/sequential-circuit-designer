@@ -1081,7 +1081,7 @@ class Canvas extends React.Component<Props, State>{
 
         if(nodeContext == null || edgeContext == null || tempContext == null) return;
 
-        // this.createTestGraph();
+        this.createTestGraph();
 
         let str = '';
         for(let i = 0; i < this.state.numberOfInpVars;++i)

@@ -205,7 +205,7 @@
         }
     }
 }
-.stateTableContainer, .stateAssignmentContainer, .transitionTableContainer{
+.stateTableContainer, .stateAssignmentContainer, .transitionTableContainer, .kMapContainer{
     table, th, td{
         border: solid 1px black;
         border-collapse: collapse;
@@ -216,6 +216,25 @@
         margin: 20px;
     }
 }
+.kMapContainer {
+    display: flex;
+    flex-direction: row;
+    .rowLabels , .colLabels{
+        border : none;
+        padding: 0px;
+    }
+    .rowVarLabels, .colVarLabels{
+        // color : red;
+        // padding: 0px;
+        border : none;
+        padding: 2px;
+        // text-align: start;
+    }
+    table{
+        border: none;
+    }
+}
+
 .transitionTableContainer{
     padding-bottom: 20px;
 }
