@@ -788,16 +788,30 @@ class Canvas extends React.Component<Props, State>{
     }
 
     createTestGraph(){
-        for(let i = 0; i < 5; ++i){
+
+
+        const generateRandomNumber : (l : number ,r : number) => number = (l : number, r : number)=>{
+            if(l === r) return l;
+            return l + Math.floor(Math.random() * (r - l) ) + 1;
+        }
+
+        let n = 5;
+
+        for(let i = 0; i < n; ++i){
             let state = this.createStateNodeObject(this.getMaxNumberOfStates(), 1, {x : 100 + i * 100, y : 100 + i * 100}, defaultStateNodeConfig.minRadius, this.nextLabel, this.inputCombTextLength, this.state.numberOfInpVars);
             this.nextLabel = this.stateLabels.next();
             state = this.getMinSizeStateNode(state);
             this.stateNodes.push(state);
             this.drawStateNode(state, this.nodeCanvasRef);
             
+            
+        }
+
+        for(let i = 0; i < n; ++i){
+            let state = this.stateNodes[i];
             for(let j = 0; j < state.ioNodes.length; ++j){
                 let ioNode = state.ioNodes[j];
-                let outNode = this.getOutNode(state);
+                let outNode = this.getOutNode(this.stateNodes[generateRandomNumber(0, n - 1)]);
                 let e = this.createEdge(ioNode,outNode,[]);
                 ioNode.edges.push(e);
                 outNode.edges.push(e);

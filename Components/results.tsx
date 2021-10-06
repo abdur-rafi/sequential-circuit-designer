@@ -52,6 +52,12 @@ interface truthTable{
     vars : string
 }
 
+interface tabulationGroupItem{
+    comb : string,
+    taken : boolean,
+    minterms : Set<string>
+}
+
 function getRequiredBitForStates(noOfStateNodes : number){
     let c = 0;
     let n = noOfStateNodes;
@@ -185,12 +191,12 @@ function generateKMap(truthTable : truthTable, numberOfTotalVars : number) : kMa
                 col : truthTable.vars.slice( 2 * row)
             }
         };
-        kMap.map[1] = {}
+        kMap.map[''] = {}
         
         rowComb.forEach(rcomb=>{
-            kMap.map[1][rcomb] = {}
+            kMap.map[''][rcomb] = {}
             colComb.forEach(ccomb=>{
-                kMap.map[1][rcomb][ccomb] = truthTable.table[rcomb + ccomb];
+                kMap.map[''][rcomb][ccomb] = truthTable.table[rcomb + ccomb];
             })
         })
         return kMap;
@@ -226,13 +232,14 @@ function generateKMap(truthTable : truthTable, numberOfTotalVars : number) : kMa
             comb.forEach(c=>{
                 tTable.table[c] = truthTable.table[remComb + c];
             })
-            kMap.map[remComb] = generateKMap(tTable, 4).map[1];
+            kMap.map[remComb] = generateKMap(tTable, 4).map[''];
         })
         return kMap;
     }
 }
 
 function generateGreyCode(nBit : number) : string[]{
+    if(nBit < 1) return [];
     if(nBit == 1){
         return ['0', '1']
     }
@@ -241,6 +248,178 @@ function generateGreyCode(nBit : number) : string[]{
     pr = pr.map(p=>'0'+p);
     prRev = prRev.map(p=>'1' + p);
     return [...pr, ...prRev];
+}
+
+function Tabulation(){
+
+}
+
+function count1(s : string) : number{
+    let c = 0;
+    for(let i = 0; i < s.length; ++i){
+        if(s[i] == '1') c++;
+    }
+    return c;
+}
+
+function countDifference(s1 : string, s2 : string): number{
+    let diff = 0;
+    for(let i = 0; i < s1.length; ++i){
+        if(s1[i] != s2[i])
+            ++diff;
+    }
+    return diff;
+}
+
+function mergeComb(s1 : string, s2 : string) : string{
+    let r = '';
+    for(let i = 0; i < s1.length; ++i){
+        if(s1[i] !== s2[i]){
+            r += '_'
+        }
+        else r += s1[i];
+    }
+    return r;
+}
+
+function simplifyFunction(truthTable : truthTable) : {
+    EPIs : tabulationGroupItem[],
+    PIs : tabulationGroupItem[],
+    selectedPIs : tabulationGroupItem[]
+}   
+{
+    let inpComb = getInputCombination(truthTable.dims);
+    let nonZeroinpComb = inpComb.filter(comb=>truthTable.table[comb] != '0');
+    let groups : tabulationGroupItem[][] = [];
+    for(let i = 0; i < truthTable.dims; ++i){
+        let item : tabulationGroupItem[] = [];
+        for(let j = 0; j < nonZeroinpComb.length; ++j){
+            let comb = nonZeroinpComb[j];
+            if(count1(comb) === i){
+                item.push({
+                    comb : comb,
+                    taken : false,
+                    minterms : new Set<string>().add(comb)
+                })
+            }
+        }
+        groups.push(item);
+    }
+    let notTaken : tabulationGroupItem[] = [];
+    let notTakenSet : Set<string>  = new Set<string>();
+    // console.log(groups);
+    for(let i = 0; i < truthTable.dims; ++i){
+        let nGroups : tabulationGroupItem[][] = [];
+        for(let j = 0; j + 1 < groups.length; ++j){
+            let item : tabulationGroupItem[] = [];
+            let itemSet : Set<string> = new Set<string>();
+            let curr = groups[j];
+            let next = groups[j + 1];
+            curr.forEach(c =>{
+                next.forEach(n =>{
+                    if(countDifference(c.comb, n.comb) === 1){
+                        let merged = mergeComb(c.comb, n.comb);
+                        if(!itemSet.has(merged)){
+                            item.push({
+                                comb : mergeComb(c.comb, n.comb),
+                                minterms : new Set([...c.minterms, ...n.minterms]),
+                                taken : false
+                            })
+                            itemSet.add(mergeComb(c.comb, n.comb));
+                        }
+                        c.taken = true;
+                        n.taken = true;
+                    }
+                })
+            })
+            nGroups.push(item);
+        }
+        groups.forEach(g=>{
+            g.forEach(i =>{
+                if(!i.taken && !notTakenSet.has(i.comb)){
+                    notTaken.push(i);
+                    notTakenSet.add(i.comb);
+                }
+            })
+        })
+        groups = nGroups;
+    }
+
+    let coveringMap : Map<string, tabulationGroupItem[]> = new Map<string, tabulationGroupItem[]>();
+    let oneMinterms = inpComb.filter(comb => truthTable.table[comb] == '1');
+    // console.log(oneMinterms);
+    oneMinterms.forEach(m=>coveringMap.set(m, []))
+    notTaken.reverse();
+    notTaken.forEach(t=>{
+        t.minterms.forEach(minterm => {
+
+            if(coveringMap.has(minterm)){
+                let arr = coveringMap.get(minterm);
+                if(arr){
+                    arr.push(t);
+                    coveringMap.set(minterm, arr);
+                }
+            }
+        })
+    })
+    let epi : tabulationGroupItem[] = []
+    let epiSet : Set<string> = new Set<string>();
+    for(let i = 0; i < oneMinterms.length; ++i){
+        let arr = coveringMap.get(oneMinterms[i]);
+        if(arr){
+            if(arr.length === 1){
+                if(!epiSet.has(arr[0].comb)){
+                    epi.push(arr[0]);
+                    epiSet.add(arr[0].comb);
+                    arr[0].minterms.forEach(m => coveringMap.delete(m));
+                }
+            }
+        }
+    }
+    let remPIs : tabulationGroupItem[] = [];
+    // console.log(epi);
+    notTaken.forEach(nt =>{
+        if(epiSet.has(nt.comb)) return;
+        let f  = false;
+        nt.minterms.forEach(mt=>{
+            if(coveringMap.has(mt)){
+                if(!f){
+                    remPIs.push(nt);
+                    f = true;
+                }
+                coveringMap.delete(mt);
+            }
+        })
+    })
+
+    // console.log(epi, remPIs);
+
+    return{
+        EPIs : epi,
+        PIs : notTaken,
+        selectedPIs : [...epi, ...remPIs ]
+    }
+    
+
+
+
+    // console.log(coveringMap);
+
+    // console.log(notTaken);
+}
+
+function getLiteral(comb : string, vars : string): string{
+    let r = '';
+    for(let i = 0; i < comb.length; ++i){
+        if(comb[i] == '_')
+            continue;
+        else if(comb[i] == '0'){
+            r += vars.slice(2 * i, 2 * i + 2) + "'";
+        }
+        else r += vars.slice(2 * i, 2 * i + 2);
+    }
+    if(r == '') return '1';
+    return r;
 }
 
 const SRMap = {
@@ -284,6 +463,8 @@ const Design : React.FC<{
     excitations.forEach(e=> truthTables.push(...truthTablesFromExcitation(e, numberOfVars, stateVars,true, 'SR')));
     let kMaps : kMap[] = [];
     truthTables.forEach(t=>kMaps.push(generateKMap(t,numberOfVars)));
+    // truthTables.forEach(t => simplifyFunction(t));
+    simplifyFunction(truthTables[0]);
     let i = 0;
     return (
         <div>
@@ -292,12 +473,22 @@ const Design : React.FC<{
             <StateTable nextStateMap = {nextStateMap} binRep = {binRep} numberOfInpVar = {props.numberOfInpVar} stateNodes = {props.stateNodes}/>
             <TransitionTable excitations = {excitations} stateNodes = {props.stateNodes} binRep = {binRep} latchLabel = 'SR' latchMap = {SRMap} numberOfInputVars = {props.numberOfInpVar}  />
             {
-                kMaps.map(k=>{
+                kMaps.map((k, index)=>{
+                    let r = simplifyFunction(truthTables[index]);
+                    let s = '';
+                    r.selectedPIs.forEach(e=> s+= getLiteral(e.comb, truthTables[index].vars) + '+' );
+                    s = s.slice(0, s.length - 1);
+                    if(s == '')
+                        s = '0'
                     return(
-                        <div> 
-                            <div> {k.functionName} </div>
-                            <KMap key = {i++} kMap = {k} />
-                        </div>
+                        <details key={k.functionName}>
+                            <summary>{ k.functionName} </summary>
+                            <div > 
+                                {/* <div> {k.functionName} </div> */}
+                                <KMap key = {i++} kMap = {k} />
+                                <div> {s.split('').map(c => Number.isInteger(Number.parseInt(c)) ? <sub>{c}</sub> : c  )} </div>
+                            </div>
+                        </details>
                     )
                 })
             }
@@ -487,61 +678,96 @@ const KMap : React.FC<{
     let remComb = generateGreyCode(rem);
     let rowComb = generateGreyCode(row);
     let colComb = generateGreyCode(col);
+    
 
-    console.log(remComb, rowComb, colComb);
+    // console.log(remComb, rowComb, colComb);
+
+    console.log(props);
+    
+    const RowColVarLabels = ()=>{
+        return(
+            // <thead>
+                <tr>
+                    <td className={styles.rowVarLabels} rowSpan = {Math.pow(2, row) + 2}> {props.kMap.vars.row.split('').map((s, i)=>{
+                        if(i % 2) return(<sub key={s} >{s}</sub>)
+                        return s
+                    })} </td>
+                    <td  className={styles.colVarLabels} colSpan = {Math.pow(2, col) + 1}> {props.kMap.vars.col.split('').map((s, i)=>{
+                        if(i % 2) return(<sub key={s} >{s}</sub>)
+                        return s
+                    })} 
+                    </td>
+                </tr>
+            // </thead>
+        )
+    }
+
+    const ColVars = ()=>{
+        return(
+            <tr>
+                <td style={{border : 'none'}}> 
+                </td>
+            {
+                colComb.map(col=>{
+                    return(
+                        <td key={col} className = {styles.colLabels}>
+                            {col}
+                        </td>
+                    )
+                })
+            }
+            </tr>
+        )
+    }
+
+    const Entries = (rem : string)=>{
+        return(
+            rowComb.map(row=>{
+                return(
+                    <tr key={row}>
+                        <td className = {styles.rowLabels} > {row} </td>
+                    {
+                        colComb.map(col=>{
+                            return(
+                                <td key ={col}>
+                                    {props.kMap.map[rem][row][col]}
+                                </td>
+                            )
+                        })}
+                    </tr>
+                )
+                
+            })
+        )
+    }
+    
+    const Table = (rem : string)=>{
+        return(
+            <table key={rem}>
+                { props.kMap.dims.rem !== 0 &&
+                <caption> {props.kMap.vars.rem} = {rem} </caption>
+                }
+                <tbody>
+                    <RowColVarLabels />
+                    <ColVars />
+                {    
+                    Entries(rem)
+                }
+                </tbody>
+            </table>
+        )
+    }
+    
+    
 
     return(
         <div className = {styles.kMapContainer}>
             {
+                rem === 0 ?
+                Table('') :
                 remComb.map(rem=>{
                     return(
-                        
-                        <table key={rem}>
-                            <caption> {rem} </caption>
-                        <tbody>
-                            <tr>
-                                <td className={styles.rowVarLabels} rowSpan = {6}> {props.kMap.vars.row.split('').map((s, i)=>{
-                                    if(i % 2) return(<sub>{s}</sub>)
-                                    return s
-                                })} </td>
-                                <td  className={styles.colVarLabels} colSpan = {5}> {props.kMap.vars.col.split('').map((s, i)=>{
-                                    if(i % 2) return(<sub>{s}</sub>)
-                                    return s
-                                })} </td>
-                            </tr>
-                            <tr>
-                                <td style={{border : 'none'}}> 
-                                </td>
-                            {
-                                colComb.map(col=>{
-                                    return(
-                                        <td className = {styles.colLabels}>
-                                            {col}
-                                        </td>
-                                    )
-                                })
-                            }
-                            </tr>
-                        {    
-                            rowComb.map(row=>{
-                                return(
-                                    <tr key={row}>
-                                        <td className = {styles.rowLabels} > {row} </td>
-                                    {
-                                        colComb.map(col=>{
-                                            return(
-                                                <td key ={col}>
-                                                    {props.kMap.map[rem][row][col]}
-                                                </td>
-                                            )
-                                        })}
-                                    </tr>
-                                )
-                                
-                            })
-                        }
-                        </tbody>
-                        </table>
+                        Table(rem)
                     )
                 })
 
