@@ -463,37 +463,55 @@ const Design : React.FC<{
     excitations.forEach(e=> truthTables.push(...truthTablesFromExcitation(e, numberOfVars, stateVars,true, 'SR')));
     let kMaps : kMap[] = [];
     truthTables.forEach(t=>kMaps.push(generateKMap(t,numberOfVars)));
-    // truthTables.forEach(t => simplifyFunction(t));
-    simplifyFunction(truthTables[0]);
-    let i = 0;
+    // let i = 0;
     return (
-        <div>
-            <StateTable nextStateMap = {nextStateMap} numberOfInpVar = {props.numberOfInpVar} stateNodes = {props.stateNodes}/>
-            <StateAssignment binRep = {binRep} stateNodes = {props.stateNodes}  />
-            <StateTable nextStateMap = {nextStateMap} binRep = {binRep} numberOfInpVar = {props.numberOfInpVar} stateNodes = {props.stateNodes}/>
-            <TransitionTable excitations = {excitations} stateNodes = {props.stateNodes} binRep = {binRep} latchLabel = 'SR' latchMap = {SRMap} numberOfInputVars = {props.numberOfInpVar}  />
+        <div className={styles.synthesisContainer}>
+            <details>
+                <summary>State Table</summary>
+                <StateTable nextStateMap = {nextStateMap} numberOfInpVar = {props.numberOfInpVar} stateNodes = {props.stateNodes}/>
+            </details>
+            <details>
+                <summary> State Assignment </summary>
+                <StateAssignment binRep = {binRep} stateNodes = {props.stateNodes}  />
+            </details>
+            <details>
+                <summary>Transition Table</summary>
+                <StateTable nextStateMap = {nextStateMap} binRep = {binRep} numberOfInpVar = {props.numberOfInpVar} stateNodes = {props.stateNodes}/>
+            </details>
+            <details>
+                <summary>Excitation Table</summary>
+                <TransitionTable excitations = {excitations} stateNodes = {props.stateNodes} binRep = {binRep} latchLabel = 'SR' latchMap = {SRMap} numberOfInputVars = {props.numberOfInpVar}  />
+            </details>
+            <details>
+                <summary> KMaps </summary>
             {
                 kMaps.map((k, index)=>{
                     let r = simplifyFunction(truthTables[index]);
                     let s = '';
-                    r.selectedPIs.forEach(e=> s+= getLiteral(e.comb, truthTables[index].vars) + '+' );
-                    s = s.slice(0, s.length - 1);
+                    r.selectedPIs.forEach(e=> s+= getLiteral(e.comb, truthTables[index].vars) + ' + ' );
+                    s = s.slice(0, s.length - 3);
                     if(s == '')
                         s = '0'
+                    let key = 0;
                     return(
-                        <details key={k.functionName}>
-                            <summary>{ k.functionName} </summary>
-                            <div > 
-                                {/* <div> {k.functionName} </div> */}
-                                <KMap key = {i++} kMap = {k} />
-                                <div> {s.split('').map(c => Number.isInteger(Number.parseInt(c)) ? <sub>{c}</sub> : c  )} </div>
-                            </div>
-                        </details>
+                        <div className={styles.functionBlockContainer}>
+                            <details key={k.functionName}>
+                                <summary>{ k.functionName.split('').map(c => Number.isInteger(parseInt(c)) ? (<sub key={key++}>{c}</sub>) : c)} </summary>
+                                <div className = {styles.functionBlock}> 
+                                    {/* <div> {k.functionName} </div> */}
+                                    <KMap key = {key++} kMap = {k} />
+                                    <div> {k.functionName.split('').map(c => Number.isInteger(parseInt(c)) ? (<sub key={key++}>{c}</sub>) : c)} = {s.split('').map(c => Number.isInteger(Number.parseInt(c)) ? <sub key={key++}>{c}</sub> : c  )} </div>
+                                </div>
+                            </details>
+                        </div>
                     )
                 })
             }
+            </details>
             {/* <KMap kMap = {kMaps[1]} /> */}
-            <button onClick = {()=> props.changeSynthesis(false)}> back to diagram </button>
+            <div className={styles.backButtonContainer}>
+                <button onClick = {()=> props.changeSynthesis(false)}> back to diagram </button>
+            </div>
         </div>
     )
 }
@@ -539,14 +557,14 @@ const StateTable : React.FC<{
                             let text = props.nextStateMap[s.label][comb];
                             if(props.binRep) text = props.binRep.get(text)!;
                             return (
-                                <th key = {'s' + s.label + 'i' +  comb}>
+                                <td key = {'s' + s.label + 'i' +  comb}>
                                     {text}
-                                </th>
+                                </td>
                             )
                         })
                         return(
                             <tr key={s.label}>
-                                <th> {props.binRep ? props.binRep.get(s.label) :  s.label} </th>
+                                <td> {props.binRep ? props.binRep.get(s.label) :  s.label} </td>
                                 {t}
                             </tr>
                         )
@@ -688,15 +706,15 @@ const KMap : React.FC<{
         return(
             // <thead>
                 <tr>
-                    <td className={styles.rowVarLabels} rowSpan = {Math.pow(2, row) + 2}> {props.kMap.vars.row.split('').map((s, i)=>{
+                    <th className={styles.rowVars} rowSpan = {Math.pow(2, row) + 2}> {props.kMap.vars.row.split('').map((s, i)=>{
                         if(i % 2) return(<sub key={s} >{s}</sub>)
                         return s
-                    })} </td>
-                    <td  className={styles.colVarLabels} colSpan = {Math.pow(2, col) + 1}> {props.kMap.vars.col.split('').map((s, i)=>{
+                    })} </th>
+                    <th  className={styles.colVars} colSpan = {Math.pow(2, col) + 1}> {props.kMap.vars.col.split('').map((s, i)=>{
                         if(i % 2) return(<sub key={s} >{s}</sub>)
                         return s
                     })} 
-                    </td>
+                    </th>
                 </tr>
             // </thead>
         )
@@ -705,14 +723,14 @@ const KMap : React.FC<{
     const ColVars = ()=>{
         return(
             <tr>
-                <td style={{border : 'none'}}> 
-                </td>
+                <th style={{border : 'none'}}> 
+                </th>
             {
                 colComb.map(col=>{
                     return(
-                        <td key={col} className = {styles.colLabels}>
+                        <th key={col} className = {styles.colLabels}>
                             {col}
-                        </td>
+                        </th>
                     )
                 })
             }
@@ -725,7 +743,7 @@ const KMap : React.FC<{
             rowComb.map(row=>{
                 return(
                     <tr key={row}>
-                        <td className = {styles.rowLabels} > {row} </td>
+                        <th className = {styles.rowLabels} > {row} </th>
                     {
                         colComb.map(col=>{
                             return(
@@ -742,10 +760,11 @@ const KMap : React.FC<{
     }
     
     const Table = (rem : string)=>{
+        let key = 0;
         return(
             <table key={rem}>
                 { props.kMap.dims.rem !== 0 &&
-                <caption> {props.kMap.vars.rem} = {rem} </caption>
+                <caption> {props.kMap.vars.rem.split('').map(c=> Number.isInteger(parseInt(c)) ? <sub key={key++}>{c}</sub> : c)} = {rem} </caption>
                 }
                 <tbody>
                     <RowColVarLabels />

@@ -795,7 +795,7 @@ class Canvas extends React.Component<Props, State>{
             return l + Math.floor(Math.random() * (r - l) ) + 1;
         }
 
-        let n = 5;
+        let n = 15;
 
         for(let i = 0; i < n; ++i){
             let state = this.createStateNodeObject(this.getMaxNumberOfStates(), 1, {x : 100 + i * 100, y : 100 + i * 100}, defaultStateNodeConfig.minRadius, this.nextLabel, this.inputCombTextLength, this.state.numberOfInpVars);
@@ -1095,7 +1095,7 @@ class Canvas extends React.Component<Props, State>{
 
         if(nodeContext == null || edgeContext == null || tempContext == null) return;
 
-        this.createTestGraph();
+        // this.createTestGraph();
 
         let str = '';
         for(let i = 0; i < this.state.numberOfInpVars;++i)

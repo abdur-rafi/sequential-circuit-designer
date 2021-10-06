@@ -205,44 +205,78 @@
         }
     }
 }
-.stateTableContainer, .stateAssignmentContainer, .transitionTableContainer, .kMapContainer{
-    table, th, td{
-        border: solid 1px black;
-        border-collapse: collapse;
-        padding: 10px;
+
+.synthesisContainer{
+    margin: 10px;
+    details{
         text-align: center;
     }
-    table{
-        margin: 20px;
+    summary{
+        padding: 20px;
+        margin: 10px;
+        background-color :  #1a7e3b;
+        color: white;
+        text-align: start;
     }
-}
-.kMapContainer {
-    display: flex;
-    flex-direction: row;
-    .rowLabels , .colLabels{
-        border : none;
-        padding: 0px;
+    
+    .stateTableContainer, .stateAssignmentContainer, .transitionTableContainer, .kMapContainer{
+        display: inline-block;
+        table, th, td{
+            border: solid 1px black;
+            border-collapse: collapse;
+            padding: 10px;
+            text-align: center;
+        }
+        table{
+            margin: 20px;
+        }
     }
-    .rowVarLabels, .colVarLabels{
-        // color : red;
-        // padding: 0px;
-        border : none;
-        padding: 2px;
-        // text-align: start;
+    .kMapContainer {
+        .rowLabels , .colLabels{
+            border : none;
+            padding: 2px;
+            
+        }
+        .rowVars, .colVars{
+            border : none;
+            padding: 1px;
+        }
+        table{
+            border: none;
+            display: inline-block;
+        }
+        caption{
+            text-align: start;
+        }
     }
-    table{
-        border: none;
+    
+    .transitionTableContainer{
+        padding-bottom: 20px;
     }
-}
+    
 
-.transitionTableContainer{
-    padding-bottom: 20px;
-}
+    .functionBlockContainer{
+        // background-color: green;
+        padding-left: 20px;
+        text-align: center;
+        summary{
+            background-color :mediumaquamarine ;
+            text-align: start;
+        }
+        .fucntionBlock{
+            padding: 10px;
+        }
+    }
 
-// .stateAssignmentContainer{
-//     table, td, th{
-//         border: solid 1px black;
-//         border-collapse: collapse;
-//         padding: 10px;
-//     }
-// }
+    .backButtonContainer{
+        padding: 20px;
+        text-align: center;
+        button{
+            height: 40px;
+            width: 120px;
+            background-color :palegreen;
+            color: black;
+            border-color: cadetblue;
+        }
+    }
+}
