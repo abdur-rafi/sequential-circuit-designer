@@ -1107,6 +1107,21 @@ class Canvas extends React.Component<Props, State>{
         nodeContext.lineWidth = canvasConfig.nodeCanvasLineWidth;
         tempContext.lineWidth = canvasConfig.tempCanvasLineWidth;
         
+        window.addEventListener('resize', e=>{
+            console.log(e);
+            nodeCanvas.height = nodeCanvas.clientHeight;
+            nodeCanvas.width = nodeCanvas.clientWidth;
+            edgeCanvas.height = edgeCanvas.clientHeight;
+            edgeCanvas.width = edgeCanvas.clientWidth;
+            tempCanvas.height = tempCanvas.clientHeight;
+            tempCanvas.width = tempCanvas.clientWidth;
+            clearCanvas(this.nodeCanvasRef);
+            clearCanvas(this.tempCanvasRef);
+            clearCanvas(this.edgeCanvasRef);
+            this.stateNodes.forEach(s => this.drawStateNode(s, this.nodeCanvasRef));
+            this.edges.forEach(e => this.drawEdge(e));
+
+        })
 
         // let stateNode = this.createStateNodeObject(4, 1, {x :250, y : 250}, defaultStateNodeConfig.radius, this.nextLabel, this.inputCombTextLength, this.state.numberOfInpVars);
         // this.nextLabel = this.stateLabels.next();
