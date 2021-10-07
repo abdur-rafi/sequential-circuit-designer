@@ -113,7 +113,7 @@ class Canvas extends React.Component<Props, State>{
             mouseMode : 'edge',
             numberOfInpVars : 2,
             synthesis : false,
-            numberOfOutputVars : 2
+            numberOfOutputVars : 4
         }
 
         this.changeNumberOfInputVars = this.changeNumberOfInputVars.bind(this);
@@ -327,7 +327,7 @@ class Canvas extends React.Component<Props, State>{
                 j = m - 1;
                 last = newNode;
                 newNode.minRadius = newNode.radius;
-                console.log(m);
+                // console.log(m);
             }
             else 
                 i = m + 1;
@@ -471,6 +471,7 @@ class Canvas extends React.Component<Props, State>{
         for(let i = 0; i < this.stateNodes.length; ++i){
             let stateNode = this.stateNodes[i];
             if(checkInsideCircle(stateNode.center, stateNode.radius, testPoint)){
+                let r = {entity : stateNode, index : i}; 
                 return {entity : stateNode, index : i};
             }
             for(let j = 0; j < stateNode.ioNodes.length; ++j){
@@ -843,7 +844,7 @@ class Canvas extends React.Component<Props, State>{
 
         const outComb = getInputCombination(this.state.numberOfOutputVars);
 
-        let n = 10;
+        let n = 4;
 
         for(let i = 0; i < n; ++i){
             let state = this.createStateNodeObject(this.getMaxNumberOfStates(), 1, {x : 100 + i * 100, y : 100 + i * 100}, defaultStateNodeConfig.minRadius, this.nextLabel, this.inputCombTextLength, this.state.numberOfInpVars);
@@ -890,7 +891,8 @@ class Canvas extends React.Component<Props, State>{
                 this.stateNodes.push(this.tempStateNode);
                 clearCanvas(this.tempCanvasRef);
                 this.drawTempNodeOnNodeCanvas();
-                this.tempStateNode = null;this.setState({
+                this.tempStateNode = null;
+                this.setState({
                     mouseMode : 'edge'
                 })
                 this.nextLabel = this.stateLabels.next();
@@ -1250,7 +1252,7 @@ class Canvas extends React.Component<Props, State>{
                 </div>}
                     {
                         this.state.synthesis &&
-                        <Design changeSynthesis={this.changeSynthesis} numberOfInpVar = {this.state.numberOfInpVars} stateNodes={this.stateNodes} edges = {this.edges} />    
+                        <Design numberOfOutputVars = {this.state.numberOfOutputVars} changeSynthesis={this.changeSynthesis} numberOfInpVar = {this.state.numberOfInpVars} stateNodes={this.stateNodes} edges = {this.edges} />    
                     }
             </div>
             

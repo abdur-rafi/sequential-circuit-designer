@@ -12,9 +12,11 @@ interface excitationInterface{
         row : number,
         col : number
     },
-    stateIndex : number,
-    stateLabels : string,
-    inputLabels : string
+    type : 'state' | 'output',
+    index : number,
+    rowLabels : string,
+    colLabels : string,
+    entryLength : number
     
     
 }
@@ -104,11 +106,12 @@ function getNextStateMap(stateNodes : StateNode[], numberOfInpVars : number) : n
     stateNodes.forEach(s=>{
         map[s.label] = {}
         inpComb.forEach(comb=>{
-            let to = s.ioNodes.filter(ioNode => ioNode.inputComb === comb)[0].edges[0].to;
+            let from = s.ioNodes.filter(ioNode => ioNode.inputComb === comb)[0];
+            let to = from.edges[0].to;
 
             map[s.label][comb] = {
                 state : to.originNode.label,
-                output : to.output
+                output : from.output
             }
         })
     })
@@ -122,39 +125,79 @@ function getLabels(n : number, t : string): string{
     return s;
 }
 
-function getExcitations(stateNodes : StateNode[] , binMap : Map<string, string>, numberOfInputVar : number, latchMap : {[key: string]: string}) : excitationInterface[]{
+function getExcitations(stateNodes : StateNode[] , binMap : Map<string, string>, numberOfInputVar : number, latchMap : {[key: string]: string} , numberOfLatchVars : number, numberOfOutputVars : number ) : excitationInterface[]{
+    const max = (n : number, n2 : number) : number=>{
+        if(n > n2) return n;
+        return n2;
+    }
+    
     let excitations : excitationInterface[] = [];
     let numberOfStateBits = getRequiredBitForStates(stateNodes.length);
     let inpComb = getInputCombination(numberOfInputVar);
-    for(let i = 0; i < numberOfStateBits; ++i){
-        excitations.push({map : {}, 
-            dims : {
-                row : numberOfStateBits,
-                col : numberOfInputVar
-            },
-            stateIndex : i,
-            stateLabels : getLabels(numberOfStateBits, 'y'),
-            inputLabels : getLabels(numberOfInputVar, 'x')
-        });
+    let mx = max(numberOfOutputVars, numberOfStateBits);
+    for(let i = 0; i < mx; ++i){
+        let sIndex = i;
+        let oIndex = i;
+        if(i < numberOfStateBits){
+            excitations.push({map : {}, 
+                dims : {
+                    row : numberOfStateBits,
+                    col : numberOfInputVar
+                },
+                index : i,
+                rowLabels : getLabels(numberOfStateBits, 'y'),
+                colLabels : getLabels(numberOfInputVar, 'x'),
+                type : 'state',
+                entryLength : numberOfLatchVars
+            });
+            sIndex = excitations.length - 1;
+        }
+        if(i < numberOfOutputVars){
+            excitations.push({map : {}, 
+                dims : {
+                    row : numberOfStateBits,
+                    col : numberOfInputVar
+                },
+                index : i,
+                rowLabels : getLabels(numberOfStateBits, 'y'),
+                colLabels : getLabels(numberOfInputVar, 'x'),
+                type : 'output',
+                entryLength : 1
+            });
+            oIndex = excitations.length - 1;
+        }
         stateNodes.forEach(s =>{
             let currStateLabel = s.label;
             let currBin = binMap.get(currStateLabel);
-            excitations[i].map[currBin!] = {}
+            if(i < numberOfStateBits){
+                excitations[sIndex].map[currBin!] = {};
+            }
+            if(i < numberOfOutputVars)
+                excitations[oIndex].map[currBin!] = {};
             inpComb.forEach(comb=>{
-                let nxtStateLabel = s.ioNodes.filter(ioNode => ioNode.inputComb === comb)[0].edges[0].to.originNode.label;
-                let nextBin = binMap.get(nxtStateLabel);
-                if(!nextBin || !currBin) return;
-                excitations[i].map[currBin][comb] = latchMap[ currBin[i] + nextBin[i] ];
+                let from = s.ioNodes.filter(ioNode => ioNode.inputComb === comb)[0];
+                if(i < numberOfOutputVars)
+                    excitations[oIndex].map[currBin!][comb] = from.output;
+                if(i < numberOfStateBits){
+                    let nxtStateLabel = from.edges[0].to.originNode.label;
+                    let nextBin = binMap.get(nxtStateLabel);
+                    if(!nextBin) return;
+                    excitations[sIndex].map[currBin!][comb] = latchMap[ currBin![i] + nextBin[i] ];
+                    
+                }
             })
         })
     }
     return excitations;
 }
 
-function truthTablesFromExcitation(excitation : excitationInterface, numberOfVars : number, fDim : number, pair : boolean, lathcLabel : string) : truthTable[]{
+function truthTablesFromExcitation(excitation : excitationInterface, numberOfVars : number, fDim : number, functionLabels : string) : truthTable[]{
     let inpCombs = getInputCombination(numberOfVars);
-    let tTable : truthTable[] = [{table : {}, dims : numberOfVars,functionName : '', vars : excitation.stateLabels + excitation.inputLabels}];
-    if(pair) tTable.push({table : {}, dims : numberOfVars, functionName : '', vars : excitation.stateLabels + excitation.inputLabels});
+    let tTable : truthTable[] = [];
+    // if(pair) tTable.push({table : {}, dims : numberOfVars, functionName : '', vars : excitation.colLabels + excitation.rowLabels});
+    for(let i = 0; i < excitation.entryLength; ++i){
+        tTable.push({table : {}, dims : numberOfVars,functionName : '', vars : excitation.rowLabels + excitation.colLabels});
+    }
     inpCombs.forEach(comb => {
         let f = comb.slice(0, fDim);
         let s = comb.slice(fDim);
@@ -166,12 +209,9 @@ function truthTablesFromExcitation(excitation : excitationInterface, numberOfVar
         catch(e){
 
         }
-        tTable[0].table[comb] = r ? r[0] : 'd'; 
-        tTable[0]['functionName'] = lathcLabel[0] + excitation.stateIndex; 
-        
-        if(pair){
-            tTable[1].table[comb] = r ? r[1] : 'd';
-            tTable[1]['functionName'] = lathcLabel[1] + excitation.stateIndex; 
+        for(let i = 0; i < excitation.entryLength; ++i){
+            tTable[i].table[comb] = r ? r[i] : 'd';
+            tTable[i].functionName = functionLabels[i] + excitation.index;
         }
     })
     return tTable;
@@ -298,7 +338,7 @@ function simplifyFunction(truthTable : truthTable) : {
     let inpComb = getInputCombination(truthTable.dims);
     let nonZeroinpComb = inpComb.filter(comb=>truthTable.table[comb] != '0');
     let groups : tabulationGroupItem[][] = [];
-    for(let i = 0; i < truthTable.dims; ++i){
+    for(let i = 0; i <= truthTable.dims; ++i){
         let item : tabulationGroupItem[] = [];
         for(let j = 0; j < nonZeroinpComb.length; ++j){
             let comb = nonZeroinpComb[j];
@@ -312,10 +352,11 @@ function simplifyFunction(truthTable : truthTable) : {
         }
         groups.push(item);
     }
+    // console.log(groups);
     let notTaken : tabulationGroupItem[] = [];
     let notTakenSet : Set<string>  = new Set<string>();
     // console.log(groups);
-    for(let i = 0; i < truthTable.dims; ++i){
+    for(let i = 0; i <= truthTable.dims; ++i){
         let nGroups : tabulationGroupItem[][] = [];
         for(let j = 0; j + 1 < groups.length; ++j){
             let item : tabulationGroupItem[] = [];
@@ -446,21 +487,59 @@ function stateMinimization(stateNodes : StateNode[], nextStateMap : nextStateMap
         arr = arr.filter(c => c !== currComb);
         return arr;
     }
+    const doesOutputMatch = (s1 : string, s2 : string) : boolean =>{
+        for(let i = 0; i < inpComb.length; ++i){
+            let comb = inpComb[i];
+            if(nextStateMap[s1][comb].output !== nextStateMap[s2][comb].output) return false;
+        }
+        return true;
+    } 
 
-    let equivalents : Set<string> = new Set<string>();
+    
+
+    let compatibles : Set<string> = new Set<string>();
+    let notCompatibles : Set<string> = new Set<string>();
+
+    let dependants : Map<string, string[]> = new Map<string, string[]>();
+
+    const dfs = (s : string)=>{
+        notCompatibles.add(s);
+        let arr = dependants.get(s);
+        if(!arr) return;
+        dependants.delete(s);
+        arr.forEach(s =>{
+            // notCompatibles.add(s);
+            dfs(s);
+        })
+
+    }
 
     let states = stateNodes.map(s => s.label);
     for(let i = 0; i < states.length; ++i){
         for(let j = i + 1; j < states.length; ++j){
+            let combined = combineStateLabels(states[i], states[j]);
+            if(!doesOutputMatch(states[i], states[j])){
+                dfs(combined);
+                // notCompatibles.add(combined);
+                continue;
+            }
             let dependentOn = dependency(states[i], states[j]);
             if(dependentOn.length === 0){
-                equivalents.add(combineStateLabels(states[i], states[j]));
+                compatibles.add(combined);
             }
             else{
-                
+                dependentOn.forEach(d=>{
+                    let arr = dependants.get(d);
+                    if(!arr){
+                        arr = []
+                    }
+                    dependants.set(d, [combined, ...arr])
+                })
             }
         }
     }
+    console.log('comp', compatibles);
+    console.log('ncomp', notCompatibles);
 }
 
 const SRMap = {
@@ -492,24 +571,38 @@ const Design : React.FC<{
     stateNodes : StateNode[],
     edges : Edge[],
     numberOfInpVar : number,
-    changeSynthesis : (b : boolean) => void
+    changeSynthesis : (b : boolean) => void,
+    numberOfOutputVars : number
 }> = (props)=>{
 
     let stateVars = getRequiredBitForStates(props.stateNodes.length) ;
     let numberOfVars = stateVars + props.numberOfInpVar;
     const binRep = getBinRepresentation(props.stateNodes);
-    const excitations = getExcitations(props.stateNodes, binRep, props.numberOfInpVar,SRMap);
+    let excitations = getExcitations(props.stateNodes, binRep, props.numberOfInpVar,JKMap, 2, props.numberOfOutputVars);
+    excitations = [... excitations.filter(e => e.type === 'state'), ... excitations.filter(e => e.type === 'output')]
     const nextStateMap = getNextStateMap(props.stateNodes, props.numberOfInpVar);
     let truthTables : truthTable[] = [];
-    excitations.forEach(e=> truthTables.push(...truthTablesFromExcitation(e, numberOfVars, stateVars,true, 'SR')));
+    excitations.forEach(e=> truthTables.push(...truthTablesFromExcitation(e, numberOfVars, stateVars, e.type === 'output' ? 'z' : 'JK')));
     let kMaps : kMap[] = [];
     truthTables.forEach(t=>kMaps.push(generateKMap(t,numberOfVars)));
+    // console.log('tTables', truthTables);
     // let i = 0;
+
+    // let trTable : truthTable = {
+    //     dims: 2,
+    //     functionName: "R0",
+    //     table: {"10": '1', "11": '1', "00": '1', "01": 'd'},
+    //     vars: "y0x0"
+    // }
+    
+    // console.log(simplifyFunction(trTable));
+    stateMinimization(props.stateNodes, nextStateMap, props.numberOfInpVar);
+
     return (
         <div className={styles.synthesisContainer}>
             <details>
                 <summary>State Table</summary>
-                <StateTable nextStateMap = {nextStateMap} numberOfInpVar = {props.numberOfInpVar} stateNodes = {props.stateNodes}/>
+                <StateTable showOutput={true}  nextStateMap = {nextStateMap} numberOfInpVar = {props.numberOfInpVar} stateNodes = {props.stateNodes}/>
             </details>
             <details>
                 <summary> State Assignment </summary>
@@ -517,17 +610,19 @@ const Design : React.FC<{
             </details>
             <details>
                 <summary>Transition Table</summary>
-                <StateTable nextStateMap = {nextStateMap} binRep = {binRep} numberOfInpVar = {props.numberOfInpVar} stateNodes = {props.stateNodes}/>
+                <StateTable  nextStateMap = {nextStateMap} binRep = {binRep} numberOfInpVar = {props.numberOfInpVar} stateNodes = {props.stateNodes}/>
             </details>
             <details>
                 <summary>Excitation Table</summary>
-                <TransitionTable excitations = {excitations} stateNodes = {props.stateNodes} binRep = {binRep} latchLabel = 'SR' latchMap = {SRMap} numberOfInputVars = {props.numberOfInpVar}  />
+                <TransitionTable  excitations = {excitations} stateNodes = {props.stateNodes} binRep = {binRep} latchLabel = 'SR' latchMap = {SRMap} numberOfInputVars = {props.numberOfInpVar}  />
             </details>
             <details>
                 <summary> KMaps </summary>
             {
                 kMaps.map((k, index)=>{
                     let r = simplifyFunction(truthTables[index]);
+                    // console.log(truthTables);
+                    // console.log(r);
                     let s = '';
                     r.selectedPIs.forEach(e=> s+= getLiteral(e.comb, truthTables[index].vars) + ' + ' );
                     s = s.slice(0, s.length - 3);
@@ -560,7 +655,8 @@ const StateTable : React.FC<{
     stateNodes : StateNode[],
     numberOfInpVar : number,
     nextStateMap : nextStateMap,
-    binRep? : Map<string, string> 
+    binRep? : Map<string, string> ,
+    showOutput? : boolean
 }> = (props)=>{
 
     let inpComb = getInputCombination(props.numberOfInpVar);
@@ -598,7 +694,7 @@ const StateTable : React.FC<{
                             if(props.binRep) text = props.binRep.get(text)!;
                             return (
                                 <td key = {'s' + s.label + 'i' +  comb}>
-                                    {text + '/' + props.nextStateMap[s.label][comb].output}
+                                    {text + (props.showOutput ? ( '/' + props.nextStateMap[s.label][comb].output) : '')}
                                 </td>
                             )
                         })
