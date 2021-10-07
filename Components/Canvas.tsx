@@ -111,9 +111,9 @@ class Canvas extends React.Component<Props, State>{
             ioNodeToSideBar : null,
             stateNodeToSideBar : null,
             mouseMode : 'edge',
-            numberOfInpVars : 2,
+            numberOfInpVars : 1,
             synthesis : false,
-            numberOfOutputVars : 4
+            numberOfOutputVars : 1
         }
 
         this.changeNumberOfInputVars = this.changeNumberOfInputVars.bind(this);
@@ -844,7 +844,7 @@ class Canvas extends React.Component<Props, State>{
 
         const outComb = getInputCombination(this.state.numberOfOutputVars);
 
-        let n = 4;
+        let n = 10;
 
         for(let i = 0; i < n; ++i){
             let state = this.createStateNodeObject(this.getMaxNumberOfStates(), 1, {x : 100 + i * 100, y : 100 + i * 100}, defaultStateNodeConfig.minRadius, this.nextLabel, this.inputCombTextLength, this.state.numberOfInpVars);

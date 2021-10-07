@@ -1,6 +1,9 @@
 import React from "react";
 import { Edge, StateNode } from "./canvasInterfaces";
 import styles from '../styles/design.module.scss'
+import { ImCross } from "react-icons/im";
+import {TiTick} from 'react-icons/ti'
+
 
 interface excitationInterface{
     map : {
@@ -61,6 +64,16 @@ interface tabulationGroupItem{
     comb : string,
     taken : boolean,
     minterms : Set<string>
+}
+interface implicationEntryMap{
+    
+    [row : string] : {
+        [col : string] : {
+            dependencies : string[],
+            isCompatible : boolean
+        }
+    }
+
 }
 
 function getRequiredBitForStates(noOfStateNodes : number){
@@ -297,9 +310,6 @@ function generateGreyCode(nBit : number) : string[]{
     return [...pr, ...prRev];
 }
 
-function Tabulation(){
-
-}
 
 function count1(s : string) : number{
     let c = 0;
@@ -470,7 +480,7 @@ function getLiteral(comb : string, vars : string): string{
     return r;
 }
 
-function stateMinimization(stateNodes : StateNode[], nextStateMap : nextStateMap, numberOfInputVars : number){
+function stateMinimization(stateLabels : string[], nextStateMap : nextStateMap, numberOfInputVars : number):implicationEntryMap{
     let separator = ' ';
     let inpComb = getInputCombination(numberOfInputVars);
 
@@ -481,7 +491,11 @@ function stateMinimization(stateNodes : StateNode[], nextStateMap : nextStateMap
     const dependency = (state1 : string, state2 : string) : string[] =>{
         let arr : string[] = [];
         inpComb.forEach(comb=>{
-            arr.push(combineStateLabels(nextStateMap[state1][comb].state, nextStateMap[state2][comb].state));
+            let nx1 = nextStateMap[state1][comb].state;
+            let nx2 =  nextStateMap[state2][comb].state;
+            if(nx1 === nx2) return;
+            if(combineStateLabels(nx1, nx2) === combineStateLabels(state1, state2)) return;
+            arr.push(combineStateLabels(nx1, nx2));
         })
         let currComb = combineStateLabels(state1, state2);
         arr = arr.filter(c => c !== currComb);
@@ -514,13 +528,12 @@ function stateMinimization(stateNodes : StateNode[], nextStateMap : nextStateMap
 
     }
 
-    let states = stateNodes.map(s => s.label);
+    let states = stateLabels;
     for(let i = 0; i < states.length; ++i){
         for(let j = i + 1; j < states.length; ++j){
             let combined = combineStateLabels(states[i], states[j]);
             if(!doesOutputMatch(states[i], states[j])){
                 dfs(combined);
-                // notCompatibles.add(combined);
                 continue;
             }
             let dependentOn = dependency(states[i], states[j]);
@@ -528,6 +541,11 @@ function stateMinimization(stateNodes : StateNode[], nextStateMap : nextStateMap
                 compatibles.add(combined);
             }
             else{
+                if(dependentOn.some(s=>notCompatibles.has(s))){
+                    dfs(combined);
+                    // notCompatibles.add(combined);
+                    continue;
+                }
                 dependentOn.forEach(d=>{
                     let arr = dependants.get(d);
                     if(!arr){
@@ -537,9 +555,45 @@ function stateMinimization(stateNodes : StateNode[], nextStateMap : nextStateMap
                 })
             }
         }
+    } 
+
+    let implicationEntries : implicationEntryMap = {}
+
+    notCompatibles.forEach(s =>{
+        let arr = s.split(separator);
+        let s1 = arr[0];
+        let s2  = arr[1];
+        if(!implicationEntries[s1]){
+            implicationEntries[s1] = {}
+        }
+        implicationEntries[s1][s2] = {
+            isCompatible : false,
+            dependencies : []
+        }
+    })
+
+    for(let i = 0; i < states.length; ++i){
+        for(let j = i + 1 ; j < states.length;++j){
+            if(!implicationEntries[states[i]]){
+                implicationEntries[states[i]] = {};
+                implicationEntries[states[i]][states[j]] = {
+                    dependencies : dependency(states[i], states[j]),
+                    isCompatible : true
+                };
+            }
+            else if(!implicationEntries[states[i]][states[j]]){
+                implicationEntries[states[i]][states[j]] = {
+                    dependencies : dependency(states[i], states[j]),
+                    isCompatible : true
+                }
+            }
+        }
     }
-    console.log('comp', compatibles);
-    console.log('ncomp', notCompatibles);
+
+    // console.log('comp', compatibles);
+    // console.log('ncomp', notCompatibles);
+
+    return implicationEntries;
 }
 
 const SRMap = {
@@ -585,24 +639,109 @@ const Design : React.FC<{
     excitations.forEach(e=> truthTables.push(...truthTablesFromExcitation(e, numberOfVars, stateVars, e.type === 'output' ? 'z' : 'JK')));
     let kMaps : kMap[] = [];
     truthTables.forEach(t=>kMaps.push(generateKMap(t,numberOfVars)));
-    // console.log('tTables', truthTables);
-    // let i = 0;
 
-    // let trTable : truthTable = {
-    //     dims: 2,
-    //     functionName: "R0",
-    //     table: {"10": '1', "11": '1', "00": '1', "01": 'd'},
-    //     vars: "y0x0"
+    const implicationEntries = stateMinimization(props.stateNodes.map(s=>s.label), nextStateMap, props.numberOfInpVar);
+
+    // let stateLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+    // let nextStateMap2 : nextStateMap = {
+    //     ['A'] : {
+    //         '0' : {
+    //             output : '0',
+    //             state : 'E'
+    //         },
+    //         '1' : {
+    //             output : '0',
+    //             state : 'D'
+    //         }
+    //     },
+    //     ['B'] : {
+    //         '0' : {
+    //             output : '1',
+    //             state : 'A'
+    //         },
+    //         '1' : {
+    //             output : '0',
+    //             state : 'F'
+    //         }
+    //     },
+    //     ['C'] : {
+    //         '0' : {
+    //             output : '0',
+    //             state : 'C'
+    //         },
+    //         '1' : {
+    //             output : '1',
+    //             state : 'A'
+    //         }
+    //     },
+    //     ['D'] : {
+    //         '0' : {
+    //             output : '0',
+    //             state : 'B'
+    //         },
+    //         '1' : {
+    //             output : '0',
+    //             state : 'A'
+    //         }
+    //     },
+    //     ['E'] : {
+    //         '0' : {
+    //             output : '1',
+    //             state : 'D'
+    //         },
+    //         '1' : {
+    //             output : '0',
+    //             state : 'C'
+    //         }
+    //     },
+    //     ['F'] : {
+    //         '0' : {
+    //             output : '0',
+    //             state : 'C'
+    //         },
+    //         '1' : {
+    //             output : '1',
+    //             state : 'D'
+    //         }
+    //     },
+    //     ['G'] : {
+    //         '0' : {
+    //             output : '1',
+    //             state : 'H'
+    //         },
+    //         '1' : {
+    //             output : '1',
+    //             state : 'G'
+    //         }
+    //     },
+    //     ['H'] : {
+    //         '0' : {
+    //             output : '1',
+    //             state : 'C'
+    //         },
+    //         '1' : {
+    //             output : '1',
+    //             state : 'B'
+    //         }
+    //     },
+        
     // }
-    
-    // console.log(simplifyFunction(trTable));
-    stateMinimization(props.stateNodes, nextStateMap, props.numberOfInpVar);
+
+    // return(
+    //     <div>
+    //         <ImplicationTable labels = {stateLabels} entries = {stateMinimization(stateLabels, nextStateMap2,1)} />
+    //     </div>
+    // )
 
     return (
         <div className={styles.synthesisContainer}>
             <details>
                 <summary>State Table</summary>
                 <StateTable showOutput={true}  nextStateMap = {nextStateMap} numberOfInpVar = {props.numberOfInpVar} stateNodes = {props.stateNodes}/>
+            </details>
+            <details>
+                <summary> Implication Table </summary>
+                <ImplicationTable labels = {props.stateNodes.map(s=>s.label)} entries = {implicationEntries} />
             </details>
             <details>
                 <summary> State Assignment </summary>
@@ -614,15 +753,13 @@ const Design : React.FC<{
             </details>
             <details>
                 <summary>Excitation Table</summary>
-                <TransitionTable  excitations = {excitations} stateNodes = {props.stateNodes} binRep = {binRep} latchLabel = 'SR' latchMap = {SRMap} numberOfInputVars = {props.numberOfInpVar}  />
+                <ExcitaitonTable  excitations = {excitations} stateNodes = {props.stateNodes} binRep = {binRep} latchLabel = 'SR' latchMap = {SRMap} numberOfInputVars = {props.numberOfInpVar}  />
             </details>
             <details>
                 <summary> KMaps </summary>
             {
                 kMaps.map((k, index)=>{
                     let r = simplifyFunction(truthTables[index]);
-                    // console.log(truthTables);
-                    // console.log(r);
                     let s = '';
                     r.selectedPIs.forEach(e=> s+= getLiteral(e.comb, truthTables[index].vars) + ' + ' );
                     s = s.slice(0, s.length - 3);
@@ -745,7 +882,7 @@ const StateAssignment : React.FC<{
     )
 }
 
-const TransitionTable : React.FC<{
+const ExcitaitonTable : React.FC<{
     stateNodes : StateNode[],
     binRep : Map<string, string>,
     latchMap : {[key :string] : string},
@@ -931,5 +1068,67 @@ const KMap : React.FC<{
     )
 
 }
+
+const ImplicationTable : React.FC<{
+    entries : implicationEntryMap,
+    labels  : string[]
+}>
+ = (props)=>{
+    let rows : React.ReactNode[] = []; 
+    let lastRow : React.ReactNode[] = [];
+    let n = props.labels.length;
+    for(let i = 1; i < n; ++i){
+        let s2 = props.labels[i];
+        let cols : React.ReactNode[] = [];
+        for(let j = 0; j < i ; ++j){
+            let s1 = props.labels[j];
+            let txt : React.ReactNode;
+            let entry = props.entries[s1][s2];
+            if(entry.isCompatible){
+                
+                txt = <TiTick />
+                if(entry.dependencies.length > 0){
+                    txt = '';
+                    entry.dependencies.forEach((e, index) => txt += ((index === entry.dependencies.length - 1) ? e : (e + '/')).replace(' ', ','));
+                    
+                }
+            }
+            else{
+                txt = <ImCross/>;
+            }
+            cols.push(
+                <td key={s1 + s2}>
+                    {txt}
+                </td>
+            )
+        }
+        rows.push(
+            <tr key={s2}>
+                <td> {s2} </td>
+                {cols}
+            </tr>
+        )
+        lastRow.push(
+            <td key = {props.labels[i - 1]}>
+                {props.labels[i - 1]}
+            </td>
+        )
+    }
+    rows.push(
+        <tr key = {'!##$#$'}>
+            <td></td>
+            {lastRow}
+        </tr>
+    )
+    
+     
+    return(
+        <div className={styles.implicationTableContainer}>
+            <table className = {styles.implicationTable}>
+                {rows}
+            </table>
+        </div>
+    )
+ }
 
 export default Design;

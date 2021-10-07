@@ -231,7 +231,7 @@
         text-align: start;
     }
     
-    .stateTableContainer, .stateAssignmentContainer, .transitionTableContainer, .kMapContainer{
+    .stateTableContainer, .stateAssignmentContainer, .transitionTableContainer, .kMapContainer, .implicationTableContainer{
         display: inline-block;
         table, th, td{
             border: solid 1px black;
@@ -241,6 +241,7 @@
         }
         table{
             margin: 20px;
+            border: none;
         }
     }
     .kMapContainer {
