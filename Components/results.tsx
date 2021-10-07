@@ -20,7 +20,10 @@ interface excitationInterface{
 }
 interface nextStateMap {
     [state : string] : {
-        [inpComb : string] : string
+        [inpComb : string] : {
+            state : string,
+            output : string
+        }
     }
 }
 interface kMap{
@@ -81,7 +84,7 @@ function getBinRepresentation(stateNodes : StateNode[]) : Map<string, string>{
     return m;
 }
 
-function getInputCombination(d : number) : string[]{
+export function getInputCombination(d : number) : string[]{
     let n = Math.pow(2,d);
     let inps : string[] = []
     for(let i = 0; i < n; ++i){
@@ -101,8 +104,12 @@ function getNextStateMap(stateNodes : StateNode[], numberOfInpVars : number) : n
     stateNodes.forEach(s=>{
         map[s.label] = {}
         inpComb.forEach(comb=>{
+            let to = s.ioNodes.filter(ioNode => ioNode.inputComb === comb)[0].edges[0].to;
 
-            map[s.label][comb] = s.ioNodes.filter(ioNode => ioNode.inputComb === comb)[0].edges[0].to.originNode.label
+            map[s.label][comb] = {
+                state : to.originNode.label,
+                output : to.output
+            }
         })
     })
     return map;
@@ -422,6 +429,40 @@ function getLiteral(comb : string, vars : string): string{
     return r;
 }
 
+function stateMinimization(stateNodes : StateNode[], nextStateMap : nextStateMap, numberOfInputVars : number){
+    let separator = ' ';
+    let inpComb = getInputCombination(numberOfInputVars);
+
+    const combineStateLabels = (l1 : string, l2 : string) : string =>{
+        if(l1 < l2) return l1 + separator + l2;
+        return l2 + separator + l1; 
+    }
+    const dependency = (state1 : string, state2 : string) : string[] =>{
+        let arr : string[] = [];
+        inpComb.forEach(comb=>{
+            arr.push(combineStateLabels(nextStateMap[state1][comb].state, nextStateMap[state2][comb].state));
+        })
+        let currComb = combineStateLabels(state1, state2);
+        arr = arr.filter(c => c !== currComb);
+        return arr;
+    }
+
+    let equivalents : Set<string> = new Set<string>();
+
+    let states = stateNodes.map(s => s.label);
+    for(let i = 0; i < states.length; ++i){
+        for(let j = i + 1; j < states.length; ++j){
+            let dependentOn = dependency(states[i], states[j]);
+            if(dependentOn.length === 0){
+                equivalents.add(combineStateLabels(states[i], states[j]));
+            }
+            else{
+                
+            }
+        }
+    }
+}
+
 const SRMap = {
     '00' : '0d',
     '01' : '10',
@@ -508,7 +549,6 @@ const Design : React.FC<{
                 })
             }
             </details>
-            {/* <KMap kMap = {kMaps[1]} /> */}
             <div className={styles.backButtonContainer}>
                 <button onClick = {()=> props.changeSynthesis(false)}> back to diagram </button>
             </div>
@@ -554,11 +594,11 @@ const StateTable : React.FC<{
                     props.stateNodes.map(s=>{
                         let t : React.ReactNode[] = [];
                         t = inpComb.map(comb=>{
-                            let text = props.nextStateMap[s.label][comb];
+                            let text = props.nextStateMap[s.label][comb].state;
                             if(props.binRep) text = props.binRep.get(text)!;
                             return (
                                 <td key = {'s' + s.label + 'i' +  comb}>
-                                    {text}
+                                    {text + '/' + props.nextStateMap[s.label][comb].output}
                                 </td>
                             )
                         })

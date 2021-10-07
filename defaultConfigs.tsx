@@ -18,7 +18,7 @@ export const defalutIONodeConfig : defalutIONodeConfig = {
 }
 export const canvasConfig : canvasConfig = {
     nodeCanvasLineWidth : 2,
-    edgeCanvasLineWidth : 4,
+    edgeCanvasLineWidth : 2,
     tempCanvasLineWidth : 1,
 }
 

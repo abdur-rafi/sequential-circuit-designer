@@ -7,7 +7,9 @@ interface Props{
     setMouseMode : (mode : MouseMode)=>void
     mouseMode : 'addNode' | 'drag' | 'edge' | 'select',
     numberOfInputVars : number,
-    changeNumberOfInputVars : (vars : number)=> void
+    changeNumberOfInputVars : (vars : number)=> void,
+    numberOfOutputVars : number,
+    changeNumberOfOutputVars : (vars : number)=> void
 }
 interface State{
 
@@ -65,6 +67,14 @@ class TopBar extends React.Component<Props, State>{
                             this.props.changeNumberOfInputVars(n);
                             
                             }} />
+                        <label> #out vars </label>
+                        <input type='number' value={this.props.numberOfOutputVars} onChange={(e)=>{
+                            let n = parseInt(e.target.value);
+                            if(n > 0 && n < 5){
+                                this.props.changeNumberOfOutputVars(n);
+                            }
+                        }} />
+                        
                     </div>
                 </div>
 

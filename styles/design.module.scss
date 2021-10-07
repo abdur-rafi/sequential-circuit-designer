@@ -138,6 +138,16 @@
         }
 
     }
+    .ioNodeContainer{
+        .outputContainer{
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            input{
+                width: 30px;
+            }
+        }
+    }
 }
 
 .topBarContainer{
