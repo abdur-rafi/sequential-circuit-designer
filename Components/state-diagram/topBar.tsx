@@ -1,8 +1,8 @@
 import React from "react";
-import styles from '../styles/design.module.scss'
+import styles from '../../styles/design.module.scss'
 import {IoHandRightOutline} from 'react-icons/io5'
 import {GrSelect} from 'react-icons/gr'
-import { MouseMode } from "./canvasInterfaces";
+import { MouseMode } from "./state-diagram-interfaces";
 interface Props{
     setMouseMode : (mode : MouseMode)=>void
     mouseMode : 'addNode' | 'drag' | 'edge' | 'select',

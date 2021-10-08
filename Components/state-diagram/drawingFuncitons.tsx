@@ -1,6 +1,6 @@
 
-import {Point, StateNode, IONode, Edge} from './canvasInterfaces'
-import {defalutIONodeConfig, defaultStateNodeConfig} from '../defaultConfigs'
+import {Point, StateNode, IONode, Edge} from './state-diagram-interfaces'
+import {defalutIONodeConfig, defaultStateNodeConfig} from '../../defaultConfigs'
 import React from 'react';
 
 
@@ -17,14 +17,16 @@ export function checkInsideCircle(center : Point, radius : number, testPoint : P
     
 }
 
-export function drawCircle(canvas : React.RefObject<HTMLCanvasElement>, center : Point, radius : number, lineColor : string, fillColor : string){
+export function drawCircle(canvas : React.RefObject<HTMLCanvasElement>, center : Point, radius : number, lineColor : string, fillColor? : string){
     let context = canvas.current?.getContext('2d');
     if(!context) return;
     context.beginPath();
     context.strokeStyle = lineColor;
-    context.fillStyle = fillColor;
-    context.arc(center.x, center.y, radius, 0, Math.PI * 2);      
-    context.fill();
+    if(fillColor)
+        context.fillStyle = fillColor;
+    context.arc(center.x, center.y, radius, 0, Math.PI * 2);     
+    if(fillColor) 
+        context.fill();
     context.stroke();
     context.closePath();  
 }
@@ -32,10 +34,7 @@ export function drawCircle(canvas : React.RefObject<HTMLCanvasElement>, center :
 
 
 export function calculateIONodeCenter(stateNode : StateNode, angle : number): Point{
-    return({
-        x : stateNode.center.x + (stateNode.radius + stateNode.gap + stateNode.ioNodeDiameter / 2) * Math.cos(angle),
-        y : stateNode.center.y + (stateNode.radius + stateNode.gap + stateNode.ioNodeDiameter / 2) * Math.sin(angle)
-    })
+    return   getPointOnCircle(stateNode.center,stateNode.radius + stateNode.gap + stateNode.ioNodeDiameter / 2, angle )
 }
 
 export function clearCircle(canvas : React.RefObject<HTMLCanvasElement>, center : Point, radius : number){
@@ -122,4 +121,11 @@ export function calculateDelTheta(ioNode : IONode) : number{
     let stateNode = ioNode.originNode;
     return (stateNode.ioNodeDiameter * 2.75) / (stateNode.radius + stateNode.gap + stateNode.ioNodeDiameter / 2);
 
+}
+
+export function getPointOnCircle(center : Point, radius : number, angle : number) : Point{
+    return {
+        x : center.x + radius * Math.cos(angle),
+        y : center.y + radius * Math.sin(angle)
+    }
 }

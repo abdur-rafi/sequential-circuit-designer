@@ -1,14 +1,14 @@
 import React from 'react'
-import {StateNode, Point, IONode, Edge, MouseMode} from './canvasInterfaces'
+import {StateNode, Point, IONode, Edge, MouseMode} from './state-diagram-interfaces'
 import {checkInsideCircle, calculateIONodeCenter,
      clearCircle, drawCircle, checkCollision, 
      pointToString, doRectanglesOverlap, getCornerPoints, clearCanvas, calculateDelTheta, doCirclesCollide} from './drawingFuncitons'
-import styles from '../styles/design.module.scss'
+import styles from '../../styles/design.module.scss'
 import SideBar from './SideBar';
 import TopBar from './topBar';
-import { canvasConfig, defalutIONodeConfig, defaultStateNodeConfig } from '../defaultConfigs';
-import Design, { getInputCombination } from './results';
-import Lingk from 'next/link'
+import { canvasConfig, defalutIONodeConfig, defaultStateNodeConfig } from '../../defaultConfigs';
+import Design from '../synthesis/results';
+import { getInputCombination } from '../synthesis/helperFunctions';
 // From stackoverflow
 class StringIdGenerator {
     _chars : string;

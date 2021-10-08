@@ -1,10 +1,9 @@
 import React, { useState } from 'react'
-import styles from '../styles/design.module.scss'
+import styles from '../../styles/design.module.scss'
 import {ImCancelCircle} from 'react-icons/im'
-import { IONode, StateNode } from './canvasInterfaces';
-import {BsArrowDown, BsArrowDownShort, BsArrowUp, BsArrowUpShort} from 'react-icons/bs'
-import {AiOutlinePlusCircle} from 'react-icons/ai'
-import { getInputCombination } from './results';
+import { IONode, StateNode } from './state-diagram-interfaces';
+import {BsArrowDown, BsArrowUp} from 'react-icons/bs'
+import { getInputCombination } from '../synthesis/helperFunctions';
 class SideBar extends React.Component<{
     toggleSideBar : ()=>void,
     stateNode : StateNode | null,
