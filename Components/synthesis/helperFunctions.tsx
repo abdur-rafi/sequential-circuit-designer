@@ -38,8 +38,9 @@ export function getInputCombination(d : number) : string[]{
     return inps;
 }
 
-export function getNextStateMap(stateNodes : StateNode[], numberOfInpVars : number) : nextStateMap{
+export async function getNextStateMap(stateNodes : StateNode[], numberOfInpVars : number) : Promise<nextStateMap>{
     let map : nextStateMap = {};
+
     let inpComb = getInputCombination(numberOfInpVars);
     stateNodes.forEach(s=>{
         map[s.label] = {}
@@ -63,12 +64,11 @@ export function getLabels(n : number, t : string): string{
     return s;
 }
 
-export function getExcitations(stateNodes : StateNode[] , binMap : Map<string, string>, numberOfInputVar : number, latchMap : {[key: string]: string} , numberOfLatchVars : number, numberOfOutputVars : number ) : excitationInterface[]{
+export async function getExcitations(stateNodes : StateNode[] , binMap : Map<string, string>, numberOfInputVar : number, latchMap : {[key: string]: string} , numberOfLatchVars : number, numberOfOutputVars : number ) : Promise<excitationInterface[]>{
     const max = (n : number, n2 : number) : number=>{
         if(n > n2) return n;
         return n2;
     }
-    
     let excitations : excitationInterface[] = [];
     let numberOfStateBits = getRequiredBitForStates(stateNodes.length);
     let inpComb = getInputCombination(numberOfInputVar);
@@ -129,7 +129,7 @@ export function getExcitations(stateNodes : StateNode[] , binMap : Map<string, s
     return excitations;
 }
 
-export function truthTablesFromExcitation(excitation : excitationInterface, numberOfVars : number, fDim : number, functionLabels : string) : truthTable[]{
+export async function truthTablesFromExcitation(excitation : excitationInterface, numberOfVars : number, fDim : number, functionLabels : string) : Promise<truthTable[]>{
     let inpCombs = getInputCombination(numberOfVars);
     let tTable : truthTable[] = [];
     // if(pair) tTable.push({table : {}, dims : numberOfVars, functionName : '', vars : excitation.colLabels + excitation.rowLabels});
@@ -156,7 +156,7 @@ export function truthTablesFromExcitation(excitation : excitationInterface, numb
     
 }
 
-export function generateKMap(truthTable : truthTable, numberOfTotalVars : number) : kMap{
+export async function generateKMap(truthTable : truthTable, numberOfTotalVars : number) : Promise<kMap>{
     if(numberOfTotalVars < 5){
         let row = Math.floor(numberOfTotalVars / 2);
         let col = numberOfTotalVars - row;
@@ -207,7 +207,7 @@ export function generateKMap(truthTable : truthTable, numberOfTotalVars : number
             }
         };
 
-        remCombs.forEach(remComb=>{
+        remCombs.forEach(async remComb=>{
             let tTable : truthTable = {
                 table : {},
                 dims : numberOfTotalVars,
@@ -217,7 +217,8 @@ export function generateKMap(truthTable : truthTable, numberOfTotalVars : number
             comb.forEach(c=>{
                 tTable.table[c] = truthTable.table[remComb + c];
             })
-            kMap.map[remComb] = generateKMap(tTable, 4).map[''];
+            let temp = await generateKMap(tTable, 4);
+            kMap.map[remComb] = temp.map[''];
         })
         return kMap;
     }
@@ -405,7 +406,7 @@ export function getLiteral(comb : string, vars : string): string{
     return r;
 }
 
-export function stateMinimization(stateLabels : string[], nextStateMap : nextStateMap, numberOfInputVars : number):implicationEntryMap{
+export async function stateMinimization(stateLabels : string[], nextStateMap : nextStateMap, numberOfInputVars : number):Promise<implicationEntryMap>{
     let separator = ' ';
     let inpComb = getInputCombination(numberOfInputVars);
 
@@ -639,7 +640,6 @@ export async function maximalCompatibles( labels : string[], entries : implicati
         })
     }
 
-    // await new Promise(resolve => setTimeout(resolve, 10000));
 
     // console.log(combs);
     console.log('compatibles', maximalCompatibles);

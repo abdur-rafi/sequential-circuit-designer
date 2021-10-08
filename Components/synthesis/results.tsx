@@ -3,12 +3,13 @@ import { Edge, StateNode } from "../state-diagram/state-diagram-interfaces";
 import styles from '../../styles/design.module.scss'
 import StateTable from "./StateTable";
 import { generateKMap, getBinRepresentation, getExcitations, getLiteral, getNextStateMap, getRequiredBitForStates, maximalCompatibles, simplifyFunction, stateMinimization, truthTablesFromExcitation } from "./helperFunctions";
-import {  kMap, truthTable } from "./interfaces";
+import {  excitationInterface, implicationEntryMap, kMap, nextStateMap, truthTable } from "./interfaces";
 import ExcitaitonTable from "./ExcitationTable";
 import KMap from './kMap'
 import ImplicationTable from "./ImplicationTable";
 import StateAssignment from "./StateAssignment";
 import MergerDiagram from "./MergerDiagram";
+import { useState, useEffect } from "react";
 
 
 const SRMap = {
@@ -44,20 +45,74 @@ const Design : React.FC<{
     numberOfOutputVars : number
 }> = (props)=>{
 
+
+
+    const [excitations, setExcitations] = useState<excitationInterface[] | null>(null);
+    const [nextStateMap , setNextStateMap] = useState<nextStateMap | null>(null);
+    const [implicationEntries, setImplicationEntries] = useState<implicationEntryMap | null>(null);
+    const [truthTables, setTruthTables] = useState<truthTable[] | null>(null);
+    const [kMaps, setKMaps] = useState<kMap[]|null>(null);
+
+
     let stateVars = getRequiredBitForStates(props.stateNodes.length) ;
     let numberOfVars = stateVars + props.numberOfInpVar;
     const binRep = getBinRepresentation(props.stateNodes);
-    let excitations = getExcitations(props.stateNodes, binRep, props.numberOfInpVar,JKMap, 2, props.numberOfOutputVars);
-    excitations = [... excitations.filter(e => e.type === 'state'), ... excitations.filter(e => e.type === 'output')]
-    const nextStateMap = getNextStateMap(props.stateNodes, props.numberOfInpVar);
-    let truthTables : truthTable[] = [];
-    excitations.forEach(e=> truthTables.push(...truthTablesFromExcitation(e, numberOfVars, stateVars, e.type === 'output' ? 'z' : 'JK')));
-    let kMaps : kMap[] = [];
-    truthTables.forEach(t=>kMaps.push(generateKMap(t,numberOfVars)));
 
-    const implicationEntries = stateMinimization(props.stateNodes.map(s=>s.label), nextStateMap, props.numberOfInpVar);
+    const getAllTruthTables = async (excitations : excitationInterface[]) : Promise<truthTable[]>=>{
+        let t : truthTable[] = [];
+        excitations.forEach(async e =>{
+            let temp = await truthTablesFromExcitation(e,numberOfVars,stateVars, e.type === 'output' ? 'z' : 'JK');
+            t.push(...temp);
+        })
+        return t;
+    }
 
-    maximalCompatibles(props.stateNodes.map(s => s.label), implicationEntries);
+    const getAllKmaps = async (truthTables : truthTable[]) : Promise<kMap[]> =>{
+        let k : kMap[] = [];
+        truthTables.forEach(async t=>{
+            let temp = await generateKMap(t,numberOfVars);
+            k.push(temp)
+        });
+        return k;
+    }
+    
+
+    useEffect(()=>{
+        getExcitations(props.stateNodes, binRep, props.numberOfInpVar,JKMap, 2, props.numberOfOutputVars).then(async e=>{
+            console.log('here');
+            e = [... e.filter(e => e.type === 'state'), ... e.filter(e => e.type === 'output')]
+            console.log(e);
+            setExcitations(e);
+            let t = await getAllTruthTables(e);
+            setTruthTables(t);
+            let k = await getAllKmaps(t);
+            setKMaps(k);
+            
+        })
+        
+    
+        getNextStateMap(props.stateNodes, props.numberOfInpVar).then(e=>{
+            setNextStateMap(e);
+            stateMinimization(props.stateNodes.map(s=> s.label), e, props.numberOfInpVar).then(s=>{
+                setImplicationEntries(s);
+            })
+        })
+        
+    }, [props])
+
+
+    // let excitations = getExcitations(props.stateNodes, binRep, props.numberOfInpVar,JKMap, 2, props.numberOfOutputVars);
+    // excitations = [... excitations.filter(e => e.type === 'state'), ... excitations.filter(e => e.type === 'output')]
+    
+    // const nextStateMap = getNextStateMap(props.stateNodes, props.numberOfInpVar);
+    // let truthTables : truthTable[] = [];
+    // excitations.forEach(e=> truthTables.push(...truthTablesFromExcitation(e, numberOfVars, stateVars, e.type === 'output' ? 'z' : 'JK')));
+    // let kMaps : kMap[] = [];
+    // truthTables.forEach(t=>kMaps.push(generateKMap(t,numberOfVars)));
+
+    // const implicationEntries = stateMinimization(props.stateNodes.map(s=>s.label), nextStateMap, props.numberOfInpVar);
+
+    // maximalCompatibles(props.stateNodes.map(s => s.label), implicationEntries);
     
     
 
@@ -152,45 +207,48 @@ const Design : React.FC<{
     //     </div>
     // )
 
-    console.log(implicationEntries);
+    // console.log(implicationEntries);
 
     return (
         <div className={styles.synthesisContainer}>
             <details>
                 <summary>State Table</summary>
-                <StateTable showOutput={true}  nextStateMap = {nextStateMap} numberOfInpVar = {props.numberOfInpVar} stateNodes = {props.stateNodes}/>
+                {nextStateMap && <StateTable showOutput={true}  nextStateMap = {nextStateMap} numberOfInpVar = {props.numberOfInpVar} stateNodes = {props.stateNodes}/>}
             </details>
-            <details>
+             <details>
                 <summary> Implication Table </summary>
-                <ImplicationTable labels = {props.stateNodes.map(s=>s.label)} entries = {implicationEntries} />
+                {implicationEntries && <ImplicationTable labels = {props.stateNodes.map(s=>s.label)} entries = {implicationEntries} />}
             </details>
+            
             <details>
                 <summary> Merger Diagram For Compatibles </summary>
-                <MergerDiagram entries = {implicationEntries} stateLabels = {props.stateNodes.map(s => s.label)} />
+                { implicationEntries && <MergerDiagram entries = {implicationEntries} stateLabels = {props.stateNodes.map(s => s.label)} />}
             </details>
             <details>
                 <summary> Merger Diagram For Incompatibles </summary>
-                <MergerDiagram inCompatibles={true} entries = {implicationEntries} stateLabels = {props.stateNodes.map(s => s.label)} />
+               { implicationEntries && <MergerDiagram inCompatibles={true} entries = {implicationEntries} stateLabels = {props.stateNodes.map(s => s.label)} />}
             </details>
+            
             <details>
                 <summary> State Assignment </summary>
                 <StateAssignment binRep = {binRep} stateNodes = {props.stateNodes}  />
             </details>
             <details>
                 <summary>Transition Table</summary>
-                <StateTable  nextStateMap = {nextStateMap} binRep = {binRep} numberOfInpVar = {props.numberOfInpVar} stateNodes = {props.stateNodes}/>
+                { nextStateMap && <StateTable  nextStateMap = {nextStateMap} binRep = {binRep} numberOfInpVar = {props.numberOfInpVar} stateNodes = {props.stateNodes}/>}
             </details>
             <details>
                 <summary>Excitation Table</summary>
-                <ExcitaitonTable  excitations = {excitations} stateNodes = {props.stateNodes} binRep = {binRep} latchLabel = 'SR' latchMap = {SRMap} numberOfInputVars = {props.numberOfInpVar}  />
+                {excitations && <ExcitaitonTable  excitations = {excitations} stateNodes = {props.stateNodes} binRep = {binRep} latchLabel = 'SR' latchMap = {SRMap} numberOfInputVars = {props.numberOfInpVar}  />}
             </details>
+            
             <details>
                 <summary> KMaps </summary>
-            {
+            {kMaps &&
                 kMaps.map((k, index)=>{
-                    let r = simplifyFunction(truthTables[index]);
+                    let r = simplifyFunction(truthTables![index]);
                     let s = '';
-                    r.selectedPIs.forEach(e=> s+= getLiteral(e.comb, truthTables[index].vars) + ' + ' );
+                    r.selectedPIs.forEach(e=> s+= getLiteral(e.comb, truthTables![index].vars) + ' + ' );
                     s = s.slice(0, s.length - 3);
                     if(s == '')
                         s = '0'
@@ -200,7 +258,6 @@ const Design : React.FC<{
                             <details>
                                 <summary>{ k.functionName.split('').map(c => Number.isInteger(parseInt(c)) ? (<sub key={key++}>{c}</sub>) : c)} </summary>
                                 <div className = {styles.functionBlock}> 
-                                    {/* <div> {k.functionName} </div> */}
                                     <KMap key = {key++} kMap = {k} />
                                     <div> {k.functionName.split('').map(c => Number.isInteger(parseInt(c)) ? (<sub key={key++}>{c}</sub>) : c)} = {s.split('').map(c => Number.isInteger(Number.parseInt(c)) ? <sub key={key++}>{c}</sub> : c  )} </div>
                                 </div>
@@ -209,7 +266,7 @@ const Design : React.FC<{
                     )
                 })
             }
-            </details>
+            </details> 
             <div className={styles.backButtonContainer}>
                 <button onClick = {()=> props.changeSynthesis(false)}> back to diagram </button>
             </div>
