@@ -522,7 +522,7 @@ export async function stateMinimization(stateLabels : string[], nextStateMap : n
     return implicationEntries;
 }
 
-export async function maximalCompatibles( labels : string[], entries : implicationEntryMap){
+export async function getMaximals( labels : string[], entries : implicationEntryMap, inCompatibles? : boolean) : Promise<string[][]>{
 
     let n = labels.length;
     let labelToIndex : {
@@ -539,7 +539,7 @@ export async function maximalCompatibles( labels : string[], entries : implicati
             let s1 = labels[i];
             for(let j = i + 1; j < n; ++j){
                 let s2 = labels[j];
-                if(entries[s1][s2].isCompatible){
+                if( (!inCompatibles && entries[s1][s2].isCompatible) || (inCompatibles && !entries[s1][s2].isCompatible)){
                     let i1 = labelToIndex[s1];
                     let i2 = labelToIndex[s2];
                     adj[i1].push(i2);
@@ -575,6 +575,10 @@ export async function maximalCompatibles( labels : string[], entries : implicati
         for(let i = 1; i < mx; ++ i){
             let curr = i.toString(2);
             let count = count1(curr);
+            let temp = '';
+            for(let j = 0; j < n - curr.length; ++j)
+                temp += '0';
+            curr = temp + curr;
             if(count <= startFrom){
                 if(!combinations[count]) combinations[count] = []
                 combinations[count].push(curr);
@@ -594,14 +598,14 @@ export async function maximalCompatibles( labels : string[], entries : implicati
         return s;
     }
 
-    const checkCompatible = (stateIndexes : number[])=>{
+    const check = (stateIndexes : number[])=>{
         let n = stateIndexes.length;
         for(let i = 0; i < n; ++i){
             let s1 = labels[stateIndexes[i]];
             for(let j = i + 1; j < n; ++j){
                 let s2 = labels[stateIndexes[j]];
-                if(s1 === s2) continue;
-                if(!entries[s1][s2].isCompatible) return false;
+                // if(s1 === s2) continue;
+                if((!inCompatibles && !entries[s1][s2].isCompatible) || (inCompatibles && entries[s1][s2].isCompatible)) return false;
             }
         }
         return true;
@@ -621,19 +625,20 @@ export async function maximalCompatibles( labels : string[], entries : implicati
 
     let adj = createAdjacencyList();
     let upperBound = getUpperBound(adj);
-    let maximalCompatibles : number[][] = [];
-    console.log(adj);
-    console.log(upperBound);
+    let maximals : number[][] = [];
+    // console.log(adj);
+    // console.log(upperBound);
     let combs = getComibations(n , upperBound);
+    console.log(combs);
     for(let i = upperBound; i > 0; --i){
         combs[i].forEach(comb=>{
             let indexes = getCombStates(comb);
-            if(maximalCompatibles.some(m => doesContain(m, indexes)))
+            if(maximals.some(m => doesContain(m, indexes)))
                 return;
             // let str = convertToString(indexes);
             // if(maximalCompatibles.includes(str)) return;
-            if(checkCompatible(indexes)){
-                maximalCompatibles.push(indexes);
+            if(check(indexes)){
+                maximals.push(indexes);
                 // maximalCompatibles += convertToString(indexes);
 
             }
@@ -642,7 +647,12 @@ export async function maximalCompatibles( labels : string[], entries : implicati
 
 
     // console.log(combs);
-    console.log('compatibles', maximalCompatibles);
-    return maximalCompatibles;
+    // console.log('compatibles', maximals);
+    let maximalLabels : string[][] = [];
+    maximals.forEach(indexes =>{
+        let temp : string[] = indexes.map(i => labels[i]);
+        maximalLabels.push(temp);
+    })
+    return maximalLabels;
 
 }
