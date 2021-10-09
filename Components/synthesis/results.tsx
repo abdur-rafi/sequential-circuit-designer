@@ -10,19 +10,24 @@ import ImplicationTable from "./ImplicationTable";
 import StateAssignment from "./StateAssignment";
 import MergerDiagram from "./MergerDiagram";
 import { useState, useEffect } from "react";
+import ClosureTable from "./ClosureTable";
 
 
 const SRMap = {
     '00' : '0d',
     '01' : '10',
     '10' : '01',
-    '11' : 'd0'
+    '11' : 'd0',
+    '0d' : 'dd',
+    '1d' : 'dd'
 }
 const JKMap = {
     '00' : '0d',
     '01' : '1d',
     '10' : 'd1',
-    '11' : 'd0'
+    '11' : 'd0',
+    '0d' : 'dd',
+    '1d' : 'dd'
 }
 const DMap = {
     '00' : '0',
@@ -45,7 +50,7 @@ const Design : React.FC<{
     numberOfOutputVars : number
 }> = (props)=>{
 
-    const [nextStateMap , setNextStateMap] = useState<nextStateMap | null>(nextStateMap3);
+    const [nextStateMap , setNextStateMap] = useState<nextStateMap | null>(nextStateMap4);
     let labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     // labels = props.stateNodes.map(s => s.label);
     useEffect(()=>{
@@ -123,94 +128,81 @@ const FromNextStateMap : React.FC<{
             setMaximalIncompatibles(mx2);
         })
         
-    }, [props])
+    }, [props])                
 
     return (
         <div className={styles.synthesisContainer}>
-            <details>
-                <summary>State Table</summary>
-                {props.nextStateMap && <StateTable   nextStateMap = {props.nextStateMap} stateLabels = {props.labels}/>}
-            </details>
-             <details>
-                <summary> Implication Table </summary>
-                {implicationEntries && <ImplicationTable labels = {props.labels} entries = {implicationEntries} />}
-            </details>
+            <Details summary = {'State Table'} 
+            content = {props.nextStateMap && <StateTable   nextStateMap = {props.nextStateMap} stateLabels = {props.labels}/>} />
+            <Details summary = {'Implication Table'} 
+            content = {implicationEntries && <ImplicationTable labels = {props.labels} entries = {implicationEntries} />} />
+            <Details summary = {'Merger Diagram For Compatibles'} 
+            content = {implicationEntries && <MergerDiagram entries = {implicationEntries} stateLabels = {props.labels} />} />
+            <Details summary = {'Merger Diagram For Incompatibles'} 
+            content = {implicationEntries && <MergerDiagram inCompatibles={true} entries = {implicationEntries} stateLabels = {props.labels} />}/>
+            <Details summary = {'Maximal Compatibles'} 
+            content =  {maximalCompatibles && maximalCompatibles.map((arr, index) =>{
+                            return(
+                                <div key={index}>
+                                    {
+                                        arr.map((s, i)=>{
+                                            if(arr.length === 1){
+                                                return '{ ' + s + ' }'
+                                            }
+                                            if(i === 0){
+                                                return '{ ' + s + ', ';
+                                            }
+                                            else if(i === arr.length - 1){
+                                                return s + ' }';
+                                            }
+                                            return s + ', '
+                                        })
+                                    }
+                                </div>
+                            )
+                        })}/>
             
-            <details>
-                <summary> Merger Diagram For Compatibles </summary>
-                { implicationEntries && <MergerDiagram entries = {implicationEntries} stateLabels = {props.labels} />}
-            </details>
-            <details>
-                <summary> Merger Diagram For Incompatibles </summary>
-               { implicationEntries && <MergerDiagram inCompatibles={true} entries = {implicationEntries} stateLabels = {props.labels} />}
-            </details>
+            <Details summary = {'Maximal Incompatibles'} 
+            content =  {maximalIncompatibles && maximalIncompatibles.map((arr, index) =>{
+                            return(
+                                <div key={index}>
+                                    {
+                                        arr.map((s, i)=>{
+                                            if(arr.length === 1){
+                                                return '{ ' + s + ' }'
+                                            }
+                                            if(i === 0){
+                                                return '{ ' + s + ', ';
+                                            }
+                                            else if(i === arr.length - 1){
+                                                return s + ' }';
+                                            }
+                                            return s + ', '
+                                        })
+                                    }
+                                </div>
+                            )
+                        })}/>
             
-            <details>
-                <summary>Maximal Compatibles</summary>
-                
-                {maximalCompatibles && maximalCompatibles.map((arr, index) =>{
-                    return(
-                        <div key={index}>
-                            {
-                                arr.map((s, i)=>{
-                                    if(arr.length === 1){
-                                        return '{ ' + s + ' }'
-                                    }
-                                    if(i === 0){
-                                        return '{ ' + s + ', ';
-                                    }
-                                    else if(i === arr.length - 1){
-                                        return s + ' }';
-                                    }
-                                    return s + ', '
-                                })
-                            }
-                        </div>
-                    )
-                })}
-            </details>
+            <Details summary = {'Closure Table'}
+            content = {
+                maximalCompatibles &&
+                <ClosureTable nextStateMap = {props.nextStateMap} maximalCompatibles = {maximalCompatibles} />
+            }
+            />
 
-            <details>
-                <summary>Maximal Incompatibles</summary>
-                
-                {maximalIncompatibles && maximalIncompatibles.map((arr, index) =>{
-                    return(
-                        <div key={index}>
-                            {
-                                arr.map((s, i)=>{
-                                    if(arr.length === 1){
-                                        return '{ ' + s + ' }'
-                                    }
-                                    if(i === 0){
-                                        return '{ ' + s + ', ';
-                                    }
-                                    else if(i === arr.length - 1){
-                                        return s + ' }';
-                                    }
-                                    return s + ', '
-                                })
-                            }
-                        </div>
-                    )
-                })}
-            </details>
-
-            <details>
-                <summary> State Assignment </summary>
-                <StateAssignment binRep = {binRep} stateLabels = {props.labels}  />
-            </details>
-            <details>
-                <summary>Transition Table</summary>
-                { props.nextStateMap && <StateTable  nextStateMap = {props.nextStateMap} binRep = {binRep} stateLabels = {props.labels}/>}
-            </details>
-            <details>
-                <summary>Excitation Table</summary>
-                {excitations && <ExcitaitonTable  excitations = {excitations} stateLabels = {props.labels} binRep = {binRep} latchLabel = 'SR' latchMap = {SRMap} />}
-            </details>
+            <Details summary = {'State Assignment '} 
+            content = { <StateAssignment binRep = {binRep} stateLabels = {props.labels}  />}/>
             
-            <details>
-                <summary> KMaps </summary>
-            {kMaps &&
+            <Details summary = {'Transition Table '} 
+            content = { props.nextStateMap && <StateTable  nextStateMap = {props.nextStateMap} binRep = {binRep} stateLabels = {props.labels}/>}/>
+            
+            <Details summary = {'Excitation Table'} 
+            content = {excitations && <ExcitaitonTable  excitations = {excitations} stateLabels = {props.labels} binRep = {binRep} latchLabel = 'JK' latchMap = {JKMap} />}/>
+            
+            
+            <Details summary = {'KMaps'} 
+            content = {kMaps &&
                 kMaps.map((k, index)=>{
                     let r = simplifyFunction(truthTables![index]);
                     let s = '';
@@ -221,18 +213,20 @@ const FromNextStateMap : React.FC<{
                     let key = 0;
                     return(
                         <div key = {k.functionName} className={styles.functionBlockContainer}>
-                            <details>
-                                <summary>{ k.functionName.split('').map(c => Number.isInteger(parseInt(c)) ? (<sub key={key++}>{c}</sub>) : c)} </summary>
+                            <Details 
+                            summary={k.functionName.split('').map(c => Number.isInteger(parseInt(c)) ? (<sub key={key++}>{c}</sub>) : c)}
+                            content = {
                                 <div className = {styles.functionBlock}> 
                                     <KMap key = {key++} kMap = {k} />
                                     <div> {k.functionName.split('').map(c => Number.isInteger(parseInt(c)) ? (<sub key={key++}>{c}</sub>) : c)} = {s.split('').map(c => Number.isInteger(Number.parseInt(c)) ? <sub key={key++}>{c}</sub> : c  )} </div>
                                 </div>
-                            </details>
+                            }
+                            />
                         </div>
                     )
                 })
-            }
-            </details> 
+            }/>
+            
             <div className={styles.backButtonContainer}>
                 <button onClick = {()=> props.changeSynthesis(false)}> back to diagram </button>
             </div>
@@ -240,6 +234,17 @@ const FromNextStateMap : React.FC<{
     )
 }
 
+const Details : React.FC<{
+    summary : React.ReactNode,
+    content : React.ReactNode
+}> = (props)=>{
+    return(
+        <details>
+            <summary> {props.summary} </summary>
+            {props.content}
+        </details>
+    )
+}
 
 let nextStateMap2 : nextStateMap = {
     nextStateMap:{
@@ -483,3 +488,91 @@ let nextStateMap3 : nextStateMap = {
 
 
 export default Design;
+
+let nextStateMap4 : nextStateMap = {
+    nextStateMap:{
+        ['A'] : {
+            '0' : {
+                output : 'd',
+                state : 'A'
+            },
+            '1' : {
+                output : '1',
+                state : 'C'
+            }
+        },
+        ['B'] : {
+            '0' : {
+                output : 'd',
+                state : 'B'
+            },
+            '1' : {
+                output : 'd',
+                state : 'A'
+            }
+        },
+        ['C'] : {
+            '0' : {
+                output : 'd',
+                state : 'G'
+            },
+            '1' : {
+                output : '0',
+                state : 'E'
+            }
+        },
+        ['D'] : {
+            '0' : {
+                output : '1',
+                state : 'C'
+            },
+            '1' : {
+                output : 'd',
+                state : 'C'
+            }
+        },
+        ['E'] : {
+            '0' : {
+                output : '1',
+                state : 'A'
+            },
+            '1' : {
+                output : 'd',
+                state : 'C'
+            }
+        },
+        ['F'] : {
+            '0' : {
+                output : 'd',
+                state : 'D'
+            },
+            '1' : {
+                output : 'd',
+                state : 'A'
+            }
+        },
+        ['G'] : {
+            '0' : {
+                output : 'd',
+                state : 'G'
+            },
+            '1' : {
+                output : 'd',
+                state : 'G'
+            }
+        },
+        ['H'] : {
+            '0' : {
+                output : 'd',
+                state : 'H'
+            },
+            '1' : {
+                output : 'd',
+                state : 'D'
+            }
+        }
+    },
+    numberOfInputVar : 1,
+    numberOfOutputVar : 1
+    
+}

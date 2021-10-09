@@ -21,6 +21,9 @@ export function getBinRepresentation(stateLabels : string[]) : Map<string, strin
         }
         m.set(stateLabels[i],curr);
     }
+    let d = '';
+    for(let i = 0; i < c; ++i) d+= 'd';
+    m.set('d', d);
     return m;
 }
 
@@ -49,11 +52,18 @@ export async function getNextStateMap(stateNodes : StateNode[], numberOfInpVars 
     stateNodes.forEach(s=>{
         map.nextStateMap[s.label] = {}
         inpComb.forEach(comb=>{
+
             let from = s.ioNodes.filter(ioNode => ioNode.inputComb === comb)[0];
-            let to = from.edges[0].to;
+            let nxtState = '';
+            if(from.edges.length === 0){
+                nxtState = 'd';
+            }
+            else{
+                nxtState = from.edges[0].to.originNode.label;
+            }
 
             map.nextStateMap[s.label][comb] = {
-                state : to.originNode.label,
+                state : nxtState,
                 output : from.output
             }
         })
@@ -430,6 +440,7 @@ export async function stateMinimization(stateLabels : string[], nextStateMap : n
             let nx1 = nextStateMap.nextStateMap[state1][comb].state;
             let nx2 =  nextStateMap.nextStateMap[state2][comb].state;
             if(nx1 === nx2) return;
+            if(nx1 === 'd' || nx2 === 'd') return;
             if(combineStateLabels(nx1, nx2) === combineStateLabels(state1, state2)) return;
             arr.push(combineStateLabels(nx1, nx2));
         })
@@ -440,7 +451,13 @@ export async function stateMinimization(stateLabels : string[], nextStateMap : n
     const doesOutputMatch = (s1 : string, s2 : string) : boolean =>{
         for(let i = 0; i < inpComb.length; ++i){
             let comb = inpComb[i];
-            if(nextStateMap.nextStateMap[s1][comb].output !== nextStateMap.nextStateMap[s2][comb].output) return false;
+            let out1 = nextStateMap.nextStateMap[s1][comb].output;
+            let out2 = nextStateMap.nextStateMap[s2][comb].output;
+            for(let i = 0; i < out1.length; ++i){
+                if(out1[i] === 'd' || out2[i] === 'd') continue;
+                if(out1[i] !== out2[i]) return false;
+            }
+            // if(nextStateMap.nextStateMap[s1][comb].output !== nextStateMap.nextStateMap[s2][comb].output) return false;
         }
         return true;
     } 
