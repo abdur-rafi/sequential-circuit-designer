@@ -11,7 +11,7 @@ const ClosureTable : React.FC<{
 
     const inpComb = getInputCombination(props.nextStateMap.numberOfInputVar);
 
-    console.log(inpComb);
+    // console.log(inpComb);
 
     const TableHeader = ()=>{
         return(
@@ -40,9 +40,9 @@ const ClosureTable : React.FC<{
     const TableBody : React.FC<{}> = ()=>{
         return(
             <tbody>
-                {props.maximalCompatibles.map(comp =>{
+                {props.maximalCompatibles.map((comp, index) =>{
                     return (
-                        <Row comp = {comp}/>
+                        <Row key = {index} comp = {comp}/>
                     )
                 })}
             </tbody>

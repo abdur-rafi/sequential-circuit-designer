@@ -1,3 +1,4 @@
+import { StringIdGenerator } from "../state-diagram/Canvas";
 import { StateNode } from "../state-diagram/state-diagram-interfaces";
 import { excitationInterface, nextStateMap, truthTable, kMap, tabulationGroupItem, implicationEntryMap } from "./interfaces";
 
@@ -549,6 +550,28 @@ export async function stateMinimization(stateLabels : string[], nextStateMap : n
     return implicationEntries;
 }
 
+function getComibations(n : number, upto : number) : {
+    [len : number] : string[]
+}{
+    let combinations : {
+        [len : number] : string[]
+    } = {}
+    let mx = (1 << n);
+    for(let i = 1; i < mx; ++ i){
+        let curr = i.toString(2);
+        let count = count1(curr);
+        let temp = '';
+        for(let j = 0; j < n - curr.length; ++j)
+            temp += '0';
+        curr = temp + curr;
+        if(count <= upto){
+            if(!combinations[count]) combinations[count] = []
+            combinations[count].push(curr);
+        }
+    }
+    return combinations;
+}
+
 export async function getMaximals( labels : string[], entries : implicationEntryMap, inCompatibles? : boolean) : Promise<string[][]>{
 
     let n = labels.length;
@@ -592,27 +615,7 @@ export async function getMaximals( labels : string[], entries : implicationEntry
         return 0;
     }
 
-    const getComibations = (n : number, startFrom : number) : {
-        [len : number] : string[]
-    }=>{
-        let combinations : {
-            [len : number] : string[]
-        } = {}
-        let mx = (1 << n);
-        for(let i = 1; i < mx; ++ i){
-            let curr = i.toString(2);
-            let count = count1(curr);
-            let temp = '';
-            for(let j = 0; j < n - curr.length; ++j)
-                temp += '0';
-            curr = temp + curr;
-            if(count <= startFrom){
-                if(!combinations[count]) combinations[count] = []
-                combinations[count].push(curr);
-            }
-        }
-        return combinations;
-    }
+    
 
     const getCombStates = (comb : string) : number[]=>{
         let s = []
@@ -656,7 +659,7 @@ export async function getMaximals( labels : string[], entries : implicationEntry
     // console.log(adj);
     // console.log(upperBound);
     let combs = getComibations(n , upperBound);
-    console.log(combs);
+    // console.log(combs);
     for(let i = upperBound; i > 0; --i){
         combs[i].forEach(comb=>{
             let indexes = getCombStates(comb);
@@ -682,4 +685,205 @@ export async function getMaximals( labels : string[], entries : implicationEntry
     })
     return maximalLabels;
 
+}
+
+
+export async function getMinimumClosure(labels : string[], maximalCompatibles : string[][], nextStateMap : nextStateMap, upperBound : number, lowerBound : number) : Promise<string[][]> {
+    let inputCombinations = getInputCombination(nextStateMap.numberOfInputVar);
+    let allChoices = getComibations(maximalCompatibles.length, upperBound);
+    const indexesForParticularCombination = (comb : string) : number[]=>{
+        let sets : number[] = [];
+        for(let i = 0; i < comb.length; ++i){
+            if(comb[i] === '1'){
+                sets.push(i);
+            }
+        }
+        return sets;
+    }
+
+    const indexesOfIndividualStates = (compatibles : string[][]) =>{
+        let arr : {[state:string] : number[]} = {}
+        compatibles.forEach((compatible, index) =>{
+            compatible.forEach(individualState =>{
+                if(!arr[individualState]){
+                    arr[individualState] = []
+                }
+                arr[individualState].push(index);
+            })
+        })
+        return arr;
+    }
+
+    const doesMaintainClousure = (compatibles : string[][]) =>{
+        const compatiblesSets = compatibles.map(compatible =>{
+            let s = new Set<string>();
+            compatible.forEach(e => s.add(e));
+            return s;
+        })
+        for(let i = 0; i < compatibles.length; ++i){
+            let compatible = compatibles[i]
+            for(let i = 0; i < inputCombinations.length; ++i){
+                let inputCombination = inputCombinations[i];
+                let curr : string[] = [];
+                compatible.forEach(state =>{
+                    if(nextStateMap.nextStateMap[state][inputCombination].state != 'd'){
+                        curr.push(nextStateMap.nextStateMap[state][inputCombination].state);
+                    }
+                })
+                let f = false;
+                if(curr.length === 0) f = true;
+                for(let i = 0; i < compatibles.length; ++i){
+                    let t = true;
+                    let compatible = compatiblesSets[i];
+                    for(let j = 0; j < curr.length; ++j){
+                        if(!compatible.has(curr[j])){
+                            t = false;
+                            break;
+                        }
+                    }
+                    if(t) f = true;
+                }
+                if(!f) return false;
+
+            }
+        }
+        return true;
+    }
+
+    const checkAllCoveringFromParicularCombiantion = (index : number, n : number, locations : {[state:string] : number[]} , current : string[][]) : string[][]=>{
+        if(index < n){
+            let currLocation = locations[labels[index]];
+            let cn = currLocation.length;
+            let upto = (1 << cn) ;
+            for(let i = 1; i < upto; ++i){
+                let curr = i.toString(2);
+                let temp = '';
+                for(let j = 0; j < cn - curr.length; ++j)
+                    temp += '0';
+                curr = temp + curr;
+                
+                let indexes = indexesForParticularCombination(curr);
+                indexes.forEach(i1 =>{
+                    let j = currLocation[i1];
+                    current[j].push(labels[index]);
+                })
+                
+                let r = checkAllCoveringFromParicularCombiantion(index + 1, n, locations, current);
+                
+                if(r.length != 0 ){
+                    return r; 
+                }
+                indexes.forEach(i1 =>{
+                    let j = currLocation[i1];
+                    let index2 = current[j].indexOf(labels[index]);
+                    current[j].splice(index2, 1);
+                })
+            }
+        }
+        else{
+            if(doesMaintainClousure(current)){
+                return current;
+            }
+        }    
+        return []  ;  
+    }
+
+    for(let i = lowerBound; i <= upperBound; ++i){
+        for(let j = 0; j < allChoices[i].length; ++j){
+            let combination = allChoices[i][j];
+            let indexes = indexesForParticularCombination(combination);
+            let compatibles : string[][] = []
+            for(let j = 0; j < indexes.length; ++j) compatibles.push(maximalCompatibles[indexes[j]]);
+            let locationsOfEachState = indexesOfIndividualStates(compatibles);
+            let n = labels.length;
+            let c = false;
+            for(let j = 0; j < n; ++j){
+                if(!locationsOfEachState[labels[j]]){
+                    c = true;
+                    break;
+                }
+            }
+            if(c) continue;
+            let curr : string[][] = [];
+            for(let k = 0; k < i; ++k) curr.push([]);
+            let r = checkAllCoveringFromParicularCombiantion(0, n, locationsOfEachState,curr);
+
+            if(r.length != 0){
+                return r;
+            }
+
+        }
+    }
+    return [];
+}
+
+export async function getReducedNextStateMap(newLabels : string[], compatibles : string[][], nextStateMap : nextStateMap) {
+    
+    const inpComb = getInputCombination(nextStateMap.numberOfInputVar);
+
+    
+
+    let newMap  : nextStateMap = {
+        nextStateMap : {},
+        numberOfInputVar : nextStateMap.numberOfInputVar,
+        numberOfOutputVar : nextStateMap.numberOfOutputVar
+    }
+
+    const getNewLabel = (nextStates : string[])=>{
+        if(nextStates.length === 0) return 'd';
+        let n = compatibles.length;
+        for(let i = 0; i < n; ++i){
+            let compatible = compatibles[i];
+            let f = true;
+            for(let j = 0; j < nextStates.length; ++j){
+                if(compatible.indexOf(nextStates[j]) === -1){
+                    f = false;
+                    break;
+                }
+            }
+            if(f){
+                return newLabels[i];
+            }
+        }
+        return '';
+    }
+
+    compatibles.forEach((compatible, index) =>{
+        newMap.nextStateMap[newLabels[index]] = {};
+        inpComb.forEach(inp =>{
+            let nxt : string[] = [];
+            let outs : string[] = []
+            compatible.forEach((comb) =>{
+                if(nextStateMap.nextStateMap[comb][inp].state != 'd'){
+                    nxt.push(nextStateMap.nextStateMap[comb][inp].state);
+                }
+                outs.push(nextStateMap.nextStateMap[comb][inp].output);
+            })
+            let out = '';
+            for(let i = 0; i < outs[0].length; ++i){
+                let t = 'd';
+                outs.forEach(o =>{
+                    if(o[i] !== 'd') t = o[i];
+                })
+                out += t;
+            }
+            
+            newMap.nextStateMap[newLabels[index]][inp] = {
+                state : getNewLabel(nxt),
+                output : out
+            }
+        })
+    })
+
+    return newMap;
+
+}
+
+export async function getNewLabels(n : number){
+    
+    let ids = new StringIdGenerator('abcefghijklmnopqrstuvwxyz');
+    let newLabels : string[] = [];
+    for(let i = 0; i < n; ++i)
+        newLabels.push(ids.next());
+    return newLabels;
 }

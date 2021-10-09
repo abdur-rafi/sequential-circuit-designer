@@ -2,7 +2,7 @@ import React from "react";
 import { Edge, StateNode } from "../state-diagram/state-diagram-interfaces";
 import styles from '../../styles/design.module.scss'
 import StateTable from "./StateTable";
-import { generateKMap, getBinRepresentation, getLiteral, getNextStateMap, getRequiredBitForStates, getMaximals, simplifyFunction, stateMinimization, truthTablesFromExcitation, getExcitationsFromNextStateMap } from "./helperFunctions";
+import { generateKMap, getBinRepresentation, getLiteral, getNextStateMap, getRequiredBitForStates, getMaximals, simplifyFunction, stateMinimization, truthTablesFromExcitation, getExcitationsFromNextStateMap, getMinimumClosure, getReducedNextStateMap, getNewLabels } from "./helperFunctions";
 import {  excitationInterface, implicationEntryMap, kMap, nextStateMap, truthTable } from "./interfaces";
 import ExcitaitonTable from "./ExcitationTable";
 import KMap from './kMap'
@@ -11,6 +11,7 @@ import StateAssignment from "./StateAssignment";
 import MergerDiagram from "./MergerDiagram";
 import { useState, useEffect } from "react";
 import ClosureTable from "./ClosureTable";
+import ReducedStates from "./ReducedStates";
 
 
 const SRMap = {
@@ -51,8 +52,10 @@ const Design : React.FC<{
 }> = (props)=>{
 
     const [nextStateMap , setNextStateMap] = useState<nextStateMap | null>(nextStateMap4);
+    // let labels = ['A', 'B', 'C', 'D', 'E']
     let labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-    // labels = props.stateNodes.map(s => s.label);
+
+    // let labels = props.stateNodes.map(s => s.label);
     useEffect(()=>{
         getNextStateMap(props.stateNodes, props.numberOfInpVar, props.numberOfOutputVars).then(s=>{
             // setNextStateMap(s);
@@ -78,16 +81,21 @@ const FromNextStateMap : React.FC<{
     nextStateMap : nextStateMap,
     changeSynthesis : (b : boolean) => void
 }> = (props)=>{
+    const [reducedNextStateMap, setReducedNextStateMap] = useState<nextStateMap | null>(null);
     const [excitations, setExcitations] = useState<excitationInterface[] | null>(null);
     const [implicationEntries, setImplicationEntries] = useState<implicationEntryMap | null>(null);
     const [truthTables, setTruthTables] = useState<truthTable[] | null>(null);
     const [kMaps, setKMaps] = useState<kMap[]|null>(null);
     const [maximalCompatibles, setMaximalCompatibles] = useState<string[][] | null>(null);
     const [maximalIncompatibles, setMaximalIncompatibles] = useState<string[][] | null>(null);
+    const [compatibles, setCompatibles] = useState<string[][] | null>();
+    const [newLabels , setNewLabels ] = useState<string[]>(props.labels);
+    const [binRep, setBinRep] = useState<Map<string, string>>(getBinRepresentation(props.labels));
+    
 
     let stateVars = getRequiredBitForStates(props.labels.length) ;
     let numberOfVars = stateVars + props.nextStateMap.numberOfInputVar;
-    const binRep = getBinRepresentation(props.labels);
+    // let binRep = getBinRepresentation(props.labels);
 
     const getAllTruthTables = async (excitations : excitationInterface[]) : Promise<truthTable[]>=>{
         let t : truthTable[] = [];
@@ -110,15 +118,15 @@ const FromNextStateMap : React.FC<{
     useEffect(()=>{
     
         // setNextStateMap(e);
-        getExcitationsFromNextStateMap(props.labels, props.nextStateMap,binRep, JKMap, 2)
-        .then(async e=>{
-            e = [...e.filter(e=> e.type === 'state'), ... e.filter(e=> e.type === 'output')]
-            setExcitations(e);
-            let t = await getAllTruthTables(e);
-            setTruthTables(t);
-            let k = await getAllKmaps(t);
-            setKMaps(k);
-        })
+        // getExcitationsFromNextStateMap(props.labels, props.nextStateMap,binRep, JKMap, 2)
+        // .then(async e=>{
+        //     e = [...e.filter(e=> e.type === 'state'), ... e.filter(e=> e.type === 'output')]
+        //     setExcitations(e);
+        //     let t = await getAllTruthTables(e);
+        //     setTruthTables(t);
+        //     let k = await getAllKmaps(t);
+        //     setKMaps(k);
+        // })
         stateMinimization(props.labels, props.nextStateMap)
         .then(async s=>{
             setImplicationEntries(s);
@@ -126,6 +134,26 @@ const FromNextStateMap : React.FC<{
             setMaximalCompatibles(mx);
             let mx2 = await getMaximals(props.labels, s, true);
             setMaximalIncompatibles(mx2);
+            let upperBound = mx.length > props.labels.length ? props.labels.length : mx.length;
+            let lowerBound = upperBound;
+            mx2.forEach(m => lowerBound = lowerBound > m.length ? m.length : lowerBound);
+            let comp = await getMinimumClosure(props.labels,mx, props.nextStateMap,upperBound, lowerBound);
+            setCompatibles(comp);
+            let newLabels = await getNewLabels(comp.length);
+            setNewLabels(newLabels);
+            let binRep = getBinRepresentation(newLabels);
+            setBinRep(binRep);
+            let newNxt = await getReducedNextStateMap(newLabels,comp, props.nextStateMap);
+            setReducedNextStateMap(newNxt);
+            let e = await getExcitationsFromNextStateMap(newLabels,newNxt,binRep,JKMap,2);
+            e = [...e.filter(e=> e.type === 'state'), ... e.filter(e=> e.type === 'output')]
+            console.log(e);
+            setExcitations(e);
+            let t = await getAllTruthTables(e);
+            setTruthTables(t);
+            let k = await getAllKmaps(t);
+            setKMaps(k);
+            console.log(newNxt);
         })
         
     }, [props])                
@@ -191,14 +219,22 @@ const FromNextStateMap : React.FC<{
             }
             />
 
+            <Details summary = {'Reduced States'}
+            content = {compatibles && <ReducedStates compatibles = {compatibles} />}
+            />
+
+            <Details summary = {'Reduced State Table'} 
+            content = {reducedNextStateMap && <StateTable   nextStateMap = {reducedNextStateMap} stateLabels = {newLabels}/>} />
+            
+
             <Details summary = {'State Assignment '} 
-            content = { <StateAssignment binRep = {binRep} stateLabels = {props.labels}  />}/>
+            content = { <StateAssignment binRep = {binRep} stateLabels = {newLabels}  />}/>
             
             <Details summary = {'Transition Table '} 
-            content = { props.nextStateMap && <StateTable  nextStateMap = {props.nextStateMap} binRep = {binRep} stateLabels = {props.labels}/>}/>
+            content = { reducedNextStateMap && <StateTable  nextStateMap = {reducedNextStateMap} binRep = {binRep} stateLabels = {newLabels}/>}/>
             
             <Details summary = {'Excitation Table'} 
-            content = {excitations && <ExcitaitonTable  excitations = {excitations} stateLabels = {props.labels} binRep = {binRep} latchLabel = 'JK' latchMap = {JKMap} />}/>
+            content = {excitations && <ExcitaitonTable  excitations = {excitations} stateLabels = {newLabels} binRep = {binRep} latchLabel = 'JK' latchMap = {JKMap} />}/>
             
             
             <Details summary = {'KMaps'} 
@@ -569,6 +605,122 @@ let nextStateMap4 : nextStateMap = {
             '1' : {
                 output : 'd',
                 state : 'D'
+            }
+        }
+    },
+    numberOfInputVar : 1,
+    numberOfOutputVar : 1
+    
+}
+
+let nextStateMap5 : nextStateMap = {
+    nextStateMap:{
+        ['A'] : {
+            '0' : {
+                output : 'd',
+                state : 'D'
+            },
+            '1' : {
+                output : 'd',
+                state : 'A'
+            }
+        },
+        ['B'] : {
+            '0' : {
+                output : '0',
+                state : 'E'
+            },
+            '1' : {
+                output : 'd',
+                state : 'A'
+            }
+        },
+        ['C'] : {
+            '0' : {
+                output : '0',
+                state : 'D'
+            },
+            '1' : {
+                output : 'd',
+                state : 'B'
+            }
+        },
+        ['D'] : {
+            '0' : {
+                output : 'd',
+                state : 'C'
+            },
+            '1' : {
+                output : 'd',
+                state : 'C'
+            }
+        },
+        ['E'] : {
+            '0' : {
+                output : '1',
+                state : 'C'
+            },
+            '1' : {
+                output : 'd',
+                state : 'B'
+            }
+        }
+    },
+    numberOfInputVar : 1,
+    numberOfOutputVar : 1
+    
+}
+
+let nextStateMap6 : nextStateMap = {
+    nextStateMap:{
+        ['A'] : {
+            '0' : {
+                output : 'd',
+                state : 'A'
+            },
+            '1' : {
+                output : 'd',
+                state : 'd'
+            }
+        },
+        ['B'] : {
+            '0' : {
+                output : '1',
+                state : 'C'
+            },
+            '1' : {
+                output : '0',
+                state : 'B'
+            }
+        },
+        ['C'] : {
+            '0' : {
+                output : '0',
+                state : 'D'
+            },
+            '1' : {
+                output : '1',
+                state : 'd'
+            }
+        },
+        ['D'] : {
+            '0' : {
+                output : 'd',
+                state : 'd'
+            },
+            '1' : {
+                output : 'd',
+                state : 'B'
+            }
+        },
+        ['E'] : {
+            '0' : {
+                output : '0',
+                state : 'A'
+            },
+            '1' : {
+                output : '1',
+                state : 'C'
             }
         }
     },

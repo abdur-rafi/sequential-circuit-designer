@@ -10,7 +10,7 @@ import { canvasConfig, defalutIONodeConfig, defaultStateNodeConfig } from '../..
 import Design from '../synthesis/results';
 import { getInputCombination } from '../synthesis/helperFunctions';
 // From stackoverflow
-class StringIdGenerator {
+export class StringIdGenerator {
     _chars : string;
     _nextId : [number];
     constructor(chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') {
@@ -112,7 +112,7 @@ class Canvas extends React.Component<Props, State>{
             stateNodeToSideBar : null,
             mouseMode : 'edge',
             numberOfInpVars : 1,
-            synthesis : false,
+            synthesis : true,
             numberOfOutputVars : 2
         }
 
