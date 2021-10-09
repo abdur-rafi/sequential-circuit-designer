@@ -2,7 +2,7 @@ import { StateNode } from "../state-diagram/state-diagram-interfaces"
 import styles from '../../styles/design.module.scss'
 
 const StateAssignment : React.FC<{
-    stateNodes : StateNode[],
+    stateLabels : string[],
     binRep : Map<string, string>
 }> = (props)=>{
     
@@ -18,11 +18,11 @@ const StateAssignment : React.FC<{
                 </thead>
                 <tbody>
                     {
-                        props.stateNodes.map(s=>{
+                        props.stateLabels.map(label=>{
                             return(
-                                <tr key={s.label}>
-                                    <td>{s.label}</td>
-                                    <td>{props.binRep.get(s.label)}</td>
+                                <tr key={label}>
+                                    <td>{label}</td>
+                                    <td>{props.binRep.get(label)}</td>
                                 </tr>
                             )
                         })

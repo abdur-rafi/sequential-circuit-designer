@@ -292,4 +292,15 @@
             border-color: cadetblue;
         }
     }
+    
+}
+
+.processingTextContainer{
+    display: flex;
+    flex-direction: column;
+    height: 80vh;
+    align-items: center;
+    justify-content: center;
+    color : gray;
+    font-size: 20px;
 }

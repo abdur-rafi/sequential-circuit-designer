@@ -10,8 +10,8 @@ export function getRequiredBitForStates(noOfStateNodes : number){
     return c;
 }
 
-export function getBinRepresentation(stateNodes : StateNode[]) : Map<string, string>{
-    let n = stateNodes.length;
+export function getBinRepresentation(stateLabels : string[]) : Map<string, string>{
+    let n = stateLabels.length;
     let c = getRequiredBitForStates(n);
     let m = new Map<string, string>();
     for(let i = 0; i < n; ++i){
@@ -19,7 +19,7 @@ export function getBinRepresentation(stateNodes : StateNode[]) : Map<string, str
         while(curr.length < c){
             curr = '0' + curr;
         }
-        m.set(stateNodes[i].label,curr);
+        m.set(stateLabels[i],curr);
     }
     return m;
 }
@@ -38,17 +38,21 @@ export function getInputCombination(d : number) : string[]{
     return inps;
 }
 
-export async function getNextStateMap(stateNodes : StateNode[], numberOfInpVars : number) : Promise<nextStateMap>{
-    let map : nextStateMap = {};
+export async function getNextStateMap(stateNodes : StateNode[], numberOfInpVars : number, numberOfOutputVar : number) : Promise<nextStateMap>{
+    let map : nextStateMap = {
+        nextStateMap : {},
+        numberOfOutputVar : numberOfOutputVar,
+        numberOfInputVar : numberOfInpVars
+    };
 
     let inpComb = getInputCombination(numberOfInpVars);
     stateNodes.forEach(s=>{
-        map[s.label] = {}
+        map.nextStateMap[s.label] = {}
         inpComb.forEach(comb=>{
             let from = s.ioNodes.filter(ioNode => ioNode.inputComb === comb)[0];
             let to = from.edges[0].to;
 
-            map[s.label][comb] = {
+            map.nextStateMap[s.label][comb] = {
                 state : to.originNode.label,
                 output : from.output
             }
@@ -64,13 +68,15 @@ export function getLabels(n : number, t : string): string{
     return s;
 }
 
-export async function getExcitations(stateNodes : StateNode[] , binMap : Map<string, string>, numberOfInputVar : number, latchMap : {[key: string]: string} , numberOfLatchVars : number, numberOfOutputVars : number ) : Promise<excitationInterface[]>{
+export async function getExcitationsFromNextStateMap(stateLabels : string[], nextStateMap : nextStateMap, binMap : Map<string, string>, latchMap : {[key: string]: string} , numberOfLatchVars : number) : Promise<excitationInterface[]>{
     const max = (n : number, n2 : number) : number=>{
         if(n > n2) return n;
         return n2;
     }
     let excitations : excitationInterface[] = [];
-    let numberOfStateBits = getRequiredBitForStates(stateNodes.length);
+    let numberOfStateBits = getRequiredBitForStates(stateLabels.length);
+    let numberOfInputVar = nextStateMap.numberOfInputVar;
+    let numberOfOutputVars = nextStateMap.numberOfOutputVar;
     let inpComb = getInputCombination(numberOfInputVar);
     let mx = max(numberOfOutputVars, numberOfStateBits);
     for(let i = 0; i < mx; ++i){
@@ -104,8 +110,8 @@ export async function getExcitations(stateNodes : StateNode[] , binMap : Map<str
             });
             oIndex = excitations.length - 1;
         }
-        stateNodes.forEach(s =>{
-            let currStateLabel = s.label;
+        stateLabels.forEach(currStateLabel =>{
+            // let currStateLabel = s;
             let currBin = binMap.get(currStateLabel);
             if(i < numberOfStateBits){
                 excitations[sIndex].map[currBin!] = {};
@@ -113,11 +119,11 @@ export async function getExcitations(stateNodes : StateNode[] , binMap : Map<str
             if(i < numberOfOutputVars)
                 excitations[oIndex].map[currBin!] = {};
             inpComb.forEach(comb=>{
-                let from = s.ioNodes.filter(ioNode => ioNode.inputComb === comb)[0];
+                // let from = s.ioNodes.filter(ioNode => ioNode.inputComb === comb)[0];
                 if(i < numberOfOutputVars)
-                    excitations[oIndex].map[currBin!][comb] = from.output;
+                    excitations[oIndex].map[currBin!][comb] = nextStateMap.nextStateMap[currStateLabel][comb].output;
                 if(i < numberOfStateBits){
-                    let nxtStateLabel = from.edges[0].to.originNode.label;
+                    let nxtStateLabel = nextStateMap.nextStateMap[currStateLabel][comb].state;
                     let nextBin = binMap.get(nxtStateLabel);
                     if(!nextBin) return;
                     excitations[sIndex].map[currBin!][comb] = latchMap[ currBin![i] + nextBin[i] ];
@@ -129,9 +135,12 @@ export async function getExcitations(stateNodes : StateNode[] , binMap : Map<str
     return excitations;
 }
 
-export async function truthTablesFromExcitation(excitation : excitationInterface, numberOfVars : number, fDim : number, functionLabels : string) : Promise<truthTable[]>{
+
+export async function truthTablesFromExcitation(excitation : excitationInterface, functionLabels : string) : Promise<truthTable[]>{
+    let numberOfVars = excitation.dims.row + excitation.dims.col;
     let inpCombs = getInputCombination(numberOfVars);
     let tTable : truthTable[] = [];
+    let fDim = excitation.dims.row;
     // if(pair) tTable.push({table : {}, dims : numberOfVars, functionName : '', vars : excitation.colLabels + excitation.rowLabels});
     for(let i = 0; i < excitation.entryLength; ++i){
         tTable.push({table : {}, dims : numberOfVars,functionName : '', vars : excitation.rowLabels + excitation.colLabels});
@@ -406,8 +415,9 @@ export function getLiteral(comb : string, vars : string): string{
     return r;
 }
 
-export async function stateMinimization(stateLabels : string[], nextStateMap : nextStateMap, numberOfInputVars : number):Promise<implicationEntryMap>{
+export async function stateMinimization(stateLabels : string[], nextStateMap : nextStateMap):Promise<implicationEntryMap>{
     let separator = ' ';
+    let numberOfInputVars = nextStateMap.numberOfInputVar;
     let inpComb = getInputCombination(numberOfInputVars);
 
     const combineStateLabels = (l1 : string, l2 : string) : string =>{
@@ -417,8 +427,8 @@ export async function stateMinimization(stateLabels : string[], nextStateMap : n
     const dependency = (state1 : string, state2 : string) : string[] =>{
         let arr : string[] = [];
         inpComb.forEach(comb=>{
-            let nx1 = nextStateMap[state1][comb].state;
-            let nx2 =  nextStateMap[state2][comb].state;
+            let nx1 = nextStateMap.nextStateMap[state1][comb].state;
+            let nx2 =  nextStateMap.nextStateMap[state2][comb].state;
             if(nx1 === nx2) return;
             if(combineStateLabels(nx1, nx2) === combineStateLabels(state1, state2)) return;
             arr.push(combineStateLabels(nx1, nx2));
@@ -430,7 +440,7 @@ export async function stateMinimization(stateLabels : string[], nextStateMap : n
     const doesOutputMatch = (s1 : string, s2 : string) : boolean =>{
         for(let i = 0; i < inpComb.length; ++i){
             let comb = inpComb[i];
-            if(nextStateMap[s1][comb].output !== nextStateMap[s2][comb].output) return false;
+            if(nextStateMap.nextStateMap[s1][comb].output !== nextStateMap.nextStateMap[s2][comb].output) return false;
         }
         return true;
     } 

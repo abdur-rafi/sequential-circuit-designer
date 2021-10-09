@@ -113,7 +113,7 @@ class Canvas extends React.Component<Props, State>{
             mouseMode : 'edge',
             numberOfInpVars : 1,
             synthesis : false,
-            numberOfOutputVars : 1
+            numberOfOutputVars : 2
         }
 
         this.changeNumberOfInputVars = this.changeNumberOfInputVars.bind(this);

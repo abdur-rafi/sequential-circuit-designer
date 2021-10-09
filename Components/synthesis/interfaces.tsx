@@ -12,17 +12,21 @@ export interface excitationInterface{
     index : number,
     rowLabels : string,
     colLabels : string,
-    entryLength : number
+    entryLength : number,
     
     
 }
 export interface nextStateMap {
-    [state : string] : {
-        [inpComb : string] : {
-            state : string,
-            output : string
+    nextStateMap:{
+            [state : string] : {
+            [inpComb : string] : {
+                state : string,
+                output : string
+            }
         }
-    }
+    },
+    numberOfInputVar : number,
+    numberOfOutputVar : number
 }
 export interface kMap{
     map :{
