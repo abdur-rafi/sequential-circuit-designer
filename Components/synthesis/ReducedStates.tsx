@@ -3,34 +3,45 @@ import styles from '../../styles/design.module.scss'
 
 
 const ReducedStates : React.FC<{
-    compatibles : string[][]
+    compatibles : string[][],
+    labels : string[]
 }> = (props)=>{
+    let TableHeader : React.FC<{}> = (props)=>{
+        return(
+            <thead>
+                <tr>
+                    <th>New State</th>
+                    <th>Previous States</th>
+                </tr>
+            </thead>
+        )
+    }
+    let TableBody : React.FC<{}> = ()=>{
+        return(
+            <tbody>
+                {
+                    props.compatibles.map((comp, index) =>{
+                        return(
+                            <tr key = {index}>
+                                <td> {props.labels[index]} </td>
+                                <td>
+                                    {
+                                        comp.map(state => state + ' ' )
+                                    }
+                                </td>
+                            </tr>
+                        )
+                    })
+                }
+            </tbody>
+        )
+    }
     return (
         <div className = {styles.reducedStateContainer}>
-            {
-                props.compatibles.map((compatible, index) =>{
-                    if(compatible.length === 1){
-                        return(
-                            <div>
-                                {'{ ' + compatible[0] + ' }' }
-                            </div>
-                        )
-                    }
-                    return(
-                        <div key = {index}>
-                            {
-                                compatible.map((c, index)=>{
-                                    if(index == 0) return '{ ' + c + ',';
-                                    else if(index === compatible.length - 1)
-                                        return ' ' + c + ' }'
-                                    return ' ' + c + ',';
-                                })
-                            }
-                        </div>
-                    )
-                    
-                })
-            }
+            <table>
+                <TableHeader />
+                <TableBody />
+            </table>
         </div>
     )
 }

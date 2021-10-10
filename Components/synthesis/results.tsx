@@ -76,10 +76,11 @@ const Design : React.FC<{
    
 }
 
-const FromNextStateMap : React.FC<{
+export const FromNextStateMap : React.FC<{
     labels : string[],
     nextStateMap : nextStateMap,
-    changeSynthesis : (b : boolean) => void
+    changeSynthesis : (b : boolean) => void,
+    internalToOriginalMap? : {[internal : string] : string}
 }> = (props)=>{
     const [reducedNextStateMap, setReducedNextStateMap] = useState<nextStateMap | null>(null);
     const [excitations, setExcitations] = useState<excitationInterface[] | null>(null);
@@ -93,40 +94,31 @@ const FromNextStateMap : React.FC<{
     const [binRep, setBinRep] = useState<Map<string, string>>(getBinRepresentation(props.labels));
     
 
-    let stateVars = getRequiredBitForStates(props.labels.length) ;
-    let numberOfVars = stateVars + props.nextStateMap.numberOfInputVar;
-    // let binRep = getBinRepresentation(props.labels);
 
-    const getAllTruthTables = async (excitations : excitationInterface[]) : Promise<truthTable[]>=>{
-        let t : truthTable[] = [];
-        excitations.forEach(async e =>{
-            let temp = await truthTablesFromExcitation(e,e.type === 'output' ? 'z' : 'JK');
-            t.push(...temp);
-        })
-        return t;
-    }
-
-    const getAllKmaps = async (truthTables : truthTable[]) : Promise<kMap[]> =>{
-        let k : kMap[] = [];
-        truthTables.forEach(async t=>{
-            let temp = await generateKMap(t,numberOfVars);
-            k.push(temp)
-        });
-        return k;
-    }
     
     useEffect(()=>{
+        
+        let stateVars = getRequiredBitForStates(props.labels.length) ;
+        let numberOfVars = stateVars + props.nextStateMap.numberOfInputVar;
+
+        const getAllTruthTables = async (excitations : excitationInterface[]) : Promise<truthTable[]>=>{
+            let t : truthTable[] = [];
+            excitations.forEach(async e =>{
+                let temp = await truthTablesFromExcitation(e,e.type === 'output' ? 'z' : 'JK');
+                t.push(...temp);
+            })
+            return t;
+        }
     
-        // setNextStateMap(e);
-        // getExcitationsFromNextStateMap(props.labels, props.nextStateMap,binRep, JKMap, 2)
-        // .then(async e=>{
-        //     e = [...e.filter(e=> e.type === 'state'), ... e.filter(e=> e.type === 'output')]
-        //     setExcitations(e);
-        //     let t = await getAllTruthTables(e);
-        //     setTruthTables(t);
-        //     let k = await getAllKmaps(t);
-        //     setKMaps(k);
-        // })
+        const getAllKmaps = async (truthTables : truthTable[]) : Promise<kMap[]> =>{
+            let k : kMap[] = [];
+            truthTables.forEach(async t=>{
+                let temp = await generateKMap(t,numberOfVars);
+                k.push(temp)
+            });
+            return k;
+        }
+
         stateMinimization(props.labels, props.nextStateMap)
         .then(async s=>{
             setImplicationEntries(s);
@@ -147,13 +139,11 @@ const FromNextStateMap : React.FC<{
             setReducedNextStateMap(newNxt);
             let e = await getExcitationsFromNextStateMap(newLabels,newNxt,binRep,JKMap,2);
             e = [...e.filter(e=> e.type === 'state'), ... e.filter(e=> e.type === 'output')]
-            console.log(e);
             setExcitations(e);
             let t = await getAllTruthTables(e);
             setTruthTables(t);
             let k = await getAllKmaps(t);
             setKMaps(k);
-            console.log(newNxt);
         })
         
     }, [props])                
@@ -220,7 +210,7 @@ const FromNextStateMap : React.FC<{
             />
 
             <Details summary = {'Reduced States'}
-            content = {compatibles && <ReducedStates compatibles = {compatibles} />}
+            content = {compatibles && <ReducedStates labels = {newLabels} compatibles = {compatibles} />}
             />
 
             <Details summary = {'Reduced State Table'} 
@@ -281,6 +271,8 @@ const Details : React.FC<{
         </details>
     )
 }
+
+export default Design;
 
 let nextStateMap2 : nextStateMap = {
     nextStateMap:{
@@ -521,9 +513,6 @@ let nextStateMap3 : nextStateMap = {
     numberOfOutputVar : 1
     
 }
-
-
-export default Design;
 
 let nextStateMap4 : nextStateMap = {
     nextStateMap:{

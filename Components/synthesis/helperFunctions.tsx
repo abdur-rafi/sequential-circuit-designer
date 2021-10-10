@@ -1,11 +1,78 @@
-import { StringIdGenerator } from "../state-diagram/Canvas";
+
 import { StateNode } from "../state-diagram/state-diagram-interfaces";
 import { excitationInterface, nextStateMap, truthTable, kMap, tabulationGroupItem, implicationEntryMap } from "./interfaces";
+
+function nextChar(c : string) {
+    return String.fromCharCode(c.charCodeAt(0) + 1);
+}
+
+export class StringIdGenerator{
+    units : string[] = []
+    curr : string[]
+    unitIndex : number
+    changingIndex : number
+    constructor(units = [] , useDot = false){
+        if(units.length !== 0){
+            this.units = units;
+        }
+        else{
+            let str = 'A';
+            for(let i = 0; i < 26; ++i){
+                let temp = str;
+                if(useDot) temp += "'"
+                this.units.push(temp);
+                str = nextChar(str);
+            }
+        }
+        this.curr = [this.units[0]];
+        this.unitIndex = 0;
+        this.changingIndex = 0; 
+    }
+    next(){
+        let t = '';
+        for(let i = 0; i < this.curr.length; ++i){
+            t += this.curr[i];
+        }
+        this._increment();
+        return t;
+        
+    }
+
+    _increment(){
+        if(this.unitIndex < this.units.length - 1){
+            let id = this.curr.length - 1;
+            this.curr[id] = this.units[this.unitIndex + 1];
+            this.unitIndex++;
+        }
+        else{
+            this.unitIndex = 0;
+            for(let i = this.changingIndex + 1; i < this.curr.length; ++i){
+                this.curr[i] = this.units[0];
+            }
+            let id = this.units.indexOf(this.curr[this.changingIndex]);
+            if(id === this.units.length - 1){
+                if(this.changingIndex === 0){
+                    this.curr.splice(0, 0, this.units[0]);
+                    this.curr[1] = this.units[0];
+                    this.changingIndex = this.curr.length - 2;
+                    return;
+                }
+                this.changingIndex--;
+                id = 0;
+                
+            }
+            this.curr[this.changingIndex] = this.units[id + 1];
+            
+        }
+    }
+
+}
 
 export function getRequiredBitForStates(noOfStateNodes : number){
     let c = 0;
     let n = noOfStateNodes;
-    while(Math.pow(2, c) < n){
+    if(n === 1) return 1;
+    while((1 << c) < n){
         c++;
     }
     return c;
@@ -879,11 +946,42 @@ export async function getReducedNextStateMap(newLabels : string[], compatibles :
 
 }
 
-export async function getNewLabels(n : number){
+export async function getNewLabels(n : number, useDot = true){
     
-    let ids = new StringIdGenerator('abcefghijklmnopqrstuvwxyz');
+    let ids = new StringIdGenerator([], useDot);
     let newLabels : string[] = [];
     for(let i = 0; i < n; ++i)
         newLabels.push(ids.next());
     return newLabels;
+}
+
+export async function nextStateMapFromStateTalbeInput(states : string[], entries : string[][], outputs : string[][]){
+    let n = states.length;
+    let internalLabels = await getNewLabels(n,false);
+    let numberOfInputs = Math.log2(entries[0].length);
+    let internalToOriginalMap : {
+        [internal : string] : string
+    } = {}
+    internalLabels.forEach((label, index)=> internalToOriginalMap[label] = states[index]);
+    let originalToInternalMap : {
+        [original : string] : string
+    } = {}
+    states.forEach((state, index)=> originalToInternalMap[state] = internalLabels[index])
+    let inpComb = getInputCombination(numberOfInputs);
+    let nextStateMap : nextStateMap = {
+        nextStateMap : {},
+        numberOfInputVar : numberOfInputs,
+        numberOfOutputVar : outputs[0][0].length
+    }
+    for(let i = 0; i < n; ++i){
+        nextStateMap.nextStateMap[internalLabels[i]] = {}
+        let m = entries[i].length;
+        for(let j = 0; j < m; ++j){
+            nextStateMap.nextStateMap[internalLabels[i]][inpComb[j]] = {
+                output : outputs[i][j],
+                state : entries[i][j] === 'd' ? 'd' : originalToInternalMap[entries[i][j]]
+            }
+        }
+    }
+    return { nextStateMap :  nextStateMap, internalToOriginalMap : internalToOriginalMap , internalLabels : internalLabels};
 }

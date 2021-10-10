@@ -8,42 +8,8 @@ import SideBar from './SideBar';
 import TopBar from './topBar';
 import { canvasConfig, defalutIONodeConfig, defaultStateNodeConfig } from '../../defaultConfigs';
 import Design from '../synthesis/results';
-import { getInputCombination } from '../synthesis/helperFunctions';
-// From stackoverflow
-export class StringIdGenerator {
-    _chars : string;
-    _nextId : [number];
-    constructor(chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') {
-        this._chars = chars;
-        this._nextId = [0];
-    }
-    next() {
-        const r = [];
-        for (const char of this._nextId) {
-            r.unshift(this._chars[char]);
-        }
-        this._increment();
-        return r.join('');
-    }
-  
-    _increment() {
-        for (let i = 0; i < this._nextId.length; i++) {
-            const val = ++this._nextId[i];
-            if (val >= this._chars.length) {
-            this._nextId[i] = 0;
-            } else {
-            return;
-            }
-        }
-        this._nextId.push(0);
-    }
-  
-    *[Symbol.iterator]() {
-        while (true) {
-            yield this.next();
-        }
-    }
-  }
+import { getInputCombination, StringIdGenerator } from '../synthesis/helperFunctions';
+
 
 interface Props{
 
