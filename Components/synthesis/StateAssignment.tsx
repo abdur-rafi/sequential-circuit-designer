@@ -1,9 +1,11 @@
 import { StateNode } from "../state-diagram/state-diagram-interfaces"
 import styles from '../../styles/design.module.scss'
+import { stringToStringMap } from "./interfaces"
+import { useLabelMap } from "./helperFunctions"
 
 const StateAssignment : React.FC<{
     stateLabels : string[],
-    binRep : Map<string, string>
+    binRep : stringToStringMap
 }> = (props)=>{
     
     
@@ -22,7 +24,7 @@ const StateAssignment : React.FC<{
                             return(
                                 <tr key={label}>
                                     <td>{label}</td>
-                                    <td>{props.binRep.get(label)}</td>
+                                    <td>{useLabelMap(label, props.binRep)}</td>
                                 </tr>
                             )
                         })

@@ -1,12 +1,14 @@
-import { implicationEntryMap } from "./interfaces";
+import { implicationEntryMap, stringToStringMap } from "./interfaces";
 import { ImCross } from "react-icons/im";
 import {TiTick} from 'react-icons/ti'
 import styles from '../../styles/design.module.scss'
+import { useLabelMap } from "./helperFunctions";
 
 
 const ImplicationTable : React.FC<{
     entries : implicationEntryMap,
-    labels  : string[]
+    labels  : string[],
+    labelMap? : stringToStringMap
 }>
  = (props)=>{
     let rows : React.ReactNode[] = []; 
@@ -24,7 +26,10 @@ const ImplicationTable : React.FC<{
                 txt = <TiTick />
                 if(entry.dependencies.length > 0){
                     txt = '';
-                    entry.dependencies.forEach((e, index) => txt += ((index === entry.dependencies.length - 1) ? e : (e + '/')).replace(' ', ','));
+                    entry.dependencies.forEach((e, index) => {
+                        let temp = e.split(' ').map(s => useLabelMap(s, props.labelMap)).reduce((prev, curr) => prev + ' ' + useLabelMap(curr,props.labelMap));
+                        txt += ((index === entry.dependencies.length - 1) ? temp : (temp + '/')).replace(' ', ',')
+                    });
                     
                 }
             }
@@ -39,13 +44,13 @@ const ImplicationTable : React.FC<{
         }
         rows.push(
             <tr key={s2}>
-                <td> {s2} </td>
+                <td> {useLabelMap(s2, props.labelMap)} </td>
                 {cols}
             </tr>
         )
         lastRow.push(
             <td key = {props.labels[i - 1]}>
-                {props.labels[i - 1]}
+                {useLabelMap(props.labels[i - 1], props.labelMap)}
             </td>
         )
     }

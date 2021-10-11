@@ -72,3 +72,6 @@ export interface implicationEntryMap{
     }
 
 }
+export interface stringToStringMap{
+    [key : string] : string
+}

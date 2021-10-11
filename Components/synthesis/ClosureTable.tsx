@@ -1,12 +1,13 @@
 import React from "react";
-import { getInputCombination } from "./helperFunctions";
-import { nextStateMap } from "./interfaces";
+import { getInputCombination, useLabelMap } from "./helperFunctions";
+import { nextStateMap, stringToStringMap } from "./interfaces";
 import styles from '../../styles/design.module.scss'
 
 
 const ClosureTable : React.FC<{
     maximalCompatibles : string[][],
-    nextStateMap : nextStateMap
+    nextStateMap : nextStateMap,
+    labelMap? : stringToStringMap
 }> = (props)=>{
 
     const inpComb = getInputCombination(props.nextStateMap.numberOfInputVar);
@@ -57,7 +58,7 @@ const ClosureTable : React.FC<{
 
                 <td>
                     {
-                        comp.map(s => s)
+                        comp.map(s => useLabelMap(s, props.labelMap))
                     }
                 </td>
                 {
@@ -69,10 +70,10 @@ const ClosureTable : React.FC<{
                             }
                         })
                         let temp = '';
-                        s.forEach(s => temp += s);
+                        s.forEach(s => temp += useLabelMap(s, props.labelMap));
                         return (
                             <td key = {inp}>
-                                {s}
+                                {temp.length === 0 ? 'd' : temp}
                             </td>
                         )
                     })

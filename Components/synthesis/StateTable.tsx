@@ -1,13 +1,13 @@
 import { StateNode } from "../state-diagram/state-diagram-interfaces";
-import { nextStateMap } from "./interfaces";
-import { getInputCombination } from "./helperFunctions";
+import { nextStateMap, stringToStringMap } from "./interfaces";
+import { getInputCombination, useLabelMap } from "./helperFunctions";
 import styles from '../../styles/design.module.scss'
 
 
 const StateTable : React.FC<{
     stateLabels : string[],
     nextStateMap : nextStateMap,
-    binRep? : Map<string, string> 
+    labelMap? : stringToStringMap
 }> = (props)=>{
 
     let inpComb = getInputCombination(props.nextStateMap.numberOfInputVar);
@@ -41,8 +41,8 @@ const StateTable : React.FC<{
                     props.stateLabels.map(s=>{
                         let t : React.ReactNode[] = [];
                         t = inpComb.map(comb=>{
-                            let text = props.nextStateMap.nextStateMap[s][comb].state;
-                            if(props.binRep) text = props.binRep.get(text)!;
+                            let text = useLabelMap(props.nextStateMap.nextStateMap[s][comb].state, props.labelMap);
+                            
                             return (
                                 <td key = {'s' + s + 'i' +  comb}>
                                     {text + ( '/' + props.nextStateMap.nextStateMap[s][comb].output)}
@@ -51,7 +51,7 @@ const StateTable : React.FC<{
                         })
                         return(
                             <tr key={s}>
-                                <td> {props.binRep ? props.binRep.get(s) :  s} </td>
+                                <td> {useLabelMap(s, props.labelMap)} </td>
                                 {t}
                             </tr>
                         )

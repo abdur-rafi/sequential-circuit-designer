@@ -1,6 +1,6 @@
 
 import { StateNode } from "../state-diagram/state-diagram-interfaces";
-import { excitationInterface, nextStateMap, truthTable, kMap, tabulationGroupItem, implicationEntryMap } from "./interfaces";
+import { excitationInterface, nextStateMap, truthTable, kMap, tabulationGroupItem, implicationEntryMap, stringToStringMap } from "./interfaces";
 
 function nextChar(c : string) {
     return String.fromCharCode(c.charCodeAt(0) + 1);
@@ -78,20 +78,20 @@ export function getRequiredBitForStates(noOfStateNodes : number){
     return c;
 }
 
-export function getBinRepresentation(stateLabels : string[]) : Map<string, string>{
+export function getBinRepresentation(stateLabels : string[]) : stringToStringMap{
     let n = stateLabels.length;
     let c = getRequiredBitForStates(n);
-    let m = new Map<string, string>();
+    let m : stringToStringMap = {} ;
     for(let i = 0; i < n; ++i){
         let curr = i.toString(2);
         while(curr.length < c){
             curr = '0' + curr;
         }
-        m.set(stateLabels[i],curr);
+        m[stateLabels[i]] = curr;
     }
     let d = '';
     for(let i = 0; i < c; ++i) d+= 'd';
-    m.set('d', d);
+    m['d'] = d;
     return m;
 }
 
@@ -146,7 +146,7 @@ export function getLabels(n : number, t : string): string{
     return s;
 }
 
-export async function getExcitationsFromNextStateMap(stateLabels : string[], nextStateMap : nextStateMap, binMap : Map<string, string>, latchMap : {[key: string]: string} , numberOfLatchVars : number) : Promise<excitationInterface[]>{
+export async function getExcitationsFromNextStateMap(stateLabels : string[], nextStateMap : nextStateMap, binMap : stringToStringMap, latchMap : {[key: string]: string} , numberOfLatchVars : number) : Promise<excitationInterface[]>{
     const max = (n : number, n2 : number) : number=>{
         if(n > n2) return n;
         return n2;
@@ -190,7 +190,7 @@ export async function getExcitationsFromNextStateMap(stateLabels : string[], nex
         }
         stateLabels.forEach(currStateLabel =>{
             // let currStateLabel = s;
-            let currBin = binMap.get(currStateLabel);
+            let currBin = useLabelMap(currStateLabel, binMap);
             if(i < numberOfStateBits){
                 excitations[sIndex].map[currBin!] = {};
             }
@@ -202,7 +202,7 @@ export async function getExcitationsFromNextStateMap(stateLabels : string[], nex
                     excitations[oIndex].map[currBin!][comb] = nextStateMap.nextStateMap[currStateLabel][comb].output;
                 if(i < numberOfStateBits){
                     let nxtStateLabel = nextStateMap.nextStateMap[currStateLabel][comb].state;
-                    let nextBin = binMap.get(nxtStateLabel);
+                    let nextBin = useLabelMap(nxtStateLabel, binMap);
                     if(!nextBin) return;
                     excitations[sIndex].map[currBin!][comb] = latchMap[ currBin![i] + nextBin[i] ];
                     
@@ -243,7 +243,8 @@ export async function truthTablesFromExcitation(excitation : excitationInterface
     
 }
 
-export async function generateKMap(truthTable : truthTable, numberOfTotalVars : number) : Promise<kMap>{
+export async function generateKMap(truthTable : truthTable) : Promise<kMap>{
+    let numberOfTotalVars = truthTable.dims;
     if(numberOfTotalVars < 5){
         let row = Math.floor(numberOfTotalVars / 2);
         let col = numberOfTotalVars - row;
@@ -297,14 +298,14 @@ export async function generateKMap(truthTable : truthTable, numberOfTotalVars : 
         remCombs.forEach(async remComb=>{
             let tTable : truthTable = {
                 table : {},
-                dims : numberOfTotalVars,
+                dims : 4,
                 functionName : truthTable.functionName,
                 vars : truthTable.vars.slice(-4)
             };
             comb.forEach(c=>{
                 tTable.table[c] = truthTable.table[remComb + c];
             })
-            let temp = await generateKMap(tTable, 4);
+            let temp = await generateKMap(tTable);
             kMap.map[remComb] = temp.map[''];
         })
         return kMap;
@@ -510,6 +511,7 @@ export async function stateMinimization(stateLabels : string[], nextStateMap : n
             if(nx1 === nx2) return;
             if(nx1 === 'd' || nx2 === 'd') return;
             if(combineStateLabels(nx1, nx2) === combineStateLabels(state1, state2)) return;
+            if(arr.indexOf(combineStateLabels(nx1, nx2)) != -1) return;
             arr.push(combineStateLabels(nx1, nx2));
         })
         let currComb = combineStateLabels(state1, state2);
@@ -984,4 +986,10 @@ export async function nextStateMapFromStateTalbeInput(states : string[], entries
         }
     }
     return { nextStateMap :  nextStateMap, internalToOriginalMap : internalToOriginalMap , internalLabels : internalLabels};
+}
+
+export function useLabelMap(label : string, labelMap : {[k : string] : string} | null | undefined ){
+    if(label === 'd') return label;
+    if(!labelMap) return label;
+    return labelMap[label];
 }

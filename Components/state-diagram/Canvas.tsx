@@ -78,7 +78,7 @@ class Canvas extends React.Component<Props, State>{
             stateNodeToSideBar : null,
             mouseMode : 'edge',
             numberOfInpVars : 1,
-            synthesis : true,
+            synthesis : false,
             numberOfOutputVars : 2
         }
 
@@ -1133,7 +1133,7 @@ class Canvas extends React.Component<Props, State>{
         nodeContext.lineWidth = canvasConfig.nodeCanvasLineWidth;
         tempContext.lineWidth = canvasConfig.tempCanvasLineWidth;
 
-        this.createTestGraph();
+        // this.createTestGraph();
 
         
         window.addEventListener('resize', e=>{

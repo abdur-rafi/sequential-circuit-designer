@@ -1,13 +1,14 @@
 import { useEffect, useRef } from "react";
 import { clearCanvas, drawCircle, getPointOnCircle } from "../state-diagram/drawingFuncitons";
 import { Point } from "../state-diagram/state-diagram-interfaces";
-import { generateGreyCode } from "./helperFunctions";
-import { implicationEntryMap } from "./interfaces";
+import { generateGreyCode, useLabelMap } from "./helperFunctions";
+import { implicationEntryMap, stringToStringMap } from "./interfaces";
 
 const MergerDiagram : React.FC<{
     stateLabels : string[],
     entries : implicationEntryMap,
-    inCompatibles? : boolean
+    inCompatibles? : boolean,
+    labelMap? : stringToStringMap
 }> = (props)=>{
 
     const canvas = useRef<HTMLCanvasElement>(null);
@@ -62,7 +63,7 @@ const MergerDiagram : React.FC<{
                 context!.beginPath();
                 context!.arc(p.x, p.y, 3, 0,Math.PI * 2);
                 context!.fill();
-                let label = props.stateLabels[i];
+                let label = useLabelMap(props.stateLabels[i], props.labelMap);
                 let labelWidht = context!.measureText(label).width;
                 if(Math.abs(s - 1.5 * Math.PI) < .0001){
                     context!.strokeText(label, p.x - labelWidht / 2, p.y - labelWidht - gap);

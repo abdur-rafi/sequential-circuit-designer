@@ -2,8 +2,8 @@ import React from "react";
 import { Edge, StateNode } from "../state-diagram/state-diagram-interfaces";
 import styles from '../../styles/design.module.scss'
 import StateTable from "./StateTable";
-import { generateKMap, getBinRepresentation, getLiteral, getNextStateMap, getRequiredBitForStates, getMaximals, simplifyFunction, stateMinimization, truthTablesFromExcitation, getExcitationsFromNextStateMap, getMinimumClosure, getReducedNextStateMap, getNewLabels } from "./helperFunctions";
-import {  excitationInterface, implicationEntryMap, kMap, nextStateMap, truthTable } from "./interfaces";
+import { generateKMap, getBinRepresentation, getLiteral, getNextStateMap, getRequiredBitForStates, getMaximals, simplifyFunction, stateMinimization, truthTablesFromExcitation, getExcitationsFromNextStateMap, getMinimumClosure, getReducedNextStateMap, getNewLabels, useLabelMap } from "./helperFunctions";
+import {  excitationInterface, implicationEntryMap, kMap, nextStateMap, stringToStringMap, truthTable } from "./interfaces";
 import ExcitaitonTable from "./ExcitationTable";
 import KMap from './kMap'
 import ImplicationTable from "./ImplicationTable";
@@ -51,14 +51,14 @@ const Design : React.FC<{
     numberOfOutputVars : number
 }> = (props)=>{
 
-    const [nextStateMap , setNextStateMap] = useState<nextStateMap | null>(nextStateMap4);
+    const [nextStateMap , setNextStateMap] = useState<nextStateMap | null>(null);
     // let labels = ['A', 'B', 'C', 'D', 'E']
-    let labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+    // let labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 
-    // let labels = props.stateNodes.map(s => s.label);
+    let labels = props.stateNodes.map(s => s.label);
     useEffect(()=>{
         getNextStateMap(props.stateNodes, props.numberOfInpVar, props.numberOfOutputVars).then(s=>{
-            // setNextStateMap(s);
+            setNextStateMap(s);
         })
         
     }, [props])
@@ -72,15 +72,15 @@ const Design : React.FC<{
             }
         </div>
     )
-
-   
 }
+
+
 
 export const FromNextStateMap : React.FC<{
     labels : string[],
     nextStateMap : nextStateMap,
     changeSynthesis : (b : boolean) => void,
-    internalToOriginalMap? : {[internal : string] : string}
+    labelMap? : {[label : string] : string}
 }> = (props)=>{
     const [reducedNextStateMap, setReducedNextStateMap] = useState<nextStateMap | null>(null);
     const [excitations, setExcitations] = useState<excitationInterface[] | null>(null);
@@ -91,7 +91,7 @@ export const FromNextStateMap : React.FC<{
     const [maximalIncompatibles, setMaximalIncompatibles] = useState<string[][] | null>(null);
     const [compatibles, setCompatibles] = useState<string[][] | null>();
     const [newLabels , setNewLabels ] = useState<string[]>(props.labels);
-    const [binRep, setBinRep] = useState<Map<string, string>>(getBinRepresentation(props.labels));
+    const [binRep, setBinRep] = useState<stringToStringMap>(getBinRepresentation(props.labels));
     
 
 
@@ -113,7 +113,7 @@ export const FromNextStateMap : React.FC<{
         const getAllKmaps = async (truthTables : truthTable[]) : Promise<kMap[]> =>{
             let k : kMap[] = [];
             truthTables.forEach(async t=>{
-                let temp = await generateKMap(t,numberOfVars);
+                let temp = await generateKMap(t);
                 k.push(temp)
             });
             return k;
@@ -151,29 +151,30 @@ export const FromNextStateMap : React.FC<{
     return (
         <div className={styles.synthesisContainer}>
             <Details summary = {'State Table'} 
-            content = {props.nextStateMap && <StateTable   nextStateMap = {props.nextStateMap} stateLabels = {props.labels}/>} />
+            content = {props.nextStateMap && <StateTable labelMap = {props.labelMap}  nextStateMap = {props.nextStateMap} stateLabels = {props.labels}/>} />
             <Details summary = {'Implication Table'} 
-            content = {implicationEntries && <ImplicationTable labels = {props.labels} entries = {implicationEntries} />} />
+            content = {implicationEntries && <ImplicationTable labelMap = {props.labelMap} labels = {props.labels} entries = {implicationEntries} />} />
             <Details summary = {'Merger Diagram For Compatibles'} 
-            content = {implicationEntries && <MergerDiagram entries = {implicationEntries} stateLabels = {props.labels} />} />
+            content = {implicationEntries && <MergerDiagram labelMap = {props.labelMap} entries = {implicationEntries} stateLabels = {props.labels} />} />
             <Details summary = {'Merger Diagram For Incompatibles'} 
-            content = {implicationEntries && <MergerDiagram inCompatibles={true} entries = {implicationEntries} stateLabels = {props.labels} />}/>
+            content = {implicationEntries && <MergerDiagram labelMap = {props.labelMap} inCompatibles={true} entries = {implicationEntries} stateLabels = {props.labels} />}/>
             <Details summary = {'Maximal Compatibles'} 
             content =  {maximalCompatibles && maximalCompatibles.map((arr, index) =>{
                             return(
                                 <div key={index}>
                                     {
                                         arr.map((s, i)=>{
+                                            let t = useLabelMap(s, props.labelMap);
                                             if(arr.length === 1){
-                                                return '{ ' + s + ' }'
+                                                return '{ ' + t + ' }'
                                             }
                                             if(i === 0){
-                                                return '{ ' + s + ', ';
+                                                return '{ ' + t + ', ';
                                             }
                                             else if(i === arr.length - 1){
-                                                return s + ' }';
+                                                return t + ' }';
                                             }
-                                            return s + ', '
+                                            return t + ', '
                                         })
                                     }
                                 </div>
@@ -186,16 +187,17 @@ export const FromNextStateMap : React.FC<{
                                 <div key={index}>
                                     {
                                         arr.map((s, i)=>{
+                                            let t = useLabelMap(s, props.labelMap);
                                             if(arr.length === 1){
-                                                return '{ ' + s + ' }'
+                                                return '{ ' + t + ' }'
                                             }
                                             if(i === 0){
-                                                return '{ ' + s + ', ';
+                                                return '{ ' + t + ', ';
                                             }
                                             else if(i === arr.length - 1){
-                                                return s + ' }';
+                                                return t + ' }';
                                             }
-                                            return s + ', '
+                                            return t + ', '
                                         })
                                     }
                                 </div>
@@ -205,12 +207,12 @@ export const FromNextStateMap : React.FC<{
             <Details summary = {'Closure Table'}
             content = {
                 maximalCompatibles &&
-                <ClosureTable nextStateMap = {props.nextStateMap} maximalCompatibles = {maximalCompatibles} />
+                <ClosureTable labelMap = {props.labelMap} nextStateMap = {props.nextStateMap} maximalCompatibles = {maximalCompatibles} />
             }
             />
 
             <Details summary = {'Reduced States'}
-            content = {compatibles && <ReducedStates labels = {newLabels} compatibles = {compatibles} />}
+            content = {compatibles && <ReducedStates labelMap = {props.labelMap} labels = {newLabels} compatibles = {compatibles} />}
             />
 
             <Details summary = {'Reduced State Table'} 
@@ -221,7 +223,7 @@ export const FromNextStateMap : React.FC<{
             content = { <StateAssignment binRep = {binRep} stateLabels = {newLabels}  />}/>
             
             <Details summary = {'Transition Table '} 
-            content = { reducedNextStateMap && <StateTable  nextStateMap = {reducedNextStateMap} binRep = {binRep} stateLabels = {newLabels}/>}/>
+            content = { reducedNextStateMap && <StateTable  nextStateMap = {reducedNextStateMap} labelMap = {binRep} stateLabels = {newLabels}/>}/>
             
             <Details summary = {'Excitation Table'} 
             content = {excitations && <ExcitaitonTable  excitations = {excitations} stateLabels = {newLabels} binRep = {binRep} latchLabel = 'JK' latchMap = {JKMap} />}/>

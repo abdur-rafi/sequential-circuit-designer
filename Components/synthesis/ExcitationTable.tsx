@@ -1,11 +1,11 @@
 import { StateNode } from "../state-diagram/state-diagram-interfaces";
-import { getInputCombination, getRequiredBitForStates } from "./helperFunctions";
+import { getInputCombination, getRequiredBitForStates, useLabelMap } from "./helperFunctions";
 import styles from '../../styles/design.module.scss'
-import { excitationInterface } from "./interfaces";
+import { excitationInterface, stringToStringMap } from "./interfaces";
 
 const ExcitaitonTable : React.FC<{
     stateLabels : string[],
-    binRep : Map<string, string>,
+    binRep : stringToStringMap,
     latchMap : {[key :string] : string},
     latchLabel : string,
     excitations : excitationInterface[]
@@ -62,7 +62,7 @@ const ExcitaitonTable : React.FC<{
                                 for(let j = 0; j < inpComb.length; ++j){
                                     nextStateRows.push(
                                         <td key = {'inp'+inpComb[j]+label+'i'+i}>
-                                            {props.excitations[i].map[props.binRep.get(label)!][inpComb[j]]}
+                                            {props.excitations[i].map[useLabelMap(label,props.binRep)][inpComb[j]]}
                                         </td>
                                     )
                                 }
@@ -70,7 +70,7 @@ const ExcitaitonTable : React.FC<{
                             return(
                                 <tr key = {label}>
                                     <td>
-                                        {props.binRep.get(label)}
+                                        {useLabelMap(label, props.binRep)}
                                     </td>
                                     {nextStateRows}
                                 </tr>

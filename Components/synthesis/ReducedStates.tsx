@@ -1,10 +1,13 @@
 import React from "react";
 import styles from '../../styles/design.module.scss'
+import { useLabelMap } from "./helperFunctions";
+import { stringToStringMap } from "./interfaces";
 
 
 const ReducedStates : React.FC<{
     compatibles : string[][],
-    labels : string[]
+    labels : string[],
+    labelMap? : stringToStringMap
 }> = (props)=>{
     let TableHeader : React.FC<{}> = (props)=>{
         return(
@@ -26,7 +29,7 @@ const ReducedStates : React.FC<{
                                 <td> {props.labels[index]} </td>
                                 <td>
                                     {
-                                        comp.map(state => state + ' ' )
+                                        comp.map(state => useLabelMap(state, props.labelMap) + ' ' )
                                     }
                                 </td>
                             </tr>

@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import { getInputCombination, nextStateMapFromStateTalbeInput } from '../synthesis/helperFunctions'
 import styles from '../../styles/design.module.scss'
 import { FromNextStateMap } from '../synthesis/results'
-import { nextStateMap } from '../synthesis/interfaces'
+import { nextStateMap, stringToStringMap } from '../synthesis/interfaces'
 
 interface lastSelected{
     i : number,
@@ -198,6 +198,7 @@ const StateTableInput : React.FC<{
     const [showResults, setShowResults] = useState<boolean>(false);
     const [nextStateMap, setNextStateMap] = useState<nextStateMap | null>(null);
     const [internalLabels, setInternalLabels] = useState<string[]>([]);
+    const [internalToOriginalMap, setInternalToOriginalMap] = useState<stringToStringMap>({});
     const chekcValidity = ()=>{
         for(let i = 0; i < numberOfStates; ++i){
             if(states[i].length === 0){
@@ -211,7 +212,7 @@ const StateTableInput : React.FC<{
             }
         }
         let set = new Set<string>();
-        for(let i = numberOfStates - 1; i >= 0; --i){
+        for(let i = 0 - 1; i < numberOfStates; ++i){
             if(set.has(states[i])){
                 setError({
                     i : i,
@@ -450,14 +451,15 @@ const StateTableInput : React.FC<{
                                 let r = await nextStateMapFromStateTalbeInput(states,entries,output);
                                 console.log(r);
                                 setNextStateMap(r.nextStateMap);
-                                setInternalLabels(r.internalLabels)
+                                setInternalLabels(r.internalLabels);
+                                setInternalToOriginalMap(r.internalToOriginalMap);
                                 setShowResults(true);
                             }
                         }}> Analyze</button>
                     </div>
                 </div>
             }
-            {showResults && nextStateMap && <FromNextStateMap nextStateMap = {nextStateMap} labels = {internalLabels} changeSynthesis = {(b)=>setShowResults(b)} />}
+            {showResults && nextStateMap && <FromNextStateMap labelMap = {internalToOriginalMap} nextStateMap = {nextStateMap} labels = {internalLabels} changeSynthesis = {(b)=>setShowResults(b)} />}
         </div>
     )
 }
