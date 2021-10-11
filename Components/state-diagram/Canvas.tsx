@@ -2,7 +2,7 @@ import React from 'react'
 import {StateNode, Point, IONode, Edge, MouseMode} from './state-diagram-interfaces'
 import {checkInsideCircle, calculateIONodeCenter,
      clearCircle, drawCircle, checkCollision, 
-     pointToString, doRectanglesOverlap, getCornerPoints, clearCanvas, calculateDelTheta, doCirclesCollide} from './drawingFuncitons'
+     pointToString, doRectanglesOverlap, clearCanvas, calculateDelTheta, doCirclesCollide} from './drawingFuncitons'
 import styles from '../../styles/design.module.scss'
 import SideBar from './SideBar';
 import TopBar from './topBar';

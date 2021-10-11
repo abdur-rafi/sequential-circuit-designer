@@ -164,89 +164,155 @@ const Entry : React.FC<{
         </td>
     )
 }
+interface Props {
 
-const StateTableInput : React.FC<{
+}
+class StateTableInput extends React.Component<Props, {
+    numberOfStates : number,
+    numberOfInputVars : number,
+    numberOfOutputVars : number,
+    states : string[],
+    entries : string[][],
+    outputs : string[][],
+    lastSelected : lastSelected,
+    error : Error | null,
+    showResults : boolean,
+    nextStateMap : nextStateMap | null,
+    internalLabels : string[],
+    internalToOriginalMap : stringToStringMap,
+    
+}>{
 
-}> = (props)=>{
 
-    const [numberOfStates, setNumberOfStates] = useState<number>(5);
-    const [numberOfInputVars, setNumberOfInputVars] = useState<number>(1);
-    const [numberOfOutputVars, setNumberOfOutputVars] = useState<number>(1);
+    constructor(props : Props){
+        super(props);
 
-    let temp : string[][] = [];
-    let tempOut : string[][] = [];
-    let tempStates : string[] = [];
-    for(let i = 0; i < numberOfStates; ++i){
-        temp.push([]);
-        tempOut.push([]);
-        tempStates.push('');
-        for(let j = 0; j < (1<<numberOfInputVars); ++j){
-            temp[i].push('');
-            tempOut[i].push('');
+        let numberOfStates = 5;
+        let numberOfInputVars = 1;
+
+        let temp : string[][] = [];
+        let tempOut : string[][] = [];
+        let tempStates : string[] = [];
+        for(let i = 0; i < numberOfStates; ++i){
+            temp.push([]);
+            tempOut.push([]);
+            tempStates.push('');
+            for(let j = 0; j < (1<<numberOfInputVars); ++j){
+                temp[i].push('');
+                tempOut[i].push('');
+            }
         }
+
+        this.state = {
+            numberOfStates : 5,
+            numberOfInputVars : 1,
+            numberOfOutputVars : 1,
+            states : tempStates,
+            entries : temp,
+            outputs :tempOut,
+            lastSelected : {
+                i : -1,
+                j : -1,
+                type : 'state'
+            },
+            error : null,
+            showResults : false,
+            internalLabels : [],
+            internalToOriginalMap : {},
+            nextStateMap : null
+        }
+        this.chekcValidity = this.chekcValidity.bind(this);
+        this.changeEntry = this.changeEntry.bind(this);
+        this.changeOutput = this.changeOutput.bind(this);
+        this.chnageStates = this.chnageStates.bind(this);
+        this.onInputVarChange = this.onInputVarChange.bind(this);
+        this.onOutputChange = this.onOutputChange.bind(this);
+        this.onStateChange = this.onStateChange.bind(this);
+        this.changeShowResult = this.changeShowResult.bind(this);
     }
 
-    const [states, setStates] = useState<string[]>(tempStates);
-    const [entries, setEntries] = useState<string[][]>(temp);
-    const [output, setOutput] = useState<string[][]>(tempOut);
-    const [lastSelected , setLastSelected] = useState<lastSelected>({
-        i : -1,
-        j : -1,
-        type : 'state'
-    });
-    const [error, setError] = useState<Error | null>(null);
-    const [showResults, setShowResults] = useState<boolean>(false);
-    const [nextStateMap, setNextStateMap] = useState<nextStateMap | null>(null);
-    const [internalLabels, setInternalLabels] = useState<string[]>([]);
-    const [internalToOriginalMap, setInternalToOriginalMap] = useState<stringToStringMap>({});
-    const chekcValidity = ()=>{
-        for(let i = 0; i < numberOfStates; ++i){
-            if(states[i].length === 0){
-                setError({
-                    i : i,
-                    j : -1,
-                    type : 'state',
-                    message : 'Empty state label'
-                })
+    // const [numberOfStates, setNumberOfStates] = useState<number>(5);
+    // const [numberOfInputVars, setNumberOfInputVars] = useState<number>(1);
+    // const [numberOfOutputVars, setNumberOfOutputVars] = useState<number>(1);
+
+    // let temp : string[][] = [];
+    // let tempOut : string[][] = [];
+    // let tempStates : string[] = [];
+    // for(let i = 0; i < numberOfStates; ++i){
+    //     temp.push([]);
+    //     tempOut.push([]);
+    //     tempStates.push('');
+    //     for(let j = 0; j < (1<<numberOfInputVars); ++j){
+    //         temp[i].push('');
+    //         tempOut[i].push('');
+    //     }
+    // }
+
+    // const [states, setStates] = useState<string[]>(tempStates);
+    // const [entries, setEntries] = useState<string[][]>(temp);
+    // const [output, setOutput] = useState<string[][]>(tempOut);
+    // const [lastSelected , setLastSelected] = useState<lastSelected>({
+    //     i : -1,
+    //     j : -1,
+    //     type : 'state'
+    // });
+    // const [error, setError] = useState<Error | null>(null);
+    // const [showResults, setShowResults] = useState<boolean>(false);
+    // const [nextStateMap, setNextStateMap] = useState<nextStateMap | null>(null);
+    // const [internalLabels, setInternalLabels] = useState<string[]>([]);
+    // const [internalToOriginalMap, setInternalToOriginalMap] = useState<stringToStringMap>({});
+    chekcValidity(){
+        for(let i = 0; i < this.state.numberOfStates; ++i){
+            if(this.state.states[i].length === 0){
+                this.setState({
+                    error :{
+                        i : i,
+                        j : -1,
+                        type : 'state',
+                        message : 'Empty state label'
+                }})
                 return false;
             }
         }
         let set = new Set<string>();
-        for(let i = 0 - 1; i < numberOfStates; ++i){
-            if(set.has(states[i])){
-                setError({
-                    i : i,
-                    j : -1,
-                    type : 'state',
-                    message : 'duplicate Entry'
-                })
+        for(let i = 0 - 1; i < this.state.numberOfStates; ++i){
+            if(set.has(this.state.states[i])){
+                this.setState({ 
+                    error : {
+                        i : i,
+                        j : -1,
+                        type : 'state',
+                        message : 'duplicate Entry'
+                    }}
+                )
                 return false;
             }
-            set.add(states[i]);
+            set.add(this.state.states[i]);
         }
         
-        for(let i = 0; i < numberOfStates; ++i){
-            for(let j = 0; j < (1 << (numberOfInputVars )); ++j){
-                if(output[i][j].length !== numberOfOutputVars){
-                    setError({
-                        i : i,
-                        j : j,
-                        type : 'output',
-                        message : 'invalid output length'
-                    })
+        for(let i = 0; i < this.state.numberOfStates; ++i){
+            for(let j = 0; j < (1 << (this.state.numberOfInputVars )); ++j){
+                if(this.state.outputs[i][j].length !== this.state.numberOfOutputVars){
+                    this.setState({
+                        error :{
+                            i : i,
+                            j : j,
+                            type : 'output',
+                            message : 'invalid output length'
+                    }})
                     return false;
                 }
-                console.log(entries[i][j]);
-                if(entries[i][j] === 'd'){
+                if(this.state.entries[i][j] === 'd'){
                     continue;
                 }
-                else if(!set.has(entries[i][j])){
-                    setError({
-                        i : i,
-                        j : j,
-                        type : 'entry',
-                        message : 'unknown state'
-                    })
+                else if(!set.has(this.state.entries[i][j])){
+                    this.setState({
+                        error :{
+                            i : i,
+                            j : j,
+                            type : 'entry',
+                            message : 'unknown state'
+                    }})
                     return false;
                 }
             }
@@ -255,57 +321,69 @@ const StateTableInput : React.FC<{
         return true;
     }
 
-    const changeEntry = (i : number, j : number, val : string)=>{
+    changeEntry(i : number, j : number, val : string){
         // entries[i][j] = val;
-        if(error?.type === 'entry' && i === error.i && j === error.j){
-            setError(null);
+        let error = this.state.error;
+        if(this.state.error?.type === 'entry' && i === this.state.error.i && j === this.state.error.j){
+            error = null;
         }
-        let temp = entries.map(e => e.map(t => t))
+        let temp = this.state.entries.map(e => e.map(t => t))
         temp[i][j] = val;
-        setEntries(temp);
-        setLastSelected({
-            i : i,
-            j : j,
-            type : 'entry'
+        this.setState({
+            entries : temp,
+            lastSelected : {
+                i : i,
+                j : j,
+                type : 'entry'
+            },
+            error : error
         })
     }
 
-    const chnageStates = (i : number, val : string, index : number )=>{
-        if(error?.type === 'state' && i === error.i){
-            setError(null);
+    chnageStates(i : number, val : string, index : number ){
+        let error = this.state.error;
+        if(this.state.error?.type === 'state' && i === this.state.error.i){
+            error = null;
         }
-        let temp = [...states];
+        let temp = [...this.state.states];
         temp[i] = val;
-        setLastSelected({
-            i : i,
-            j : -1,
-            type : 'state'
+        this.setState({
+            lastSelected : {
+                i : i,
+                j : -1,
+                type : 'state'
+            },
+            states : temp,
+            error : error
         })
-        setStates(temp);
     }
 
-    const changeOutput = (i : number ,j : number, val : string)=>{
+    changeOutput(i : number ,j : number, val : string){
+        let error = this.state.error;
         if(error?.type === 'output' && i === error.i && j === error.j){
-            setError(null);
+            error = null;
         }
-        let temp = output.map(o => o.map(t => t))
+        let temp = this.state.outputs.map(o => o.map(t => t))
         temp[i][j] = val;
-        setLastSelected({
-            i : i,
-            j : j,
-            type : 'output'
-        });
-        setOutput(temp);
+        this.setState({
+            lastSelected : {
+                i : i,
+                j : j, 
+                type : 'output'
+            },
+            outputs : temp,
+            error : null
+        })
     }
 
 
-    const inpCombs = getInputCombination(numberOfInputVars);
 
-    const onStateChange = (numberOfStates : number)=>{
+    onStateChange(numberOfStates : number){
+
         let statesTemp : string[] = [];
         for(let i = 0; i < numberOfStates; ++i){
-            if(i < states.length){
-                statesTemp[i] = states[i];
+            if(i < this.state.states.length){
+                statesTemp[i] = this.state.states[i];
             }
             else{
                 statesTemp.push('');
@@ -314,155 +392,200 @@ const StateTableInput : React.FC<{
         let tempEntries : string[][] = [];
         let tempOut : string[][] = [];
         for(let i = 0; i < numberOfStates; ++i){
-            if(i < entries.length){
-                tempEntries[i] = entries[i];
-                tempOut[i] = output[i];
+            if(i < this.state.entries.length){
+                tempEntries[i] = this.state.entries[i];
+                tempOut[i] = this.state.outputs[i];
             }
             else{
                 tempEntries.push([])
                 tempOut.push([]);
-                for(let j = 0; j < (1 << numberOfInputVars);++j){
+                for(let j = 0; j < (1 << this.state.numberOfInputVars);++j){
                     tempEntries[i].push('');
                     tempOut[i].push('');
                 }
             }
         }
-        setEntries(tempEntries);
-        setStates(statesTemp);
-        setOutput(tempOut);
-        setNumberOfStates(numberOfStates);
+        this.setState({
+            entries : tempEntries,
+            states : statesTemp,
+            outputs : tempOut,
+            numberOfStates : numberOfStates
+        })
     }
 
-    const onInputVarChange = (numberOfInputVars : number)=>{
+    onInputVarChange(numberOfInputVars : number){
         let tempEntries : string[][] = [];
-        for(let i = 0; i < numberOfStates; ++i){
+        for(let i = 0; i < this.state.numberOfStates; ++i){
             tempEntries.push([]);
             for(let j = 0; j < (1 << numberOfInputVars); ++j){
-                if(j < entries[i].length){
-                    tempEntries[i].push(entries[i][j]);
+                if(j < this.state.entries[i].length){
+                    tempEntries[i].push(this.state.entries[i][j]);
                 }
                 else{
                     tempEntries[i].push('');
                 }
             }
         }
-        setEntries(tempEntries);
-        setNumberOfInputVars(numberOfInputVars);
+        this.setState({
+            entries : tempEntries,
+            numberOfInputVars : numberOfInputVars
+        })
     }
 
-    const onOutputChange = (numberOfOutputVars : number)=>{
+    onOutputChange(numberOfOutputVars : number){
         let temp : string[][] = [];
-        for(let i = 0; i < numberOfStates; ++i){
+        for(let i = 0; i < this.state.numberOfStates; ++i){
             temp.push([]);
-            for(let j = 0; j < (1 << (numberOfInputVars)); ++j){
+            for(let j = 0; j < (1 << (this.state.numberOfInputVars)); ++j){
                 temp[i].push('');
             }
         }
-        setOutput(temp);
-        setNumberOfOutputVars(numberOfOutputVars);
+
+        this.setState({
+            outputs : temp,
+            numberOfOutputVars : numberOfOutputVars
+        })
+
     }
 
-    let Row : React.FC<{
-        index : number,
-        stateVal : string,
-        entries : string[],
-        outputs : string[]
-    }> = ({index, stateVal, entries, outputs})=>{
-        let stateError = false;
-        if(error?.type === 'state' && error.i === index){
-            stateError = true;
-        }
-        return(
-            <tr>
-                <StateEntry error = {stateError} errorMessage = {stateError ? error?.message : ''} lastSelected = {lastSelected} val = {stateVal} changeState = {chnageStates} index = {index} /> 
-                {
-                    
-                    inpCombs.map((comb, j)=> {
-                        let entryError = false, outputError = false;
-                        if(error?.type === 'entry' && error.i === index && error.j === j){
-                            entryError = true;
-                        }
-                        else if(error?.type === 'output' && error.i === index && error.j === j){
-                            outputError = true;
-                        }
+    changeShowResult(b : boolean){
+        this.setState({showResults : b})
+    }
 
-                        return(
-                            <Entry entryError = {entryError} output = {outputs[j]} 
-                            changeOutput = {changeOutput} lastSelected = {lastSelected} changeEntry = {changeEntry}
-                            numberOfOutputVars = {numberOfOutputVars} 
-                            key={comb} i = {index} j = {j} val = {entries[j]} 
-                            outputError = {outputError}
-                            errorMessage = {(entryError || outputError) ? error?.message : ''}
-                            />
-                        )
-                    })
+    
+
+    
+
+    render(){
+        return(
+            <div>
+                { 
+                    !this.state.showResults &&
+                    <div>
+                        <div>
+                            #inputs <input type = 'number' onChange = {e => {
+                                let n = parseInt(e.target.value);
+                                if(n >0 && n < 5){
+                                    this.onInputVarChange(n);
+                                }
+                            }} value = {this.state.numberOfInputVars}></input>
+                            #outputs <input type = 'number' onChange = {e => {
+                                let n = parseInt(e.target.value);
+                                if(n >0){
+                                    this.onOutputChange(n);
+                                }
+                            }}
+                            value = {this.state.numberOfOutputVars}
+                            ></input>
+                            #states <input type = 'number' onChange = {e => {
+                                let n = parseInt(e.target.value);
+                                if(n >0){
+                                    this.onStateChange(n);
+                                }
+                            }} value = {this.state.numberOfStates} ></input>
+                        </div>
+                        <div className = {styles.stateTableInputContainer}>
+                            <table>
+                                <TableHeader numberOfInputVars = {this.state.numberOfInputVars} />
+                                <TableBody changeEntry = {this.changeEntry} changeOutput = {this.changeOutput} states = {this.state.states} outputs = {this.state.outputs}
+                                numberOfStates = {this.state.numberOfStates} numberOfOutputVars = {this.state.numberOfOutputVars} numberOfInputVars = {this.state.numberOfInputVars} 
+                                lastSelected = {this.state.lastSelected} error = {this.state.error} entries = {this.state.entries} chnageStates = {this.chnageStates} />
+                            </table>
+                        </div>
+                        <div>
+                            <button onClick = {async ()=>{
+                                if(this.chekcValidity()){
+                                    let r = await nextStateMapFromStateTalbeInput(this.state.states,this.state.entries,this.state.outputs);
+                                    console.log(r);
+                                    this.setState({
+                                        nextStateMap : r.nextStateMap,
+                                        internalToOriginalMap : r.internalToOriginalMap,
+                                        internalLabels : r.internalLabels,
+                                        showResults : true
+                                    })
+                                }
+                            }}> Analyze</button>
+                        </div>
+                    </div>
                 }
-            </tr>
+                { this.state.showResults && <FromNextStateMap labelMap = {this.state.internalToOriginalMap} nextStateMap = {this.state.nextStateMap} labels = {this.state.internalLabels} changeSynthesis = {this.changeShowResult} />}
+            </div>
         )
     }
+}
 
-    let TableBody : React.FC<{}> = ()=>{
-        let t : React.ReactNode[] = [];
-        for(let i = 0; i < numberOfStates; ++i){
-            t. push(<Row index = {i} entries = {entries[i]} stateVal = {states[i]} key = {i} outputs={output[i]} />)
-        }
-        return(
-            <tbody>
-                {t}
-            </tbody>
-        )
+const Row : React.FC<{
+    index : number,
+    stateVal : string,
+    entries : string[],
+    outputs : string[],
+    error : Error | null,
+    numberOfInputVars : number,
+    numberOfOutputVars : number,
+    lastSelected : lastSelected,
+    chnageStates : (i : number, val : string,index : number) => void,
+    changeOutput : (i : number, j : number, val : string) => void,
+    changeEntry : (i : number, j : number, val : string) => void
+}> = (props)=>{
+    let stateError = false;
+    if(props.error?.type === 'state' && props.error.i === props.index){
+        stateError = true;
     }
-
+    const inpCombs = getInputCombination(props.numberOfInputVars);
     return(
-        <div>
-            { !showResults &&
-                <div>
-                    <div>
-                        #inputs <input type = 'number' onChange = {e => {
-                            let n = parseInt(e.target.value);
-                            if(n >0 && n < 5){
-                                onInputVarChange(n);
-                            }
-                        }} value = {numberOfInputVars}></input>
-                        #outputs <input type = 'number' onChange = {e => {
-                            let n = parseInt(e.target.value);
-                            if(n >0){
-                                onOutputChange(n);
-                            }
-                        }}
-                        value = {numberOfOutputVars}
-                        ></input>
-                        #states <input type = 'number' onChange = {e => {
-                            let n = parseInt(e.target.value);
-                            if(n >0){
-                                onStateChange(n);
-                            }
-                        }} value = {numberOfStates} ></input>
-                    </div>
-                    <div className = {styles.stateTableInputContainer}>
-                        <table>
-                            <TableHeader numberOfInputVars = {numberOfInputVars} />
-                            <TableBody />
-                        </table>
-                    </div>
-                    <div>
-                        <button onClick = {async ()=>{
-                            if(chekcValidity()){
-                                let r = await nextStateMapFromStateTalbeInput(states,entries,output);
-                                console.log(r);
-                                setNextStateMap(r.nextStateMap);
-                                setInternalLabels(r.internalLabels);
-                                setInternalToOriginalMap(r.internalToOriginalMap);
-                                setShowResults(true);
-                            }
-                        }}> Analyze</button>
-                    </div>
-                </div>
+        <tr>
+            <StateEntry error = {stateError} errorMessage = {stateError ? props.error?.message : ''} lastSelected = {props.lastSelected} 
+            val = {props.stateVal} changeState = {props.chnageStates} index = {props.index} /> 
+            {
+                
+                inpCombs.map((comb, j)=> {
+                    let entryError = false, outputError = false;
+                    if(props.error?.type === 'entry' && props.error.i === props.index && props.error.j === j){
+                        entryError = true;
+                    }
+                    else if(props.error?.type === 'output' && props.error.i === props.index && props.error.j === j){
+                        outputError = true;
+                    }
+
+                    return(
+                        <Entry entryError = {entryError} output = {props.outputs[j]} 
+                        changeOutput = {props.changeOutput} lastSelected = {props.lastSelected} changeEntry = {props.changeEntry}
+                        numberOfOutputVars = {props.numberOfOutputVars} 
+                        key={comb} i = {props.index} j = {j} val = {props.entries[j]} 
+                        outputError = {outputError}
+                        errorMessage = {(entryError || outputError) ? props.error?.message : ''}
+                        />
+                    )
+                })
             }
-            {showResults && nextStateMap && <FromNextStateMap labelMap = {internalToOriginalMap} nextStateMap = {nextStateMap} labels = {internalLabels} changeSynthesis = {(b)=>setShowResults(b)} />}
-        </div>
+        </tr>
     )
 }
 
+
+const TableBody : React.FC<{
+    entries : string[][],
+    outputs : string[][],
+    error : Error | null,
+    states : string[],
+    numberOfInputVars : number,
+    numberOfOutputVars : number,
+    numberOfStates : number,
+    lastSelected : lastSelected,
+    chnageStates : (i : number, val : string,index : number) => void,
+    changeOutput : (i : number, j : number, val : string) => void,
+    changeEntry : (i : number, j : number, val : string) => void
+
+}> = (props)=>{
+    let t : React.ReactNode[] = [];
+    for(let i = 0; i < props.numberOfStates; ++i){
+        t. push(<Row {...props} index = {i} entries = {props.entries[i]} stateVal = {props.states[i]} key = {i} outputs={props.outputs[i]} />)
+    }
+    return(
+        <tbody>
+            {t}
+        </tbody>
+    )
+}
 
 export default StateTableInput;

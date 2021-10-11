@@ -78,7 +78,7 @@ const Design : React.FC<{
 
 export const FromNextStateMap : React.FC<{
     labels : string[],
-    nextStateMap : nextStateMap,
+    nextStateMap : nextStateMap | null,
     changeSynthesis : (b : boolean) => void,
     labelMap? : {[label : string] : string}
 }> = (props)=>{
@@ -97,7 +97,7 @@ export const FromNextStateMap : React.FC<{
 
     
     useEffect(()=>{
-        
+        if(!props.nextStateMap) return;
         let stateVars = getRequiredBitForStates(props.labels.length) ;
         let numberOfVars = stateVars + props.nextStateMap.numberOfInputVar;
 
@@ -129,13 +129,13 @@ export const FromNextStateMap : React.FC<{
             let upperBound = mx.length > props.labels.length ? props.labels.length : mx.length;
             let lowerBound = upperBound;
             mx2.forEach(m => lowerBound = lowerBound > m.length ? m.length : lowerBound);
-            let comp = await getMinimumClosure(props.labels,mx, props.nextStateMap,upperBound, lowerBound);
+            let comp = await getMinimumClosure(props.labels,mx, props.nextStateMap!,upperBound, lowerBound);
             setCompatibles(comp);
             let newLabels = await getNewLabels(comp.length);
             setNewLabels(newLabels);
             let binRep = getBinRepresentation(newLabels);
             setBinRep(binRep);
-            let newNxt = await getReducedNextStateMap(newLabels,comp, props.nextStateMap);
+            let newNxt = await getReducedNextStateMap(newLabels,comp, props.nextStateMap!);
             setReducedNextStateMap(newNxt);
             let e = await getExcitationsFromNextStateMap(newLabels,newNxt,binRep,JKMap,2);
             e = [...e.filter(e=> e.type === 'state'), ... e.filter(e=> e.type === 'output')]
@@ -206,7 +206,7 @@ export const FromNextStateMap : React.FC<{
             
             <Details summary = {'Closure Table'}
             content = {
-                maximalCompatibles &&
+                maximalCompatibles && props.nextStateMap &&
                 <ClosureTable labelMap = {props.labelMap} nextStateMap = {props.nextStateMap} maximalCompatibles = {maximalCompatibles} />
             }
             />
