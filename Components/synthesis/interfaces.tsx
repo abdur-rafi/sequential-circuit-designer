@@ -10,8 +10,8 @@ export interface excitationInterface{
     },
     type : 'state' | 'output',
     index : number,
-    rowLabels : string,
-    colLabels : string,
+    rowLabels : string[],
+    colLabels : string[],
     entryLength : number,
     
     
@@ -43,9 +43,9 @@ export interface kMap{
     },
     functionName : string,
     vars : {
-        rem : string,
-        row : string,
-        col : string
+        rem : string[],
+        row : string[],
+        col : string[]
     }
 }
 export interface truthTable{
@@ -54,7 +54,7 @@ export interface truthTable{
     },
     dims : number,
     functionName : string,
-    vars : string
+    vars : string[]
 }
 
 export interface tabulationGroupItem{
@@ -74,4 +74,13 @@ export interface implicationEntryMap{
 }
 export interface stringToStringMap{
     [key : string] : string
+}
+
+export interface simplifyFunctionReutnType{
+    
+        EPIs: tabulationGroupItem[];
+        PIs: tabulationGroupItem[];
+        selectedPIs: tabulationGroupItem[];
+        groupsPerStep? : tabulationGroupItem[][][]
+    
 }

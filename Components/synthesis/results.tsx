@@ -12,6 +12,7 @@ import MergerDiagram from "./MergerDiagram";
 import { useState, useEffect } from "react";
 import ClosureTable from "./ClosureTable";
 import ReducedStates from "./ReducedStates";
+import FuncionEquation from "./FunctionEquation";
 
 
 const SRMap = {
@@ -34,13 +35,17 @@ const DMap = {
     '00' : '0',
     '01' : '1',
     '10' : '0',
-    '11' : '1'
+    '11' : '1',
+    '0d' : 'd',
+    '1d' : 'd'
 }
 const TMap = {
     '00' : '0',
     '01' : '1',
     '10' : '1',
-    '11' : '0'
+    '11' : '0',
+    '0d' : 'd',
+    '1d' : 'd'
 }
 
 const Design : React.FC<{
@@ -104,7 +109,7 @@ export const FromNextStateMap : React.FC<{
         const getAllTruthTables = async (excitations : excitationInterface[]) : Promise<truthTable[]>=>{
             let t : truthTable[] = [];
             excitations.forEach(async e =>{
-                let temp = await truthTablesFromExcitation(e,e.type === 'output' ? 'z' : 'JK');
+                let temp = await truthTablesFromExcitation(e,e.type === 'output' ? 'z' : 'D');
                 t.push(...temp);
             })
             return t;
@@ -137,7 +142,7 @@ export const FromNextStateMap : React.FC<{
             setBinRep(binRep);
             let newNxt = await getReducedNextStateMap(newLabels,comp, props.nextStateMap!);
             setReducedNextStateMap(newNxt);
-            let e = await getExcitationsFromNextStateMap(newLabels,newNxt,binRep,JKMap,2);
+            let e = await getExcitationsFromNextStateMap(newLabels,newNxt,binRep,DMap,1);
             e = [...e.filter(e=> e.type === 'state'), ... e.filter(e=> e.type === 'output')]
             setExcitations(e);
             let t = await getAllTruthTables(e);
@@ -226,18 +231,18 @@ export const FromNextStateMap : React.FC<{
             content = { reducedNextStateMap && <StateTable  nextStateMap = {reducedNextStateMap} labelMap = {binRep} stateLabels = {newLabels}/>}/>
             
             <Details summary = {'Excitation Table'} 
-            content = {excitations && <ExcitaitonTable  excitations = {excitations} stateLabels = {newLabels} binRep = {binRep} latchLabel = 'JK' latchMap = {JKMap} />}/>
+            content = {excitations && <ExcitaitonTable  excitations = {excitations} stateLabels = {newLabels} binRep = {binRep} latchLabel = 'D' latchMap = {DMap} />}/>
             
             
             <Details summary = {'KMaps'} 
             content = {kMaps &&
                 kMaps.map((k, index)=>{
                     let r = simplifyFunction(truthTables![index]);
-                    let s = '';
-                    r.selectedPIs.forEach(e=> s+= getLiteral(e.comb, truthTables![index].vars) + ' + ' );
-                    s = s.slice(0, s.length - 3);
-                    if(s == '')
-                        s = '0'
+                    // let s = '';
+                    // r.selectedPIs.forEach(e=> s+= getLiteral(e.comb, truthTables![index].vars) + ' + ' );
+                    // s = s.slice(0, s.length - 3);
+                    // if(s == '')
+                    //     s = '0'
                     let key = 0;
                     return(
                         <div key = {k.functionName} className={styles.functionBlockContainer}>
@@ -246,7 +251,8 @@ export const FromNextStateMap : React.FC<{
                             content = {
                                 <div className = {styles.functionBlock}> 
                                     <KMap key = {key++} kMap = {k} />
-                                    <div> {k.functionName.split('').map(c => Number.isInteger(parseInt(c)) ? (<sub key={key++}>{c}</sub>) : c)} = {s.split('').map(c => Number.isInteger(Number.parseInt(c)) ? <sub key={key++}>{c}</sub> : c  )} </div>
+                                    <FuncionEquation functionName = {k.functionName} r = {r} vars = {truthTables![index].vars}  />
+                                    {/* <div> {k.functionName.split('').map(c => Number.isInteger(parseInt(c)) ? (<sub key={key++}>{c}</sub>) : c)} = {s.split('').map(c => Number.isInteger(Number.parseInt(c)) ? <sub key={key++}>{c}</sub> : c  )} </div> */}
                                 </div>
                             }
                             />

@@ -19,13 +19,22 @@ const KMap : React.FC<{
         return(
             // <thead>
                 <tr>
-                    <th className={styles.rowVars} rowSpan = {Math.pow(2, row) + 2}> {props.kMap.vars.row.split('').map((s, i)=>{
-                        if(i % 2) return(<sub key={s} >{s}</sub>)
-                        return s
+                    <th className={styles.rowVars} rowSpan = {Math.pow(2, row) + 2}> {props.kMap.vars.row.map((s, i)=>{
+                        // return s
+                        return(
+                            s.split('').map((s)=>{
+                                if(Number.isInteger(parseInt(s))) return(<sub key={s} >{s}</sub>)
+                                return s
+                            })
+                        )
                     })} </th>
-                    <th  className={styles.colVars} colSpan = {Math.pow(2, col) + 1}> {props.kMap.vars.col.split('').map((s, i)=>{
-                        if(i % 2) return(<sub key={s} >{s}</sub>)
-                        return s
+                    <th  className={styles.colVars} colSpan = {Math.pow(2, col) + 1}> {props.kMap.vars.col.map((s, i)=>{
+                        return(
+                            s.split('').map((s, i)=>{
+                                if(Number.isInteger(parseInt(s))) return(<sub key={s} >{s}</sub>)
+                                return s
+                            })
+                        )
                     })} 
                     </th>
                 </tr>
@@ -77,7 +86,15 @@ const KMap : React.FC<{
         return(
             <table key={rem}>
                 { props.kMap.dims.rem !== 0 &&
-                <caption> {props.kMap.vars.rem.split('').map(c=> Number.isInteger(parseInt(c)) ? <sub key={key++}>{c}</sub> : c)} = {rem} </caption>
+                <caption>
+                    {props.kMap.vars.rem.map(state=>{
+                        return(
+                            state.split('').map(c =>  Number.isInteger(parseInt(c)) ? <sub key={key++}>{c}</sub> : c)
+                        )
+                           
+                    })} = {rem} 
+                    {/* {props.kMap.vars.rem.map(s => s)} */}
+                </caption>
                 }
                 <tbody>
                     <RowColVarLabels />

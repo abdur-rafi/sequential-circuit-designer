@@ -231,36 +231,6 @@ class StateTableInput extends React.Component<Props, {
         this.changeShowResult = this.changeShowResult.bind(this);
     }
 
-    // const [numberOfStates, setNumberOfStates] = useState<number>(5);
-    // const [numberOfInputVars, setNumberOfInputVars] = useState<number>(1);
-    // const [numberOfOutputVars, setNumberOfOutputVars] = useState<number>(1);
-
-    // let temp : string[][] = [];
-    // let tempOut : string[][] = [];
-    // let tempStates : string[] = [];
-    // for(let i = 0; i < numberOfStates; ++i){
-    //     temp.push([]);
-    //     tempOut.push([]);
-    //     tempStates.push('');
-    //     for(let j = 0; j < (1<<numberOfInputVars); ++j){
-    //         temp[i].push('');
-    //         tempOut[i].push('');
-    //     }
-    // }
-
-    // const [states, setStates] = useState<string[]>(tempStates);
-    // const [entries, setEntries] = useState<string[][]>(temp);
-    // const [output, setOutput] = useState<string[][]>(tempOut);
-    // const [lastSelected , setLastSelected] = useState<lastSelected>({
-    //     i : -1,
-    //     j : -1,
-    //     type : 'state'
-    // });
-    // const [error, setError] = useState<Error | null>(null);
-    // const [showResults, setShowResults] = useState<boolean>(false);
-    // const [nextStateMap, setNextStateMap] = useState<nextStateMap | null>(null);
-    // const [internalLabels, setInternalLabels] = useState<string[]>([]);
-    // const [internalToOriginalMap, setInternalToOriginalMap] = useState<stringToStringMap>({});
     chekcValidity(){
         for(let i = 0; i < this.state.numberOfStates; ++i){
             if(this.state.states[i].length === 0){
@@ -589,3 +559,4 @@ const TableBody : React.FC<{
 }
 
 export default StateTableInput;
+

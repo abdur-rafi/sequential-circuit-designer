@@ -1,6 +1,6 @@
 
 import { StateNode } from "../state-diagram/state-diagram-interfaces";
-import { excitationInterface, nextStateMap, truthTable, kMap, tabulationGroupItem, implicationEntryMap, stringToStringMap } from "./interfaces";
+import { excitationInterface, nextStateMap, truthTable, kMap, tabulationGroupItem, implicationEntryMap, stringToStringMap, simplifyFunctionReutnType } from "./interfaces";
 
 function nextChar(c : string) {
     return String.fromCharCode(c.charCodeAt(0) + 1);
@@ -139,11 +139,14 @@ export async function getNextStateMap(stateNodes : StateNode[], numberOfInpVars 
     return map;
 }
 
-export function getLabels(n : number, t : string): string{
-    let s = '';
-    for(let i = 0; i < n; ++i)
-        s += t + i;
-    return s;
+export function getLabels(n : number, t : string): string[]{
+    let vars : string[] = []
+    for(let i = 0; i < n; ++i){
+        let s = t + i;
+        vars.push(s);
+    }
+
+    return vars;
 }
 
 export async function getExcitationsFromNextStateMap(stateLabels : string[], nextStateMap : nextStateMap, binMap : stringToStringMap, latchMap : {[key: string]: string} , numberOfLatchVars : number) : Promise<excitationInterface[]>{
@@ -221,7 +224,7 @@ export async function truthTablesFromExcitation(excitation : excitationInterface
     let fDim = excitation.dims.row;
     // if(pair) tTable.push({table : {}, dims : numberOfVars, functionName : '', vars : excitation.colLabels + excitation.rowLabels});
     for(let i = 0; i < excitation.entryLength; ++i){
-        tTable.push({table : {}, dims : numberOfVars,functionName : '', vars : excitation.rowLabels + excitation.colLabels});
+        tTable.push({table : {}, dims : numberOfVars,functionName : '', vars : [...excitation.rowLabels ,...excitation.colLabels]});
     }
     inpCombs.forEach(comb => {
         let f = comb.slice(0, fDim);
@@ -259,9 +262,9 @@ export async function generateKMap(truthTable : truthTable) : Promise<kMap>{
             },
             functionName : truthTable.functionName,
             vars : {
-                rem : '',
-                row : truthTable.vars.slice(0, 2 * row),
-                col : truthTable.vars.slice( 2 * row)
+                rem : [],
+                row : truthTable.vars.slice(0, row),
+                col : truthTable.vars.slice(row)
             }
         };
         kMap.map[''] = {}
@@ -289,9 +292,9 @@ export async function generateKMap(truthTable : truthTable) : Promise<kMap>{
             },
             functionName : truthTable.functionName,
             vars : {
-                rem : truthTable.vars.slice(0, 2 * rem),
-                row : truthTable.vars.slice(2 * rem, 2 * rem + 4),
-                col : truthTable.vars.slice(-4)
+                rem : truthTable.vars.slice(0, rem),
+                row : truthTable.vars.slice(rem, rem + 2),
+                col : truthTable.vars.slice(-2)
             }
         };
 
@@ -353,15 +356,12 @@ export function mergeComb(s1 : string, s2 : string) : string{
     return r;
 }
 
-export function simplifyFunction(truthTable : truthTable) : {
-    EPIs : tabulationGroupItem[],
-    PIs : tabulationGroupItem[],
-    selectedPIs : tabulationGroupItem[]
-}   
+export function simplifyFunction(truthTable : truthTable, returnSteps ? : boolean) : simplifyFunctionReutnType   
 {
     let inpComb = getInputCombination(truthTable.dims);
     let nonZeroinpComb = inpComb.filter(comb=>truthTable.table[comb] != '0');
     let groups : tabulationGroupItem[][] = [];
+    let rGroups : tabulationGroupItem[][][] = [groups];
     for(let i = 0; i <= truthTable.dims; ++i){
         let item : tabulationGroupItem[] = [];
         for(let j = 0; j < nonZeroinpComb.length; ++j){
@@ -382,6 +382,7 @@ export function simplifyFunction(truthTable : truthTable) : {
     // console.log(groups);
     for(let i = 0; i <= truthTable.dims; ++i){
         let nGroups : tabulationGroupItem[][] = [];
+        let changed = false;
         for(let j = 0; j + 1 < groups.length; ++j){
             let item : tabulationGroupItem[] = [];
             let itemSet : Set<string> = new Set<string>();
@@ -392,6 +393,7 @@ export function simplifyFunction(truthTable : truthTable) : {
                     if(countDifference(c.comb, n.comb) === 1){
                         let merged = mergeComb(c.comb, n.comb);
                         if(!itemSet.has(merged)){
+                            changed = true;
                             item.push({
                                 comb : mergeComb(c.comb, n.comb),
                                 minterms : new Set([...c.minterms, ...n.minterms]),
@@ -405,6 +407,7 @@ export function simplifyFunction(truthTable : truthTable) : {
                 })
             })
             nGroups.push(item);
+            
         }
         groups.forEach(g=>{
             g.forEach(i =>{
@@ -414,6 +417,9 @@ export function simplifyFunction(truthTable : truthTable) : {
                 }
             })
         })
+        if(changed){
+            rGroups.push(nGroups);
+        }
         groups = nGroups;
     }
 
@@ -469,26 +475,24 @@ export function simplifyFunction(truthTable : truthTable) : {
     return{
         EPIs : epi,
         PIs : notTaken,
-        selectedPIs : [...epi, ...remPIs ]
+        selectedPIs : [...epi, ...remPIs ],
+        groupsPerStep : returnSteps ? rGroups : undefined
     }
     
-
-
-
     // console.log(coveringMap);
 
     // console.log(notTaken);
 }
 
-export function getLiteral(comb : string, vars : string): string{
+export function getLiteral(comb : string, vars : string[]): string{
     let r = '';
     for(let i = 0; i < comb.length; ++i){
         if(comb[i] == '_')
             continue;
         else if(comb[i] == '0'){
-            r += vars.slice(2 * i, 2 * i + 2) + "'";
+            r += vars.slice(i, i + 1) + "'";
         }
-        else r += vars.slice(2 * i, 2 * i + 2);
+        else r += vars.slice(i, i + 1);
     }
     if(r == '') return '1';
     return r;
@@ -992,4 +996,29 @@ export function useLabelMap(label : string, labelMap : {[k : string] : string} |
     if(label === 'd') return label;
     if(!labelMap) return label;
     return labelMap[label];
+}
+
+export async function truthTableFromMinterms(terms : number[], vars : string[], dontCares : number[]){
+    let trTable : truthTable = {
+        table : {
+
+        },
+        dims : vars.length,
+        functionName : '',
+        vars : vars
+    }
+    let inpComb = getInputCombination(vars.length);
+    
+    inpComb.forEach((comb, index)=>{
+        if(terms.indexOf(index) != -1){
+            trTable.table[comb] = '1';
+        }
+        else if(dontCares.indexOf(index) != -1){
+            trTable.table[comb] = 'd';
+        }
+        else
+            trTable.table[comb] = '0';
+    })
+
+    return trTable;
 }

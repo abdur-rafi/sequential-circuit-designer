@@ -288,7 +288,7 @@
         text-align: start;
     }
     
-    .stateTableContainer, .stateAssignmentContainer, .transitionTableContainer, .kMapContainer, .implicationTableContainer, .closureTableContainer, .reducedStateContainer, .stateTableInputContainer{
+    .stateTableContainer, .stateAssignmentContainer, .transitionTableContainer, .implicationTableContainer, .closureTableContainer, .reducedStateContainer, .stateTableInputContainer{
         display: inline-block;
         table, th, td{
             border: solid 1px black;
@@ -301,24 +301,7 @@
             border: none;
         }
     }
-    .kMapContainer {
-        .rowLabels , .colLabels{
-            border : none;
-            padding: 2px;
-            
-        }
-        .rowVars, .colVars{
-            border : none;
-            padding: 1px;
-        }
-        table{
-            border: none;
-            display: inline-block;
-        }
-        caption{
-            text-align: start;
-        }
-    }
+    
     
     .transitionTableContainer{
         padding-bottom: 20px;
@@ -360,4 +343,83 @@
     justify-content: center;
     color : gray;
     font-size: 20px;
+}
+
+.kMapContainer {
+    .rowLabels , .colLabels{
+        border : none;
+        padding: 2px;
+        
+    }
+    .rowVars, .colVars{
+        border : none;
+        padding: 1px;
+    }
+    caption{
+        text-align: start;
+    }
+    display: inline-block;
+    table, th, td{
+        border: solid 1px black;
+        border-collapse: collapse;
+        padding: 10px;
+        text-align: center;
+    }
+    
+    table{
+        margin: 20px;
+        border: none;
+        display: inline-block;
+    }
+    
+}
+
+.tabulationTableContainer{
+    text-align: center;
+    table{
+        display: inline-block;
+        border-collapse: collapse;
+        border: none;
+        
+    }
+    td, th{
+        
+        padding: 20px;
+        border: 1px solid black;
+        border-collapse: collapse;
+        text-align: left;
+    }
+    th{
+        text-align: center;
+    }
+}
+.cellTableContainer{
+    text-align: left;
+    // background-color: red;
+    th, td{
+        padding: 0px;
+        border: none;
+        border: 1px solid black;
+        border-left: 0px;
+        // border-top: 0px;
+        min-width: 30px;
+        // background-color: blue;
+    }
+    th{
+        border: 0px;
+        width: 30px;
+        font-size: 12px;
+        
+    }
+    td{
+        text-align: center;
+    }
+    table{
+        border: none;
+        display: inline-block;
+    }
+    // tr{
+    //     display: flex;
+    //     flex-direction: row;
+    // }
 }
