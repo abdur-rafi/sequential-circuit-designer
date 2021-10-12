@@ -423,3 +423,69 @@
     //     flex-direction: row;
     // }
 }
+
+$breakpoint : 600px;
+.header{
+    position: fixed;
+    top: 0px;
+    padding: 20px;
+    // padding-top: 10px;
+    // min-height: 50px;
+    width: 100%;
+    background-color: gray;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    @media (max-width : $breakpoint){
+        display: block;
+            padding: 7.5px;
+            align-items: center;
+        // position: static;
+    }
+    .logoContainer{
+        @media (max-width : $breakpoint) {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+        }
+    }
+    .navigationLinksContainer{
+        user-select: none;
+        display: flex;
+        flex-direction: row;
+        @media (max-width : $breakpoint){
+            display: block;
+        }
+        & div{
+            width: 200px;
+        }
+        // .combinationalOptionsContainer, .sequentialOptionsContainer{
+        //     background-color: blue;
+        //     & div{
+        //         background-color: green;
+        //     }
+        // }
+    }
+    .noneDisplay{
+        display: none;
+    }
+    .menuButtonContainer{
+        margin-right: 20px;
+        .menuIcon{
+            height: 20px;
+            width: 20px;
+        }
+        padding: 10px;
+        border-radius: 10px;
+        
+
+    }
+    .pressed{
+        background-color: lightblue;
+    }
+    .rotateArrow{
+        transform: rotate(180deg);
+    }
+}

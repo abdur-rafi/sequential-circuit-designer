@@ -112,14 +112,6 @@ const TabulationTable : React.FC<{
                         <td key = {key++}>
                             {
                                 <TabualationTableCell items = {props.allGroups[j][i]} rowIndex = {i} columnIndex = {j}  />
-                                // props.allGroups[j][i].map(t =>{
-                                //     return(
-                                //         <div>
-                                //             {t.comb}
-
-                                //         </div>
-                                //     )
-                                // })
                             }
                         </td>
                     )
