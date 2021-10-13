@@ -1,0 +1,49 @@
+.topBar{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 5px;
+    margin-left: 20px;
+    margin-right: 20px;
+    
+}
+.leftSideContainer{
+    display: flex;
+    flex-direction: row;
+}
+.grabIconContainer{
+    display: flex;
+    align-items: center;
+}
+.selectIcon , .edgeIcon , .grabIcon , .plusIcon,.resultIcon{
+    color: black;
+    font-size : 25px;
+    padding: 5px;
+    width: 30px;
+    &:hover{
+        opacity: .6;
+    }
+    border-radius: 4px;
+}
+.selectIconActive ,.edgeIconActive, .grabIconActive, .plusIconActive{
+    background-color : rgb(154, 154, 240);
+}
+
+.edgeIcon{
+    text-align: center;
+    user-select: none;
+}
+.plusIcon{
+    text-align: center;
+}
+.rightSideContainer{
+    // margin-right: 20px;
+    // background-color: red;
+    input{
+        width: 30px;
+        outline: none;
+        border: none;
+        border-bottom: 1px solid black;
+        padding: 5px;
+    }
+}

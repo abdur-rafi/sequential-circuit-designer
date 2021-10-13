@@ -1,6 +1,6 @@
 import React from 'react'
 import { useState } from 'react'
-import styles from '../styles/design.module.scss'
+import styles from '../styles/footerheadercontainer.module.scss'
 import { useMediaQuery } from 'react-responsive'
 import {IoMenuSharp} from 'react-icons/io5'
 import {IoIosArrowDown} from 'react-icons/io'

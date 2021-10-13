@@ -1,0 +1,76 @@
+
+    .sideBar{
+        // color : red;
+        background-color: rgb(128, 128, 128);
+        border: solid 2px rgb(170, 168, 168);
+        height: 200px;
+        width: 200px;
+        border-radius: 10px 0px 10px 10px;
+        border-radius: 10px;
+        .crossIconContainer{
+            text-align: right;
+
+            .crossIcon{
+                margin : 5px;
+                &:hover{
+                    opacity: .6;
+                }
+            }
+        }
+    }
+    .stateNodeContainer, .ioNodeContainer{
+        margin: 5px;
+        // background-color: blue;
+        .inNodeContainer , .outNodeContainer, .radiusContainer{
+            // background-color: green;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            .arrowIcon{
+                // color: brown;
+                padding: 5px;
+                background-color: rgb(222, 222, 231);
+                border-radius: 15px;
+                margin: 0px 2px;
+                &:hover{
+                    opacity: .7;
+                }
+            }
+        }
+        .colorContainer{
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            input{
+                width: 30px;
+            }
+            // background-color: red;
+            .colorBlockContainer{
+                // background-color: red;
+                height: 30px;
+                display: flex;
+                align-items: center;
+                .colorBlock{
+                    margin-left: 5px;
+                    display: inline-block;
+                    height: 15px;
+                    width: 15px;
+                    border-radius: 10px;
+                    border: solid 1px black ;
+                }
+            }
+            
+        }
+
+    }
+    .ioNodeContainer{
+        .outputContainer{
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            input{
+                width: 30px;
+            }
+        }
+    }

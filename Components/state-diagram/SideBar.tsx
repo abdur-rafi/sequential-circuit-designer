@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import styles from '../../styles/design.module.scss'
+import styles from '../../styles/sidebar.module.scss'
 import {ImCancelCircle} from 'react-icons/im'
 import { IONode, StateNode } from './state-diagram-interfaces';
 import {BsArrowDown, BsArrowUp} from 'react-icons/bs'

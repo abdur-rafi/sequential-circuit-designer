@@ -3,7 +3,7 @@ import {StateNode, Point, IONode, Edge, MouseMode} from './state-diagram-interfa
 import {checkInsideCircle, calculateIONodeCenter,
      clearCircle, drawCircle, checkCollision, 
      pointToString, doRectanglesOverlap, clearCanvas, calculateDelTheta, doCirclesCollide} from './drawingFuncitons'
-import styles from '../../styles/design.module.scss'
+import styles from '../../styles/statediagram.module.scss'
 import SideBar from './SideBar';
 import TopBar from './topBar';
 import { canvasConfig, defalutIONodeConfig, defaultStateNodeConfig } from '../../defaultConfigs';
@@ -45,7 +45,8 @@ class Canvas extends React.Component<Props, State>{
     tempStateNodeCenter : Point;
     inputCombTextLength : number;
     selectedEdge : Edge | null;
-    moveContext : boolean
+    moveContext : boolean;
+    canvasContainerRef : React.RefObject<HTMLDivElement>
     
 
 
@@ -54,6 +55,7 @@ class Canvas extends React.Component<Props, State>{
         this.nodeCanvasRef = React.createRef();
         this.edgeCanvasRef = React.createRef();
         this.tempCanvasRef = React.createRef();
+        this.canvasContainerRef = React.createRef();
 
         this.stateNodes = [];
         this.edges = [];
@@ -1095,14 +1097,22 @@ class Canvas extends React.Component<Props, State>{
         let edgeContext = edgeCanvas.getContext('2d');
         let tempContext = tempCanvas.getContext('2d');
 
-        
+        console.log(this.canvasContainerRef.current?.getBoundingClientRect());
+        let box = this.canvasContainerRef.current?.getBoundingClientRect();
 
-        nodeCanvas.height = nodeCanvas.clientHeight;
-        nodeCanvas.width = nodeCanvas.clientWidth;
-        edgeCanvas.height = edgeCanvas.clientHeight;
-        edgeCanvas.width = edgeCanvas.clientWidth;
-        tempCanvas.height = tempCanvas.clientHeight;
-        tempCanvas.width = tempCanvas.clientWidth;
+        // nodeCanvas.height = nodeCanvas.clientHeight;
+        // nodeCanvas.width = nodeCanvas.clientWidth;
+        // edgeCanvas.height = edgeCanvas.clientHeight;
+        // edgeCanvas.width = edgeCanvas.clientWidth;
+        // tempCanvas.height = tempCanvas.clientHeight;
+        // tempCanvas.width = tempCanvas.clientWidth;
+
+        nodeCanvas.height = box!.height;
+        nodeCanvas.width = box!.width;
+        edgeCanvas.height = box!.height;
+        edgeCanvas.width = box!.width;
+        tempCanvas.height =  box!.height;
+        tempCanvas.width =  box!.width;
 
 
         window.addEventListener('keydown', e=>{
@@ -1133,17 +1143,30 @@ class Canvas extends React.Component<Props, State>{
         nodeContext.lineWidth = canvasConfig.nodeCanvasLineWidth;
         tempContext.lineWidth = canvasConfig.tempCanvasLineWidth;
 
-        this.createTestGraph();
+        // this.createTestGraph();
 
         
         window.addEventListener('resize', e=>{
 
-            nodeCanvas.height = nodeCanvas.clientHeight;
-            nodeCanvas.width = nodeCanvas.clientWidth;
-            edgeCanvas.height = edgeCanvas.clientHeight;
-            edgeCanvas.width = edgeCanvas.clientWidth;
-            tempCanvas.height = tempCanvas.clientHeight;
-            tempCanvas.width = tempCanvas.clientWidth;
+            // nodeCanvas.height = nodeCanvas.clientHeight;
+            // nodeCanvas.width = nodeCanvas.clientWidth;
+            // edgeCanvas.height = edgeCanvas.clientHeight;
+            // edgeCanvas.width = edgeCanvas.clientWidth;
+            // tempCanvas.height = tempCanvas.clientHeight;
+            // tempCanvas.width = tempCanvas.clientWidth;
+
+            let box = this.canvasContainerRef.current?.getBoundingClientRect();
+
+            console.log(box);
+            if(!box) return;
+
+            nodeCanvas.height = box.height;
+            nodeCanvas.width = box.width;
+            edgeCanvas.height = box.height;
+            edgeCanvas.width = box.width;
+            tempCanvas.height =  box.height;
+            tempCanvas.width =  box.width;
+
             clearCanvas(this.nodeCanvasRef);
             clearCanvas(this.tempCanvasRef);
             clearCanvas(this.edgeCanvasRef);
@@ -1182,40 +1205,40 @@ class Canvas extends React.Component<Props, State>{
 
     render() : React.ReactNode{
         return (
-            <div className={styles.root}>
+            <div className = {styles.stateDiagramRoot} >
                 {
                     
                     <div style={{
-                        display : this.state.synthesis ? 'none' : 'block'
-                    }}>
-                    <div className={styles.topBarContainer}>
-                        <TopBar changeNumberOfOutputVars={this.changeNumberOfOutputVars} numberOfOutputVars={this.state.numberOfOutputVars} changeNumberOfInputVars = {this.changeNumberOfInputVars} numberOfInputVars = {this.state.numberOfInpVars} setMouseMode = {this.setMouseMode} mouseMode = {this.state.mouseMode}/>
-                    </div>
-                    <div className={styles.canvasContainer}>
-                        <canvas ref = {this.nodeCanvasRef} className={styles.canvas} />
-                        <canvas ref={this.edgeCanvasRef} className={styles.canvas} />
-                        <canvas ref={this.tempCanvasRef} className={styles.canvas} style={{
-                            zIndex : 5
-                        }} />
-                    </div>
-                    <div onClick={()=>this.setState({synthesis : true})} className={styles.synthesisButtonContainer}>
-                        <button className={styles.synthesisButton}>
-                            synthesis
-                            {/* <Link to='/synthesize' > </Link> */}
-                        </button>
-                    </div>
+                        display : this.state.synthesis ? 'none' : 'flex'
+                    }} className = {styles.main} >
+                        <div className={styles.topBarContainer}>
+                            <TopBar changeSynthesis = {this.changeSynthesis} changeNumberOfOutputVars={this.changeNumberOfOutputVars} numberOfOutputVars={this.state.numberOfOutputVars} changeNumberOfInputVars = {this.changeNumberOfInputVars} numberOfInputVars = {this.state.numberOfInpVars} setMouseMode = {this.setMouseMode} mouseMode = {this.state.mouseMode}/>
+                        </div>
+                        <div className={styles.canvasContainer} ref={this.canvasContainerRef}>
+                            <canvas ref = {this.nodeCanvasRef} className={styles.canvas} />
+                            <canvas ref={this.edgeCanvasRef} className={styles.canvas} />
+                            <canvas ref={this.tempCanvasRef} className={styles.canvas} style={{
+                                zIndex : 5
+                            }} />
+                        </div>
+                        {/* <div onClick={()=>this.setState({synthesis : true})} className={styles.synthesisButtonContainer}>
+                            <button className={styles.synthesisButton}>
+                                synthesis
+                            </button>
+                        </div>
 
-                    <div onClick={()=>this.setMouseMode('addNode')} className={styles.addNodeButtonContainer}>
-                        <button className={styles.addNodeButton}>Add Node</button>
+                        <div onClick={()=>this.setMouseMode('addNode')} className={styles.addNodeButtonContainer}>
+                            <button className={styles.addNodeButton}>Add Node</button>
+                        </div> */}
+                        
+                        
+                        {
+                            this.state.showSideBar &&
+                        <div className = {styles.sideBarContainer}>
+                            <SideBar changeOutput={this.changeOutput} numberOfOutputVars={this.state.numberOfOutputVars} changeNumberOfOutputVars={this.changeNumberOfOutputVars} changeIoNodeColor = {this.changeIoNodeColor} changeStateColor = {this.changeStateColor} changeStateNodeRadius = {this.changeStateNodeRadius} addIoNodeWithStateChange = {this.addIoNodeWithStateChange} ioNode = {this.state.ioNodeToSideBar} stateNode = {this.state.stateNodeToSideBar} toggleSideBar = {this.toggleSideBar} />
+                        </div>}
                     </div>
-                    
-                    
-                    {
-                        this.state.showSideBar &&
-                    <div className = {styles.sideBarContainer}>
-                        <SideBar changeOutput={this.changeOutput} numberOfOutputVars={this.state.numberOfOutputVars} changeNumberOfOutputVars={this.changeNumberOfOutputVars} changeIoNodeColor = {this.changeIoNodeColor} changeStateColor = {this.changeStateColor} changeStateNodeRadius = {this.changeStateNodeRadius} addIoNodeWithStateChange = {this.addIoNodeWithStateChange} ioNode = {this.state.ioNodeToSideBar} stateNode = {this.state.stateNodeToSideBar} toggleSideBar = {this.toggleSideBar} />
-                    </div>}
-                </div>}
+                }
                     {
                         this.state.synthesis &&
                         <Design numberOfOutputVars = {this.state.numberOfOutputVars} changeSynthesis={this.changeSynthesis} numberOfInpVar = {this.state.numberOfInpVars} stateNodes={this.stateNodes} edges = {this.edges} />    

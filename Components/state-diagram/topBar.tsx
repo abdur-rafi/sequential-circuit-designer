@@ -1,15 +1,17 @@
 import React from "react";
-import styles from '../../styles/design.module.scss'
+import styles from '../../styles/topbar.module.scss'
 import {IoHandRightOutline} from 'react-icons/io5'
 import {GrSelect} from 'react-icons/gr'
 import { MouseMode } from "./state-diagram-interfaces";
+import {AiFillCaretRight, AiOutlinePlus} from 'react-icons/ai'
 interface Props{
     setMouseMode : (mode : MouseMode)=>void
     mouseMode : 'addNode' | 'drag' | 'edge' | 'select',
     numberOfInputVars : number,
     changeNumberOfInputVars : (vars : number)=> void,
     numberOfOutputVars : number,
-    changeNumberOfOutputVars : (vars : number)=> void
+    changeNumberOfOutputVars : (vars : number)=> void,
+    changeSynthesis : (b : boolean) => void
 }
 interface State{
 
@@ -56,10 +58,29 @@ class TopBar extends React.Component<Props, State>{
                             E
                         </div>
                     </div>
+                    <div className = {styles.plusIconContainer }>
+                        <div className = {styles.plusIcon + ' ' +  (this.props.mouseMode === 'addNode' ? styles.plusIconActive : '')}
+                         onClick = {()=>{
+                            if(this.props.mouseMode === 'addNode')
+                                return;
+                            this.props.setMouseMode('addNode')
+                        }}>
+                            <AiOutlinePlus />
+                        </div>
+                    </div>
+                    <div className = {styles.resultIconContainer }>
+                        <div className = {styles.resultIcon}
+                         onClick = {()=>{
+                            this.props.changeSynthesis(true);
+                        }}>
+                            <AiFillCaretRight />
+                        </div>
+                    </div>
+                    
                 </div>
                 <div className = {styles.rightSideContainer}>
                     <div className = {styles.inputVarContainer}>
-                        <label> #inp vars</label>
+                        <label> input</label>
                         <input type='number' value={this.props.numberOfInputVars}
                         onChange = {(e)=>{
                             let n = parseInt(e.target.value);
@@ -67,7 +88,7 @@ class TopBar extends React.Component<Props, State>{
                             this.props.changeNumberOfInputVars(n);
                             
                             }} />
-                        <label> #out vars </label>
+                        <label> output </label>
                         <input type='number' value={this.props.numberOfOutputVars} onChange={(e)=>{
                             let n = parseInt(e.target.value);
                             if(n > 0 && n < 5){

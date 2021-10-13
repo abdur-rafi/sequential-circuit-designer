@@ -1,0 +1,104 @@
+
+$contentMarginTop : 60px;
+$breakpoint : 600px;
+$footerHeight : 80px;
+
+.root{
+    
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.contentContainer{
+    padding-top: 5px;
+    margin-top: $contentMarginTop;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    height: calc(100% - $footerHeight - $contentMarginTop);
+    // overflow: hidden;
+}
+
+.header{
+
+
+    background: hsla(186, 33%, 94%, 1);
+
+    background: linear-gradient(90deg, hsla(186, 33%, 94%, 1) 0%, hsla(216, 41%, 79%, 1) 100%);
+
+    // background: hsla(217, 100%, 50%, 1);
+
+    // background: linear-gradient(90deg, hsla(217, 100%, 50%, 1) 0%, hsla(186, 100%, 69%, 1) 100%);
+
+    // background: -moz-linear-gradient(90deg, hsla(186, 33%, 94%, 1) 0%, hsla(216, 41%, 79%, 1) 100%);
+
+    // background: -webkit-linear-gradient(90deg, hsla(186, 33%, 94%, 1) 0%, hsla(216, 41%, 79%, 1) 100%);
+
+    // filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#EBF4F5", endColorstr="#B5C6E0", GradientType=1 );
+
+    position: fixed;
+    top: 0px;
+    padding: 20px;
+    width: 100%;
+    // background-color: gray;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    // align-items: center;
+    @media (max-width : $breakpoint){
+        display: block;
+            padding: 7.5px;
+            align-items: center;
+        // position: static;
+    }
+    .logoContainer{
+        @media (max-width : $breakpoint) {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+        }
+    }
+    .navigationLinksContainer{
+        user-select: none;
+        display: flex;
+        flex-direction: row;
+        @media (max-width : $breakpoint){
+            display: block;
+        }
+        & div{
+            width: 200px;
+        }
+        // .combinationalOptionsContainer, .sequentialOptionsContainer{
+        //     background-color: blue;
+        //     & div{
+        //         background-color: green;
+        //     }
+        // }
+    }
+    .noneDisplay{
+        display: none;
+    }
+    .menuButtonContainer{
+        margin-right: 20px;
+        .menuIcon{
+            height: 20px;
+            width: 20px;
+        }
+        padding: 10px;
+        border-radius: 10px;
+        
+
+    }
+    .pressed{
+        background-color: lightblue;
+    }
+    .rotateArrow{
+        transform: rotate(180deg);
+    }
+}
+.footer{
+    height: $footerHeight;
+}
