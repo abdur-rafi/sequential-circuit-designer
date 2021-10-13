@@ -4,7 +4,7 @@ import Canvas from "../Components/state-diagram/Canvas";
 
 function StateDiagram(){
     return(
-        <HeaderFooterContent useFooter = {false} content = {<Canvas />} />
+        <HeaderFooterContent useHeight = {true} useFooter = {false} content = {<Canvas />} />
     )
 }
 

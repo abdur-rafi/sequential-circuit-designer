@@ -17,8 +17,12 @@ $footerHeight : 80px;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    height: calc(100% - $footerHeight - $contentMarginTop);
     // overflow: hidden;
+}
+
+.contentHeight{
+    height: calc(100% - $footerHeight - $contentMarginTop);
+
 }
 
 .header{

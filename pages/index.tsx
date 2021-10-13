@@ -3,7 +3,7 @@ import HeaderFooterContent from "../Components/FooterHeaderContent";
 function Index(){
 
     return(
-        <HeaderFooterContent content = {'content'} />
+    <HeaderFooterContent useFooter = {true} useMinHeight = {false} content = {'content'} />
     )
 
 }

@@ -3,7 +3,8 @@ import styles from '../../styles/topbar.module.scss'
 import {IoHandRightOutline} from 'react-icons/io5'
 import {GrSelect} from 'react-icons/gr'
 import { MouseMode } from "./state-diagram-interfaces";
-import {AiFillCaretRight, AiOutlinePlus} from 'react-icons/ai'
+import {AiFillCaretRight, AiOutlineDash, AiOutlinePlus} from 'react-icons/ai'
+import { useMediaQuery } from "react-responsive";
 interface Props{
     setMouseMode : (mode : MouseMode)=>void
     mouseMode : 'addNode' | 'drag' | 'edge' | 'select',
@@ -16,92 +17,109 @@ interface Props{
 interface State{
 
 }
-class TopBar extends React.Component<Props, State>{
+const TopBar : React.FC<Props> = (props)=>{
 
+    const removeTextFromOptions = useMediaQuery({query : '(max-width:750px)'});
 
+    
+    return(
+        <div className={styles.topBar}>
+            <div className = {styles.leftSideContainer}>
+                <div onClick = {()=>{
+                        if(props.mouseMode === 'drag')
+                            return;
+                        // else
+                        props.setMouseMode('drag');
+                    }} className={styles.grabIconContainer+ ' ' + (props.mouseMode === 'drag' ? styles.grabIconActive : '')}>
+                    { !removeTextFromOptions && 'Drag'}
+                    <IoHandRightOutline
+                    className={styles.grabIcon }
+                    
+                    />
 
-    render() : React.ReactNode{
-        return(
-            <div className={styles.topBar}>
-                <div className = {styles.leftSideContainer}>
-                    <div className={styles.grabIconContainer}>
-                        <IoHandRightOutline
-                        className={styles.grabIcon + ' ' + (this.props.mouseMode === 'drag' ? styles.grabIconActive : '')}
-                        onClick = {()=>{
-                            if(this.props.mouseMode === 'drag')
+                </div>
+                <div onClick = {()=>{
+                            if(props.mouseMode === 'select')
                                 return;
                             // else
-                            this.props.setMouseMode('drag');
-                        }}
-                        />
-
-                    </div>
-                    <div className = {styles.selectIconContainer}>
+                            props.setMouseMode('select');
+                        }} className = {styles.selectIconContainer  + ' ' + (props.mouseMode === 'select' ? styles.selectIconActive : '')}>
+                    { !removeTextFromOptions && "Select"}
+                    <GrSelect
+                        className={styles.selectIcon}
                         
-                        <GrSelect
-                            className={styles.selectIcon + ' ' + (this.props.mouseMode === 'select' ? styles.selectIconActive : '')}
-                            onClick = {()=>{
-                                if(this.props.mouseMode === 'select')
-                                    return;
-                                // else
-                                this.props.setMouseMode('select');
-                            }}
-                            />
-                    </div>
-                    <div className = {styles.edgeIconContainer}>
-                        <div className = {styles.edgeIcon + ' ' + (this.props.mouseMode === 'edge' ? styles.selectIconActive : '')}
-                        onClick = {()=>{
-                            if(this.props.mouseMode === 'edge')
-                                return;
-                            this.props.setMouseMode('edge')
-                        }}>
-                            E
-                        </div>
-                    </div>
-                    <div className = {styles.plusIconContainer }>
-                        <div className = {styles.plusIcon + ' ' +  (this.props.mouseMode === 'addNode' ? styles.plusIconActive : '')}
-                         onClick = {()=>{
-                            if(this.props.mouseMode === 'addNode')
-                                return;
-                            this.props.setMouseMode('addNode')
-                        }}>
-                            <AiOutlinePlus />
-                        </div>
-                    </div>
-                    <div className = {styles.resultIconContainer }>
-                        <div className = {styles.resultIcon}
-                         onClick = {()=>{
-                            this.props.changeSynthesis(true);
-                        }}>
-                            <AiFillCaretRight />
-                        </div>
-                    </div>
+                        />
+                </div>
+                <div onClick = {()=>{
+                        if(props.mouseMode === 'edge')
+                            return;
+                        props.setMouseMode('edge')
+                    }} className = {styles.edgeIconContainer + ' ' + (props.mouseMode === 'edge' ? styles.selectIconActive : '')}>
+                    { !removeTextFromOptions && 'Connect'}
+                    {/* <div className = {styles.edgeIcon + ' ' + (this.props.mouseMode === 'edge' ? styles.selectIconActive : '')}
+                    onClick = {()=>{
+                        if(this.props.mouseMode === 'edge')
+                            return;
+                        this.props.setMouseMode('edge')
+                    }}>
+                        E
+                    </div> */}
+
+                    <AiOutlineDash className = {styles.edgeIcon}>
+                        E
+                    </AiOutlineDash>
+
+                </div>
+                <div onClick = {()=>{
+                        if(props.mouseMode === 'addNode')
+                            return;
+                        props.setMouseMode('addNode')
+                    }} className = {styles.plusIconContainer + ' ' +  (props.mouseMode === 'addNode' ? styles.plusIconActive : '') }>
+                    { !removeTextFromOptions &&  "New Node"}
+                    <AiOutlinePlus className = {styles.plusIcon }/>
+                </div>
+                <div onClick = {()=>{
+                        props.changeSynthesis(true);
+                    }} className = {styles.resultIconContainer }>
+                    { !removeTextFromOptions &&  "Calculate"}
+                    <AiFillCaretRight className = {styles.resultIcon}/>
+                </div>
+                
+            </div>
+            <div className = {styles.rightSideContainer}>
+                <div className = {styles.inputVarContainer}>
+                    <label> input</label>
+                    <input type='number' value={props.numberOfInputVars}
+                    onChange = {(e)=>{
+                        let n = parseInt(e.target.value);
+                        if(n > 4 || n < 1) return;
+                        props.changeNumberOfInputVars(n);
+                        
+                        }} />
+                    {/* <label> output </label>
+                    <input type='number' value={this.props.numberOfOutputVars} onChange={(e)=>{
+                        let n = parseInt(e.target.value);
+                        if(n > 0 && n < 5){
+                            this.props.changeNumberOfOutputVars(n);
+                        }
+                    }} /> */}
                     
                 </div>
-                <div className = {styles.rightSideContainer}>
-                    <div className = {styles.inputVarContainer}>
-                        <label> input</label>
-                        <input type='number' value={this.props.numberOfInputVars}
-                        onChange = {(e)=>{
-                            let n = parseInt(e.target.value);
-                            if(n > 4 || n < 1) return;
-                            this.props.changeNumberOfInputVars(n);
-                            
-                            }} />
-                        <label> output </label>
-                        <input type='number' value={this.props.numberOfOutputVars} onChange={(e)=>{
-                            let n = parseInt(e.target.value);
-                            if(n > 0 && n < 5){
-                                this.props.changeNumberOfOutputVars(n);
-                            }
-                        }} />
-                        
-                    </div>
-                </div>
+                <div className = {styles.outputVarContainer}>
+                <label> output </label>
+                    <input type='number' value={props.numberOfOutputVars} onChange={(e)=>{
+                        let n = parseInt(e.target.value);
+                        if(n > 0 && n < 5){
+                            props.changeNumberOfOutputVars(n);
+                        }
+                    }} />
 
+                </div>
             </div>
-        )
-    }
+
+        </div>
+    )
+    
 }
 
 export default TopBar;

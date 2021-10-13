@@ -5,7 +5,7 @@ import { generateKMap, simplifyFunction, truthTableFromMinterms } from './helper
 import { kMap, simplifyFunctionReutnType, tabulationGroupItem, truthTable } from './interfaces';
 import KMap from './kMap';
 import PrimeImplicants from './PrimeImplicants';
-import styles from '../../styles/design.module.scss'
+import styles from '../../styles/minimizefunction.module.scss'
 
 const TabualationTableCell : React.FC<{
     rowIndex : number,
@@ -20,7 +20,9 @@ const TabualationTableCell : React.FC<{
     for(let i = 1; i < props.items.length; ++i){
         afterRows.push(
             <tr key = {i}>
-                <td>
+                <td style = {{
+                    color : props.items[i].taken ? 'black' : 'red'
+                }}>
                     {
                         props.items[i].comb
                     }
@@ -40,7 +42,7 @@ const TabualationTableCell : React.FC<{
                     <tr>
                         
                         <th>
-                            {props.columnIndex === 0 ? 'cell' : 'combined cells'}
+                            {props.columnIndex === 0 ? 'cell' : 'from cells'}
                         </th>
                         <th>
                             input combination
@@ -55,7 +57,9 @@ const TabualationTableCell : React.FC<{
                         <td rowSpan = {props.items.length === 0? 1 : props.items.length}>
                             {indexes.map((t, i) => t + ((i === indexes.length - 1) ? '' : ','))}
                         </td>
-                        <td>
+                        <td style = {{
+                            color : (props.items.length > 0 && !props.items[0].taken) ? 'red' : 'black'
+                        }}>
                             {
                                 props.items.length > 0 && props.items[0].comb
                             }
@@ -155,6 +159,7 @@ const MinimizeFunction : React.FC<{
     const [implicants, setImplicants] = useState<simplifyFunctionReutnType|null> (null);
 
     const [sumOfMinterm, setSumOfMinterm] = useState<boolean>(true);
+    const [varsArr, setVarsArr] = useState<string[]>([]);
 
     let regex = /\s*,\s*/;
 
@@ -193,6 +198,7 @@ const MinimizeFunction : React.FC<{
                 type : 'terms',
                 message : 'no terms given'
             })
+            return false
         }
         for(let i = 0; i < n; ++i){
             if(vars[i].length === 0 || vars[i].split(/\s/).length > 1){
@@ -271,9 +277,12 @@ const MinimizeFunction : React.FC<{
         .then(async tr =>{
             let k = await generateKMap(tr);
             let r = simplifyFunction(tr, true);
+            setVarsArr(vars);
             setImplicants(r);
             setKMap(k);
         })
+
+
 
         return true;
 
@@ -286,18 +295,18 @@ const MinimizeFunction : React.FC<{
     }
 
     return(
-        <div>
-            <div>
-                Variables:
+        <div className = {styles.root}>
+            <div className = {styles.variablesInputContainer} >
+                <label>Variables:</label>
                 <input type = 'text' onChange = {(e)=>{
                         setVariables(e.target.value);
                         resetError('vars')
                     }} value = {variables} />
-                <div>
+                <div className = {styles.errorTextContainer} >
                     {error && error.type === 'vars' && error.message}
                 </div>
             </div>
-            <div>
+            <div className = {styles.termContainer}>
                     <select onChange = {(e)=>{
                         if(e.target.value === 'sum of minterms'){
                             setSumOfMinterm(true);
@@ -316,37 +325,37 @@ const MinimizeFunction : React.FC<{
                         setFunctionTerms(e.target.value);
                         resetError('terms')
                     }} value = {functionTerms} />
-                <div>
+                <div className = {styles.errorTextContainer}>
                     {error && error.type === 'terms' && error.message}
                 </div>
             </div>
-            <div>
-                don't cares:
+            <div className = {styles.dontCareContainer}>
+                <label> don't cares: </label>
                 <input type = 'text' onChange = {(e)=>{
                         setDontCares(e.target.value);
                         resetError('dontCares');
                     }} value = {dontCares} />
-                <div>
+                <div className = {styles.errorTextContainer}>
                     {error && error.type === 'dontCares' && error.message}
                 </div>
             </div>
-            <div>
-                <button onClick = {()=>validate()}> Generate Kamp </button>
+            <div className = {styles.buttonContainer} >
+                <button onClick = {()=>validate()}> {props.useTabulaion ? 'Generate Table' : 'Generate KMap'} </button>
             </div>
-            <div>
+            <div className = {styles.mapContainer}>
                 {
                    !props.useTabulaion && kMap && <KMap kMap = {kMap} />
                     
                 }
                 {
-                    props.useTabulaion && implicants && <TabulationTable allGroups = {implicants.groupsPerStep!} vars = {variables.trim().split(regex)} />
+                    props.useTabulaion && implicants && <TabulationTable allGroups = {implicants.groupsPerStep!} vars = {varsArr} />
                 }
                 {
-                    implicants && <FuncionEquation vars = {variables.trim().split(regex)} functionName = {'f'} r = {implicants} />
+                    implicants && <FuncionEquation vars = {varsArr} functionName = {'f'} r = {implicants} />
                 }
                 
                 {
-                    implicants && <PrimeImplicants vars = {variables.trim().split(regex)} r = {implicants} />
+                    implicants && <PrimeImplicants vars = {varsArr} r = {implicants} />
                 }
                 
             </div>

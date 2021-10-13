@@ -1,0 +1,92 @@
+
+.root{
+    margin : 10px;
+    text-align: center;
+}
+
+.stateTableInputContainer{
+    text-align: center;
+    
+    table, th, td{
+        border: solid 1px black;
+        border-collapse: collapse;
+        // padding: 10px;
+        text-align: center;
+    }
+    table{
+        margin: 20px;
+        border: none;
+        display: inline-block;
+    }
+    th{
+        padding: 10px;
+    }
+    input{
+        margin: 10px;
+        // padding: 10px;
+        border: none;
+        border-bottom: 1px solid;
+        &:focus{
+            border: none;
+            // color : red;
+            outline: none;
+            border-bottom: 1px solid lightblue;
+        }
+    }
+    .stateEntryTd{
+        input{
+            width: 40px;
+            height: 20px;
+        }
+    }
+    .entryTd{
+        input{
+            width: 40px;
+            height: 20px;
+        }
+        .outputEntryInput{
+            width: 30px;
+        }
+    }
+    .errorTd{
+        .errorInput{
+            border-bottom: 1px solid red;
+        }
+    }
+    .errorMessageContainer{
+        font-size: 12px;
+        color: rgb(243, 38, 38);
+    }
+    
+}
+
+.inputsContainer, .outputsContainer, .statesContainer{
+    // background-color: red;
+    display: inline-block;
+    padding: 10px;
+    label{
+        padding: 10px;
+    }
+    input{
+        margin-left: 10px;
+        outline : none;
+        border: none;
+        border-bottom: 1px solid rgb(146, 143, 143);
+        &:focus{
+            border-bottom: 1px solid lightblue;
+        }
+    }
+
+    margin: 10px;
+    // border: 2px inset lightslategray;
+}
+
+.buttonContainer{
+    text-align: center;
+    button{
+        padding: 5px 15px;
+        background-color: rgb(11, 94, 32);
+        color: white;
+        
+    }
+}

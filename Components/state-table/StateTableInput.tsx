@@ -1,7 +1,7 @@
 import React from 'react'
 import { useState, useEffect, useRef } from 'react'
 import { getInputCombination, nextStateMapFromStateTalbeInput } from '../synthesis/helperFunctions'
-import styles from '../../styles/design.module.scss'
+import styles from '../../styles/statetableinput.module.scss'
 import { FromNextStateMap } from '../synthesis/results'
 import { nextStateMap, stringToStringMap } from '../synthesis/interfaces'
 
@@ -428,31 +428,40 @@ class StateTableInput extends React.Component<Props, {
 
     render(){
         return(
-            <div>
+            <div className = {styles.root}>
                 { 
                     !this.state.showResults &&
                     <div>
                         <div>
-                            #inputs <input type = 'number' onChange = {e => {
-                                let n = parseInt(e.target.value);
-                                if(n >0 && n < 5){
-                                    this.onInputVarChange(n);
-                                }
-                            }} value = {this.state.numberOfInputVars}></input>
-                            #outputs <input type = 'number' onChange = {e => {
-                                let n = parseInt(e.target.value);
-                                if(n >0){
-                                    this.onOutputChange(n);
-                                }
-                            }}
-                            value = {this.state.numberOfOutputVars}
-                            ></input>
-                            #states <input type = 'number' onChange = {e => {
-                                let n = parseInt(e.target.value);
-                                if(n >0){
-                                    this.onStateChange(n);
-                                }
-                            }} value = {this.state.numberOfStates} ></input>
+                            <div className = {styles.inputsContainer}>
+                                <label> inputs </label>
+                                <input type = 'number' onChange = {e => {
+                                    let n = parseInt(e.target.value);
+                                    if(n >0 && n < 5){
+                                        this.onInputVarChange(n);
+                                    }
+                                }} value = {this.state.numberOfInputVars}></input>
+                            </div>
+                            <div className = {styles.outputsContainer}>
+                                <label> outputs </label>
+                                <input type = 'number' onChange = {e => {
+                                    let n = parseInt(e.target.value);
+                                    if(n >0){
+                                        this.onOutputChange(n);
+                                    }
+                                }}
+                                value = {this.state.numberOfOutputVars}
+                                ></input>
+                            </div>
+                            <div className = {styles.statesContainer}>
+                                <label> states </label>
+                                <input type = 'number' onChange = {e => {
+                                    let n = parseInt(e.target.value);
+                                    if(n >0){
+                                        this.onStateChange(n);
+                                    }
+                                }} value = {this.state.numberOfStates} ></input>
+                            </div>
                         </div>
                         <div className = {styles.stateTableInputContainer}>
                             <table>
@@ -462,7 +471,7 @@ class StateTableInput extends React.Component<Props, {
                                 lastSelected = {this.state.lastSelected} error = {this.state.error} entries = {this.state.entries} chnageStates = {this.chnageStates} />
                             </table>
                         </div>
-                        <div>
+                        <div className = {styles.buttonContainer}>
                             <button onClick = {async ()=>{
                                 if(this.chekcValidity()){
                                     let r = await nextStateMapFromStateTalbeInput(this.state.states,this.state.entries,this.state.outputs);

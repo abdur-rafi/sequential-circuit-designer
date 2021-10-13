@@ -1,11 +1,11 @@
-import FuncionEquation from "../../Components/synthesis/FunctionEquation"
+import React from "react";
+import HeaderFooterContent from "../../Components/FooterHeaderContent";
 import MinimizeFunction from "../../Components/synthesis/MinimizeFunction"
 
 const Tabulation = ()=>{
     return(
-        <div>
-            <MinimizeFunction useTabulaion = {true} />
-        </div>
+        <HeaderFooterContent useHeight = {false} useFooter = {true} content = {<MinimizeFunction useTabulaion = {true} />} />
+        
     )
 }
 
