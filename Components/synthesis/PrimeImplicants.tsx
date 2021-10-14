@@ -1,6 +1,7 @@
 import React from 'react'
 import { getLiteral } from './helperFunctions';
 import { simplifyFunctionReutnType } from './interfaces'
+import styles from '../../styles/equationAndImplicants.module.scss'
 
 const PrimeImplicants : React.FC<{
     r : simplifyFunctionReutnType,
@@ -17,7 +18,7 @@ const PrimeImplicants : React.FC<{
 
     
     return(
-        <div>
+        <div className = {styles.implicantContainer} >
             <div>
                 All Prime Implicants: {' '} 
                 {allPis.split('').map(c => Number.isInteger(parseInt(c)) ? (<sub key={key++}>{c}</sub>) : c)}

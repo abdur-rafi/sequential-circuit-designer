@@ -1,7 +1,7 @@
 import React from 'react'
 import { getLiteral } from './helperFunctions';
 import { simplifyFunctionReutnType, tabulationGroupItem } from './interfaces';
-
+import styles from '../../styles/equationAndImplicants.module.scss'
 
 let FuncionEquation : React.FC<{
     functionName : string,
@@ -15,7 +15,7 @@ let FuncionEquation : React.FC<{
     if(s == '')
         s = '0'
 return(
-        <div> 
+        <div className = {styles.equationContainer} > 
             {props.functionName.split('').map
             (c => Number.isInteger(parseInt(c)) ? (<sub key={key++}>{c}</sub>) : c)} = {s.split('').map
             (c => Number.isInteger(Number.parseInt(c)) ? <sub key={key++}>{c}</sub> : c  )} 

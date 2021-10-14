@@ -2,6 +2,7 @@ import React from 'react'
 import { useState, useEffect, useRef } from 'react'
 import { getInputCombination, nextStateMapFromStateTalbeInput } from '../synthesis/helperFunctions'
 import styles from '../../styles/statetableinput.module.scss'
+import minimizeFunctionStyles from '../../styles/minimizefunction.module.scss'
 import { FromNextStateMap } from '../synthesis/results'
 import { nextStateMap, stringToStringMap } from '../synthesis/interfaces'
 
@@ -432,8 +433,18 @@ class StateTableInput extends React.Component<Props, {
                 { 
                     !this.state.showResults &&
                     <div>
-                        <div>
-                            <div className = {styles.inputsContainer}>
+
+                        <div className = {minimizeFunctionStyles.introContainer} >
+                            <h1>
+                                Synthesize Sequential Circuit From State Table 
+                            </h1>
+                            <div>
+                                Provide only the state Table and We will do the rest
+                            </div>
+                        </div>
+
+                        <div className = {minimizeFunctionStyles.inputsContainer} >
+                            <div className = {minimizeFunctionStyles.inputContainer}>
                                 <label> inputs </label>
                                 <input type = 'number' onChange = {e => {
                                     let n = parseInt(e.target.value);
@@ -442,7 +453,7 @@ class StateTableInput extends React.Component<Props, {
                                     }
                                 }} value = {this.state.numberOfInputVars}></input>
                             </div>
-                            <div className = {styles.outputsContainer}>
+                            <div className = {minimizeFunctionStyles.outputsContainer}>
                                 <label> outputs </label>
                                 <input type = 'number' onChange = {e => {
                                     let n = parseInt(e.target.value);
@@ -453,7 +464,7 @@ class StateTableInput extends React.Component<Props, {
                                 value = {this.state.numberOfOutputVars}
                                 ></input>
                             </div>
-                            <div className = {styles.statesContainer}>
+                            <div className = {minimizeFunctionStyles.statesContainer}>
                                 <label> states </label>
                                 <input type = 'number' onChange = {e => {
                                     let n = parseInt(e.target.value);

@@ -1,7 +1,7 @@
 
 $contentMarginTop : 60px;
 $breakpoint : 600px;
-$footerHeight : 80px;
+$footerHeight : 100px;
 
 .root{
     
@@ -105,4 +105,26 @@ $footerHeight : 80px;
 }
 .footer{
     height: $footerHeight;
+    background-color: red;
+    padding: 20px;
+    background-color: black;
+    color: white;
+    text-align: center;
+    .linksContainer{
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        // justify-content: center;
+        .facebookIcon, .githubIcon{
+            // padding: 10px;
+            margin: 2px 5px;
+            color: white !important;
+            font-size: 2em;
+        }
+    }
+}
+
+.cardContainer{
+    text-align: left;
+    display: inline-block;
 }

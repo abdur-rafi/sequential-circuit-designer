@@ -79,6 +79,43 @@ const TabualationTableCell : React.FC<{
     )
 }
 
+const ColumnTable : React.FC<{
+    colums : tabulationGroupItem[][],
+    columnIndex : number,
+    vars : string[]
+}> = (props)=>{
+    let key = 0;
+    return(
+        <div className = {styles.columnTableContainer}>
+            <table className = {styles.columnTable}>
+                <thead>
+                    <tr>
+                        <th>
+                            {`Step: ${props.columnIndex + 1}`}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {
+                        props.colums.map((item, index)=>{
+                            return(
+                                <tr key = {key++}>
+                                    <td>
+                                        <TabualationTableCell columnIndex = {props.columnIndex} items = {item} rowIndex = {index} />
+                                    </td>
+                                </tr>
+                            )
+                        })
+                    }
+                </tbody>
+                {/* {
+                    props.colums.map( (item, index) => <TabualationTableCell key = {key++} rowIndex = {index} columnIndex = {props.columnIndex} items = {item} />)
+                } */}
+            </table>
+        </div>
+    )
+}
+
 const TabulationTable : React.FC<{
     allGroups : tabulationGroupItem[][][],
     vars : string[]
@@ -122,7 +159,7 @@ const TabulationTable : React.FC<{
                 }
             }
             row.push(
-                <tr>
+                <tr key = {key++}>
                     {columns}
                 </tr>
             )
@@ -136,10 +173,13 @@ const TabulationTable : React.FC<{
 
     return(
         <div className = {styles.tabulationTableContainer}>
-            <table className = {styles.tabulationTable}>
+            {/* <table className = {styles.tabulationTable}>
                 <TableHeader/>
                 <TableBody/>
-            </table>
+            </table> */}
+            {
+                props.allGroups.map((item, index)=><ColumnTable columnIndex = {index} colums = {item} vars = {props.vars} />)
+            }
         </div>
     )
 }
@@ -174,7 +214,7 @@ const MinimizeFunction : React.FC<{
         return remTerms;
     }
 
-    const validate = () =>{
+    const validate =  () =>{
         const doesContainOtherThandigits = (l : string)=>{
             for(let i = 0; i < l.length; ++i){
                 if(!Number.isInteger(parseInt(l[i]))){
@@ -296,52 +336,85 @@ const MinimizeFunction : React.FC<{
 
     return(
         <div className = {styles.root}>
-            <div className = {styles.variablesInputContainer} >
-                <label>Variables:</label>
-                <input type = 'text' onChange = {(e)=>{
-                        setVariables(e.target.value);
-                        resetError('vars')
-                    }} value = {variables} />
-                <div className = {styles.errorTextContainer} >
-                    {error && error.type === 'vars' && error.message}
-                </div>
+            <div className = {styles.introContainer} >
+                <h1>
+                    Minimize / Simplify Function
+                </h1>
+                <div>
+                Provide the function as sum of minterms or product of maxterms. The function is then minimized using {props.useTabulaion ? 'Tabulation Method' : 'KMap'}.
+                Additionally all Prime Implicants and essential prime implicants are provided</div>
             </div>
-            <div className = {styles.termContainer}>
+            <div className = {styles.inputsContainer}>
+
+              
+                <div className = {styles.variablesInputContainer} >
+                    <label>Variables:</label>
+                    <input type = 'text' onChange = {(e)=>{
+                            setVariables(e.target.value);
+                            resetError('vars')
+                        }} value = {variables} />
+
+                    {error && error.type === 'vars' &&
+                        <div className = {styles.errorTextContainer} >
+                            {error.message}
+                        </div>
+                    }
+                </div>
+                <div className = {styles.optionsContainer}>
                     <select onChange = {(e)=>{
-                        if(e.target.value === 'sum of minterms'){
-                            setSumOfMinterm(true);
-                        }
-                        else{
-                            setSumOfMinterm(false);
-                        }
-                    }} defaultValue = {'sum of minterms'} >
-                        <option> sum of minterms </option>
-                        <option> product of maxterms </option>
-                    </select>
-                
-                {' '} of {' '}
+                            if(e.target.value === 'sum of minterms'){
+                                setSumOfMinterm(true);
+                            }
+                            else{
+                                setSumOfMinterm(false);
+                            }
+                        }} defaultValue = {'sum of minterms'} >
+                            <option> sum of minterms </option>
+                            <option> product of maxterms </option>
+                        </select>
+                </div>
+                <div className = {styles.termContainer}>
+                        {/* <select onChange = {(e)=>{
+                            if(e.target.value === 'sum of minterms'){
+                                setSumOfMinterm(true);
+                            }
+                            else{
+                                setSumOfMinterm(false);
+                            }
+                        }} defaultValue = {'sum of minterms'} >
+                            <option> sum of minterms </option>
+                            <option> product of maxterms </option>
+                        </select> */}
                     
-                <input type = 'text' onChange = {(e)=>{
-                        setFunctionTerms(e.target.value);
-                        resetError('terms')
-                    }} value = {functionTerms} />
-                <div className = {styles.errorTextContainer}>
-                    {error && error.type === 'terms' && error.message}
+                    <label> Terms </label>    
+                    <input type = 'text' onChange = {(e)=>{
+                            setFunctionTerms(e.target.value);
+                            resetError('terms')
+                        }} value = {functionTerms} />
+                    {error && error.type === 'terms' &&
+                        <div className = {styles.errorTextContainer} >
+                            {error.message}
+                        </div>
+                    }
                 </div>
-            </div>
-            <div className = {styles.dontCareContainer}>
-                <label> don't cares: </label>
-                <input type = 'text' onChange = {(e)=>{
-                        setDontCares(e.target.value);
-                        resetError('dontCares');
-                    }} value = {dontCares} />
-                <div className = {styles.errorTextContainer}>
-                    {error && error.type === 'dontCares' && error.message}
+                <div className = {styles.dontCareContainer}>
+                    <label> don't cares: </label>
+                    <input type = 'text' onChange = {(e)=>{
+                            setDontCares(e.target.value);
+                            resetError('dontCares');
+                        }} value = {dontCares} />
+                    {error && error.type === 'dontCares' &&
+                        <div className = {styles.errorTextContainer} >
+                            {error.message}
+                        </div>
+                    }
                 </div>
+                <div className = {styles.buttonContainer} >
+                    <button onClick = {()=>validate()}> {props.useTabulaion ? 'Generate Table' : 'Generate KMap'} </button>
+                </div>
+
             </div>
-            <div className = {styles.buttonContainer} >
-                <button onClick = {()=>validate()}> {props.useTabulaion ? 'Generate Table' : 'Generate KMap'} </button>
-            </div>
+            
             <div className = {styles.mapContainer}>
                 {
                    !props.useTabulaion && kMap && <KMap kMap = {kMap} />
@@ -351,11 +424,14 @@ const MinimizeFunction : React.FC<{
                     props.useTabulaion && implicants && <TabulationTable allGroups = {implicants.groupsPerStep!} vars = {varsArr} />
                 }
                 {
-                    implicants && <FuncionEquation vars = {varsArr} functionName = {'f'} r = {implicants} />
+                    implicants &&
+                    <div className = {styles.equationAndImplicationsContainer}>
+                        <FuncionEquation vars = {varsArr} functionName = {'f'} r = {implicants} />
+                        <PrimeImplicants vars = {varsArr} r = {implicants} />
+                    </div>
                 }
                 
                 {
-                    implicants && <PrimeImplicants vars = {varsArr} r = {implicants} />
                 }
                 
             </div>
