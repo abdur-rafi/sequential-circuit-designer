@@ -192,6 +192,8 @@ class StateTableInput extends React.Component<Props, {
 
         let numberOfStates = 5;
         let numberOfInputVars = 1;
+        let circuitMode : circuitMode = 'pulse';
+
 
         let temp : string[][] = [];
         let tempOut : string[][] = [];
@@ -200,15 +202,19 @@ class StateTableInput extends React.Component<Props, {
             temp.push([]);
             tempOut.push([]);
             tempStates.push('');
-            for(let j = 0; j < (1<<numberOfInputVars); ++j){
+            let m = numberOfInputVars;
+            // if(circuitMode === 'synch'){
+            //     m = 1 << this.state.numberOfInputVars;
+            // }
+            for(let j = 0; j < m; ++j){
                 temp[i].push('');
                 tempOut[i].push('');
             }
         }
 
         this.state = {
-            numberOfStates : 5,
-            numberOfInputVars : 1,
+            numberOfStates : numberOfStates,
+            numberOfInputVars : numberOfInputVars,
             numberOfOutputVars : 1,
             states : tempStates,
             entries : temp,
@@ -223,7 +229,7 @@ class StateTableInput extends React.Component<Props, {
             internalLabels : [],
             internalToOriginalMap : {},
             nextStateMap : null,
-            circuiMode : "synchronous"
+            circuiMode : "pulse"
         }
         this.chekcValidity = this.chekcValidity.bind(this);
         this.changeEntry = this.changeEntry.bind(this);
@@ -233,6 +239,7 @@ class StateTableInput extends React.Component<Props, {
         this.onOutputChange = this.onOutputChange.bind(this);
         this.onStateChange = this.onStateChange.bind(this);
         this.changeShowResult = this.changeShowResult.bind(this);
+        this.onModeChange = this.onModeChange.bind(this);
     }
 
     chekcValidity(){
@@ -265,7 +272,11 @@ class StateTableInput extends React.Component<Props, {
         }
         
         for(let i = 0; i < this.state.numberOfStates; ++i){
-            for(let j = 0; j < (1 << (this.state.numberOfInputVars )); ++j){
+            let m = this.state.numberOfInputVars;
+            if(this.state.circuiMode === 'synch'){
+                m = 1 << this.state.numberOfInputVars;
+            }
+            for(let j = 0; j < m; ++j){
                 if(this.state.outputs[i][j].length !== this.state.numberOfOutputVars){
                     this.setState({
                         error :{
@@ -373,7 +384,11 @@ class StateTableInput extends React.Component<Props, {
             else{
                 tempEntries.push([])
                 tempOut.push([]);
-                for(let j = 0; j < (1 << this.state.numberOfInputVars);++j){
+                let m = this.state.numberOfInputVars;
+                if(this.state.circuiMode === 'synch'){
+                    m = 1 << this.state.numberOfInputVars;
+                }
+                for(let j = 0; j < m;++j){
                     tempEntries[i].push('');
                     tempOut[i].push('');
                 }
@@ -389,20 +404,29 @@ class StateTableInput extends React.Component<Props, {
 
     onInputVarChange(numberOfInputVars : number){
         let tempEntries : string[][] = [];
+        let tempOut : string[][] = [];
         for(let i = 0; i < this.state.numberOfStates; ++i){
             tempEntries.push([]);
-            for(let j = 0; j < (1 << numberOfInputVars); ++j){
+            tempOut.push([]);
+            let m = numberOfInputVars;
+            if(this.state.circuiMode === 'synch'){
+                m = 1 << numberOfInputVars;
+            }
+            for(let j = 0; j < m; ++j){
                 if(j < this.state.entries[i].length){
                     tempEntries[i].push(this.state.entries[i][j]);
+                    tempOut[i].push(this.state.outputs[i][j])
                 }
                 else{
+                    tempOut[i].push('');
                     tempEntries[i].push('');
                 }
             }
         }
         this.setState({
             entries : tempEntries,
-            numberOfInputVars : numberOfInputVars
+            numberOfInputVars : numberOfInputVars,
+            outputs : tempOut
         })
     }
 
@@ -410,7 +434,11 @@ class StateTableInput extends React.Component<Props, {
         let temp : string[][] = [];
         for(let i = 0; i < this.state.numberOfStates; ++i){
             temp.push([]);
-            for(let j = 0; j < (1 << (this.state.numberOfInputVars)); ++j){
+            let m = this.state.numberOfInputVars;
+            if(this.state.circuiMode === 'synch'){
+                m = 1 << this.state.numberOfInputVars;
+            }
+            for(let j = 0; j < m; ++j){
                 temp[i].push('');
             }
         }
@@ -420,6 +448,15 @@ class StateTableInput extends React.Component<Props, {
             numberOfOutputVars : numberOfOutputVars
         })
 
+    }
+
+    onModeChange(mode : circuitMode){
+        if(this.state.circuiMode === mode) return;
+        this.setState({
+            circuiMode : mode
+        }, ()=>{
+            this.onInputVarChange(this.state.numberOfInputVars);
+        })
     }
 
     changeShowResult(b : boolean){
@@ -476,6 +513,17 @@ class StateTableInput extends React.Component<Props, {
                                     }
                                 }} value = {this.state.numberOfStates} ></input>
                             </div>
+                            <div className = {minimizeFunctionStyles.modeContainer}>
+                                <label>Mode</label>
+                                <select onChange = {(e)=>{
+                                    if(e.target.value === 'synch' || e.target.value === 'pulse'){
+                                        this.onModeChange(e.target.value);
+                                    }
+                                }} value = {this.state.circuiMode}>
+                                    <option>synch</option>
+                                    <option>pulse</option>
+                                </select>
+                            </div>
                         </div>
                         <div className = {styles.stateTableInputContainer}>
                             <table>
@@ -501,7 +549,7 @@ class StateTableInput extends React.Component<Props, {
                         </div>
                     </div>
                 }
-                { this.state.showResults && <FromNextStateMap labelMap = {this.state.internalToOriginalMap} nextStateMap = {this.state.nextStateMap} labels = {this.state.internalLabels} changeSynthesis = {this.changeShowResult} />}
+                { this.state.showResults && <FromNextStateMap circuitMode = {this.state.circuiMode} labelMap = {this.state.internalToOriginalMap} nextStateMap = {this.state.nextStateMap} labels = {this.state.internalLabels} changeSynthesis = {this.changeShowResult} />}
             </div>
         )
     }

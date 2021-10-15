@@ -26,7 +26,8 @@ $fontSize : 1.1em;
         flex-direction: column;
     }
 }
-.variablesInputContainer, .termContainer, .dontCareContainer, .optionsContainer, .inputContainer, .outputsContainer, .statesContainer{
+.variablesInputContainer, .termContainer, .dontCareContainer, .optionsContainer, .inputContainer,
+ .outputsContainer, .statesContainer, .modeContainer{
 
     
     // background-color: red;
@@ -58,8 +59,10 @@ $fontSize : 1.1em;
     }
     select{
         font-size: $fontSize;
+        
     }
 
+    
     margin: 10px;
 
     @media screen and (max-width : $smallScreen) {

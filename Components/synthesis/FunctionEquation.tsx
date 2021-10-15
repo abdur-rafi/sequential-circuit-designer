@@ -24,9 +24,12 @@ let FuncionEquation : React.FC<{
         s = '0'
 return(
         <div className = {styles.equationContainer} > 
-            {props.functionName.split('').map
-            (c => Number.isInteger(parseInt(c)) ? (<sub key={key++}>{c}</sub>) : c)} = {s.split('').map
-            (c => Number.isInteger(Number.parseInt(c)) ? <sub key={key++}>{c}</sub> : c  )} 
+            <div>
+                {props.functionName.split('').map
+                (c => Number.isInteger(parseInt(c)) ? (<sub key={key++}>{c}</sub>) : c)} = {s.split('').map
+                (c => Number.isInteger(Number.parseInt(c)) ? <sub key={key++}>{c}</sub> : c  )} 
+
+            </div>
         </div>
 
     )

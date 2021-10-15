@@ -256,10 +256,12 @@ export const FromNextStateMap : React.FC<{
                             content = {
                                 <div className = {styles.functionBlock}> 
                                     <KMap key = {key++} kMap = {k} />
-                                    <FuncionEquation circuitMode = {props.circuitMode} numberOfInputs = {props.nextStateMap!.numberOfInputVar} functionName = {k.functionName} r = {r} vars = {truthTables![index].vars}  />
-                                    {/* <div> {k.functionName.split('').map(c => Number.isInteger(parseInt(c)) ? (<sub key={key++}>{c}</sub>) : c)} = {s.split('').map(c => Number.isInteger(Number.parseInt(c)) ? <sub key={key++}>{c}</sub> : c  )} </div> */}
-                                    <PrimeImplicants circuitMode = {props.circuitMode} 
-                                    numberOfInputs = {props.nextStateMap!.numberOfInputVar} vars = {truthTables![index].vars} r = {r} />
+                                    <div>
+                                        <FuncionEquation circuitMode = {props.circuitMode} numberOfInputs = {props.nextStateMap!.numberOfInputVar} functionName = {k.functionName} r = {r} vars = {truthTables![index].vars}  />
+                                        {/* <div> {k.functionName.split('').map(c => Number.isInteger(parseInt(c)) ? (<sub key={key++}>{c}</sub>) : c)} = {s.split('').map(c => Number.isInteger(Number.parseInt(c)) ? <sub key={key++}>{c}</sub> : c  )} </div> */}
+                                        <PrimeImplicants circuitMode = {props.circuitMode} 
+                                        numberOfInputs = {props.nextStateMap!.numberOfInputVar} vars = {truthTables![index].vars} r = {r} />
+                                    </div>
                                 </div>
                             }
                             />

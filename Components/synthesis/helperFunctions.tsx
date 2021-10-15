@@ -1062,7 +1062,12 @@ export async function getNewLabels(n : number, useDot = true){
 export async function nextStateMapFromStateTalbeInput(states : string[], entries : string[][], outputs : string[][], circuitMode : circuitMode){
     let n = states.length;
     let internalLabels = await getNewLabels(n,false);
-    let numberOfInputs = Math.log2(entries[0].length);
+    let numberOfInputs : number = 0;
+    if(circuitMode === 'synch')
+        numberOfInputs = Math.log2(entries[0].length);
+    else if(circuitMode === 'pulse'){
+        numberOfInputs = entries[0].length;
+    }
     let internalToOriginalMap : {
         [internal : string] : string
     } = {}

@@ -1,5 +1,5 @@
 
-$contentMarginTop : 60px;
+$contentPaddingTop : 60px;
 $breakpoint : 600px;
 $footerHeight : 100px;
 
@@ -9,21 +9,24 @@ $footerHeight : 100px;
     height: 100%;
     flex-direction: column;
     justify-content: space-between;
+
 }
 
 .contentContainer{
-    padding-top: 5px;
-    margin-top: $contentMarginTop;
+    // padding-top: 5px;
+    padding-top: $contentPaddingTop;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
     // overflow: hidden;
+    
 }
 
 .contentHeight{
-    height: calc(100% - $footerHeight - $contentMarginTop);
+    height: calc(100% - $footerHeight - $contentPaddingTop);
 
 }
+
 
 .header{
 
@@ -31,16 +34,6 @@ $footerHeight : 100px;
     background: hsla(186, 33%, 94%, 1);
 
     background: linear-gradient(90deg, hsla(186, 33%, 94%, 1) 0%, hsla(216, 41%, 79%, 1) 100%);
-
-    // background: hsla(217, 100%, 50%, 1);
-
-    // background: linear-gradient(90deg, hsla(217, 100%, 50%, 1) 0%, hsla(186, 100%, 69%, 1) 100%);
-
-    // background: -moz-linear-gradient(90deg, hsla(186, 33%, 94%, 1) 0%, hsla(216, 41%, 79%, 1) 100%);
-
-    // background: -webkit-linear-gradient(90deg, hsla(186, 33%, 94%, 1) 0%, hsla(216, 41%, 79%, 1) 100%);
-
-    // filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#EBF4F5", endColorstr="#B5C6E0", GradientType=1 );
 
     position: fixed;
     top: 0px;

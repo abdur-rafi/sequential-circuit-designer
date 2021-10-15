@@ -1,11 +1,27 @@
 .equationContainer{
     // background-color: red;
-    margin: 10px;
+    // margin: 10px;
+    >div{
+        background-color: rgba(0, 206, 209, 0.308);
+        border: 2px inset lightblue;
+        padding: 15px;
+        margin: 10px 30px;
+        border-radius: 10px;
+
+    }
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
 
 }
 .implicantContainer{
     // background-color: red;
-    margin: 10px;
+    margin: 10px 30px;
+    border: 2px inset lightblue;
+    background-color: rgba(0, 206, 209, 0.308);
+    border-radius: 10px;
+    display: inline-block;
+    padding: 10px;
     > div{
         padding : 10px
     }
