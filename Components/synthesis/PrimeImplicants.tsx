@@ -1,19 +1,30 @@
 import React from 'react'
-import { getLiteral } from './helperFunctions';
-import { simplifyFunctionReutnType } from './interfaces'
+import { getInputCombination, getLiteral } from './helperFunctions';
+import { circuitMode, simplifyFunctionReutnType } from './interfaces'
 import styles from '../../styles/equationAndImplicants.module.scss'
 
 const PrimeImplicants : React.FC<{
     r : simplifyFunctionReutnType,
-    vars : string[]
+    vars : string[],
+    numberOfInputs : number,
+    circuitMode : circuitMode
 }> = (props)=>{
     let key = 0;
     let allPis = '';
-    props.r.PIs.forEach(e=> allPis+= getLiteral(e.comb, props.vars) + ' , ' );
+    let pulses : string[] = ['']
+    if(props.circuitMode === 'pulse'){
+        pulses = getInputCombination(props.numberOfInputs, props.circuitMode);
+    }
+    pulses.forEach(p=>{
+
+        props.r[p].PIs.forEach(e=> allPis+= p + getLiteral(e.comb, props.vars, props.circuitMode) + ' , ' );
+    })
     allPis = allPis.slice(0, allPis.length - 3);
 
     let epis = '';
-    props.r.EPIs.forEach(e=> epis+= getLiteral(e.comb, props.vars) + ' , ' );
+    pulses.forEach(p=>{
+        props.r[p].EPIs.forEach(e=> epis+= p + getLiteral(e.comb, props.vars, props.circuitMode) + ' , ' );
+    })
     epis = epis.slice(0, epis.length - 3);
 
     

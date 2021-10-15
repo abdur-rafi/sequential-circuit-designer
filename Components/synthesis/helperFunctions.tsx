@@ -98,7 +98,7 @@ export function getBinRepresentation(stateLabels : string[]) : stringToStringMap
 export function getInputCombination(d : number, circuitMode : circuitMode , labels? : string[]) : string[]{
     let n = Math.pow(2,d);
     let inps : string[] = []
-    if(circuitMode === 'synchronous'){
+    if(circuitMode === 'synch'){
         for(let i = 0; i < n; ++i){
             let curr = i.toString(2);
             while(curr.length < d){
@@ -227,11 +227,11 @@ export async function getExcitationsFromNextStateMap(stateLabels : string[], nex
 export async function truthTablesFromExcitation(excitation : excitationInterface, functionLabels : string, circuitMode : circuitMode) : Promise<truthTable[]>{
     let numberOfVars = excitation.dims.row + excitation.dims.col;
     let inpCombs : string[] = [];
-    if(circuitMode === 'synchronous'){
+    if(circuitMode === 'synch'){
         inpCombs = getInputCombination(numberOfVars, circuitMode);
     }
     else{
-        let stateCombs = getInputCombination(excitation.dims.row, 'synchronous');
+        let stateCombs = getInputCombination(excitation.dims.row, 'synch');
         let pulseCombs = getInputCombination(excitation.dims.col, circuitMode);
         stateCombs.forEach(st =>{
             pulseCombs.forEach(p => inpCombs.push(st + p))
@@ -271,8 +271,25 @@ export async function generateKMap(truthTable : truthTable, circuitMode : circui
             [pulse : string] : truthTable
         } = {}
         let pulseComb = getInputCombination(numberOfinps, 'pulse');
-        let stateComb = getInputCombination(stateDim,'synchronous');
+        let stateComb = getInputCombination(stateDim,'synch');
         let kmaps : kMap[] = []
+        let kmap : kMap = {
+            map : {},
+            dims : {
+                pulse : -1,
+                rem : -1,
+                col : -1,
+                row : -1
+            },
+            functionName : truthTable.functionName,
+            pulseMode : true,
+            vars : {
+                pulse : [],
+                rem : [],
+                col : [],
+                row : []
+            }
+        }
         pulseComb.forEach(async p =>{
             let tr : truthTable = {
                 dims : stateDim,
@@ -284,39 +301,48 @@ export async function generateKMap(truthTable : truthTable, circuitMode : circui
                 tr.table[s] = truthTable.table[s + p]
             })
             // tablesForPulses[p] = tr;
-            let mp = await generateKMap(tr, 'synchronous');
-            kmaps.push(mp[0]);
+            let mp = await generateKMap(tr, 'synch');
+            kmap.dims = mp[0].dims;
+            kmap.dims.pulse = numberOfinps;
+            kmap.vars = mp[0].vars;
+            kmap.vars.pulse = pulseComb;
+            kmap.map[p] = mp[0].map[''];
+            mp[0].pulseMode = true;
         })
 
-        return kmaps;
+        return [kmap];
         
     }
     let numberOfTotalVars = truthTable.dims;
     if(numberOfTotalVars < 5){
         let row = Math.floor(numberOfTotalVars / 2);
         let col = numberOfTotalVars - row;
-        let rowComb = getInputCombination(row, 'synchronous');
-        let colComb = getInputCombination(col, 'synchronous');
+        let rowComb = getInputCombination(row, 'synch');
+        let colComb = getInputCombination(col, 'synch');
         let kMap : kMap = {
             map : {},
             dims : {
+                pulse : 0,
                 rem : 0,
                 row : row,
                 col : col
             },
             functionName : truthTable.functionName,
             vars : {
+                pulse : [],
                 rem : [],
                 row : truthTable.vars.slice(0, row),
                 col : truthTable.vars.slice(row)
-            }
+            },
+            pulseMode : false
         };
         kMap.map[''] = {}
+        kMap.map[''][''] = {}
         
         rowComb.forEach(rcomb=>{
-            kMap.map[''][rcomb] = {}
+            kMap.map[''][''][rcomb] = {}
             colComb.forEach(ccomb=>{
-                kMap.map[''][rcomb][ccomb] = truthTable.table[rcomb + ccomb];
+                kMap.map[''][''][rcomb][ccomb] = truthTable.table[rcomb + ccomb];
             })
         })
         return [kMap];
@@ -324,23 +350,27 @@ export async function generateKMap(truthTable : truthTable, circuitMode : circui
     else{
         
         let rem = numberOfTotalVars - 4;
-        let remCombs = getInputCombination(rem, 'synchronous');
-        let comb = getInputCombination(4, 'synchronous');
+        let remCombs = getInputCombination(rem, 'synch');
+        let comb = getInputCombination(4, 'synch');
 
         let kMap : kMap = {
             map : {},
             dims : {
+                pulse : 0,
                 rem : rem,
                 row : 2,
                 col : 2
             },
             functionName : truthTable.functionName,
             vars : {
+                pulse : [],
                 rem : truthTable.vars.slice(0, rem),
                 row : truthTable.vars.slice(rem, rem + 2),
                 col : truthTable.vars.slice(-2)
-            }
+            },
+            pulseMode : false
         };
+        kMap.map[''] = {}
 
         remCombs.forEach(async remComb=>{
             let tTable : truthTable = {
@@ -352,8 +382,8 @@ export async function generateKMap(truthTable : truthTable, circuitMode : circui
             comb.forEach(c=>{
                 tTable.table[c] = truthTable.table[remComb + c];
             })
-            let temp = await generateKMap(tTable, 'synchronous');
-            kMap.map[remComb] = temp[0].map[''];
+            let temp = await generateKMap(tTable, 'synch');
+            kMap.map[''][remComb] = temp[0].map[''][''];
         })
         return [kMap];
     }
@@ -400,9 +430,31 @@ export function mergeComb(s1 : string, s2 : string) : string{
     return r;
 }
 
-export function simplifyFunction(truthTable : truthTable,circuitMode : circuitMode, returnSteps ? : boolean) : simplifyFunctionReutnType   
+export function simplifyFunction(truthTable : truthTable,circuitMode : circuitMode, numberOfInput : number, returnSteps ? : boolean) : simplifyFunctionReutnType   
 {
+
+    if(circuitMode === 'pulse'){
+        let inpComb = getInputCombination(numberOfInput,'pulse');
+        let r : simplifyFunctionReutnType = {
+        }
+        let stateComb = getInputCombination(truthTable.dims - numberOfInput, 'synch');
+        inpComb.forEach(p =>{
+            let tr :truthTable = {
+                dims : truthTable.dims - numberOfInput,
+                table : {},
+                functionName : truthTable.functionName,
+                vars : truthTable.vars.slice(0, truthTable.dims - numberOfInput)
+            }
+
+            stateComb.forEach(s=>tr.table[s] = truthTable.table[s + p])
+
+            r[p] = simplifyFunction(tr,'synch',truthTable.dims - 1,true)[''];
+        })
+
+        return r;
+    }
     let inpComb = getInputCombination(truthTable.dims, circuitMode);
+
     let nonZeroinpComb = inpComb.filter(comb=>truthTable.table[comb] != '0');
     let groups : tabulationGroupItem[][] = [];
     let rGroups : tabulationGroupItem[][][] = [groups];
@@ -517,10 +569,12 @@ export function simplifyFunction(truthTable : truthTable,circuitMode : circuitMo
     // console.log(epi, remPIs);
 
     return{
-        EPIs : epi,
-        PIs : notTaken,
-        selectedPIs : [...epi, ...remPIs ],
-        groupsPerStep : returnSteps ? rGroups : undefined
+        '' :{
+            EPIs : epi,
+            PIs : notTaken,
+            selectedPIs : [...epi, ...remPIs ],
+            groupsPerStep : returnSteps ? rGroups : undefined
+        }
     }
     
     // console.log(coveringMap);
@@ -528,7 +582,7 @@ export function simplifyFunction(truthTable : truthTable,circuitMode : circuitMo
     // console.log(notTaken);
 }
 
-export function getLiteral(comb : string, vars : string[]): string{
+export function getLiteral(comb : string, vars : string[], circuitMode : circuitMode): string{
     let r = '';
     for(let i = 0; i < comb.length; ++i){
         if(comb[i] == '_')
@@ -538,7 +592,7 @@ export function getLiteral(comb : string, vars : string[]): string{
         }
         else r += vars.slice(i, i + 1);
     }
-    if(r == '') return '1';
+    if(r == '' && circuitMode === 'synch') return '1';
     return r;
 }
 

@@ -30,23 +30,28 @@ export interface nextStateMap {
 }
 export interface kMap{
     map :{
-        [remComb : string] : {
-            [rowComb : string] : {
-                [columnComb : string] : string
+        [pulse : string] :{
+            [remComb : string] : {
+                [rowComb : string] : {
+                    [columnComb : string] : string
+                }
             }
-        }
+        }    
     },
     dims : {
+        pulse : number,
         rem : number
         row : number,
         col : number
     },
     functionName : string,
     vars : {
+        pulse : string[],
         rem : string[],
         row : string[],
         col : string[]
-    }
+    },
+    pulseMode : boolean
 }
 export interface truthTable{
     table : {
@@ -77,12 +82,14 @@ export interface stringToStringMap{
 }
 
 export interface simplifyFunctionReutnType{
+
+    [pulse : string] : {
     
         EPIs: tabulationGroupItem[];
         PIs: tabulationGroupItem[];
         selectedPIs: tabulationGroupItem[];
         groupsPerStep? : tabulationGroupItem[][][]
-    
+    }
 }
 
-export type circuitMode = 'pulse' | 'synchronous'
+export type circuitMode = 'pulse' | 'synch'

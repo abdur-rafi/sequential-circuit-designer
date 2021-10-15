@@ -313,10 +313,10 @@ const MinimizeFunction : React.FC<{
         }
         
 
-        truthTableFromMinterms(termsNumber, vars, dontCaresNumber, 'synchronous')
+        truthTableFromMinterms(termsNumber, vars, dontCaresNumber, 'synch')
         .then(async tr =>{
-            let k = await generateKMap(tr,'synchronous' );
-            let r = simplifyFunction(tr, 'synchronous', true);
+            let k = await generateKMap(tr,'synch' );
+            let r = simplifyFunction(tr, 'synch', vars.length, true);
             setVarsArr(vars);
             setImplicants(r);
             setKMap(k[0]);
@@ -421,13 +421,13 @@ const MinimizeFunction : React.FC<{
                     
                 }
                 {
-                    props.useTabulaion && implicants && <TabulationTable allGroups = {implicants.groupsPerStep!} vars = {varsArr} />
+                    props.useTabulaion && implicants && <TabulationTable allGroups = {implicants[''].groupsPerStep!} vars = {varsArr} />
                 }
                 {
                     implicants &&
                     <div className = {styles.equationAndImplicationsContainer}>
-                        <FuncionEquation vars = {varsArr} functionName = {'f'} r = {implicants} />
-                        <PrimeImplicants vars = {varsArr} r = {implicants} />
+                        <FuncionEquation circuitMode='synch' numberOfInputs = {0} vars = {varsArr} functionName = {'f'} r = {implicants} />
+                        <PrimeImplicants circuitMode = 'synch' numberOfInputs = {varsArr.length} vars = {varsArr} r = {implicants} />
                     </div>
                 }
                 

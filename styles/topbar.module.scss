@@ -52,7 +52,7 @@
 }
 
 .grabIconContainer, .selectIconContainer, .edgeIconContainer, .plusIconContainer, .resultIconContainer,
- .inputVarContainer, .outputVarContainer{
+ .inputVarContainer, .outputVarContainer,.modeContainer{
     // background-color: red;
     border: 2px rgb(190, 190, 190) solid;
     border-radius: 5px;
@@ -60,6 +60,11 @@
     align-items: center;
     padding: 1px 5px;
     margin: 0px 5px;
+    select{
+        border: none;
+        border-bottom: 1px solid black;
+        outline: none;
+    }
 }
 .selectIconContainer{
     // background-color: blue;

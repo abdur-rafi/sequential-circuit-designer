@@ -13,6 +13,7 @@ import { useState, useEffect } from "react";
 import ClosureTable from "./ClosureTable";
 import ReducedStates from "./ReducedStates";
 import FuncionEquation from "./FunctionEquation";
+import PrimeImplicants from "./PrimeImplicants";
 
 
 const SRMap = {
@@ -240,10 +241,11 @@ export const FromNextStateMap : React.FC<{
             <Details summary = {'KMaps'} 
             content = {kMaps &&
                 kMaps.map((k, index)=>{
-                    // let r = simplifyFunction(truthTables![index], props.circuitMode);
+                    let r = simplifyFunction(truthTables![index], props.circuitMode,props.nextStateMap!.numberOfInputVar);
+                    console.log(r);
                     // let s = '';
                     // r.selectedPIs.forEach(e=> s+= getLiteral(e.comb, truthTables![index].vars) + ' + ' );
-                    // s = s.slice(0, s.length - 3);
+                // s = s.slice(0, s.length - 3);
                     // if(s == '')
                     //     s = '0'
                     let key = 0;
@@ -254,8 +256,10 @@ export const FromNextStateMap : React.FC<{
                             content = {
                                 <div className = {styles.functionBlock}> 
                                     <KMap key = {key++} kMap = {k} />
-                                    {/* <FuncionEquation functionName = {k.functionName} r = {r} vars = {truthTables![index].vars}  /> */}
+                                    <FuncionEquation circuitMode = {props.circuitMode} numberOfInputs = {props.nextStateMap!.numberOfInputVar} functionName = {k.functionName} r = {r} vars = {truthTables![index].vars}  />
                                     {/* <div> {k.functionName.split('').map(c => Number.isInteger(parseInt(c)) ? (<sub key={key++}>{c}</sub>) : c)} = {s.split('').map(c => Number.isInteger(Number.parseInt(c)) ? <sub key={key++}>{c}</sub> : c  )} </div> */}
+                                    <PrimeImplicants circuitMode = {props.circuitMode} 
+                                    numberOfInputs = {props.nextStateMap!.numberOfInputVar} vars = {truthTables![index].vars} r = {r} />
                                 </div>
                             }
                             />

@@ -26,7 +26,7 @@ const ExcitaitonTable : React.FC<{
     
     for(let i = 0; i < stateBitCount; ++i){
         upperHeadRow.push(
-            <th key = {i} colSpan = { props.circuitMode === 'synchronous' ? Math.pow(2,numberOfInputVars) : numberOfInputVars}>
+            <th key = {i} colSpan = { props.circuitMode === 'synch' ? Math.pow(2,numberOfInputVars) : numberOfInputVars}>
                 {props.latchLabel.length === 2 ? 
                 (<span>{props.latchLabel[0]}<sub>{i}</sub>{props.latchLabel[1]}<sub>{i}</sub></span>  ) :
                 (<span>{props.latchLabel}<sub>{i}</sub></span>)

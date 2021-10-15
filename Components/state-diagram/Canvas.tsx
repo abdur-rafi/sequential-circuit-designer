@@ -98,6 +98,22 @@ class Canvas extends React.Component<Props, State>{
         this.changeSynthesis = this.changeSynthesis.bind(this);
         this.changeNumberOfOutputVars = this.changeNumberOfOutputVars.bind(this);
         this.changeOutput = this.changeOutput.bind(this);
+        this.chnageCircuitMode = this.chnageCircuitMode.bind(this);
+    }
+
+    chnageCircuitMode(circuitMode : circuitMode){
+        this.setState({
+            circuitMode : circuitMode
+        },()=>{
+            clearCanvas(this.nodeCanvasRef);
+            clearCanvas(this.tempCanvasRef);
+            clearCanvas(this.edgeCanvasRef);
+            this.stateNodes = []
+            this.edges = []
+            this.resetModeVars();
+            this.stateLabels = new StringIdGenerator();
+            this.nextLabel = this.stateLabels.next();
+        })
     }
 
     changeOutput(ioNode : IONode, out : string){
@@ -320,6 +336,8 @@ class Canvas extends React.Component<Props, State>{
             // this.stateNodes = t;
             // this.stateNodes.forEach(s=>this.drawStateNode(s, this.nodeCanvasRef));
             this.resetModeVars();
+            this.stateLabels = new StringIdGenerator();
+            this.nextLabel = this.stateLabels.next();
         })
         
     }
@@ -811,7 +829,7 @@ class Canvas extends React.Component<Props, State>{
             return l + Math.floor(Math.random() * (r - l) ) + 1;
         }
 
-        const outComb = getInputCombination(this.state.numberOfOutputVars,'synchronous');
+        const outComb = getInputCombination(this.state.numberOfOutputVars,'synch');
 
         let n = 10;
 
@@ -1216,7 +1234,7 @@ class Canvas extends React.Component<Props, State>{
                         display : this.state.synthesis ? 'none' : 'flex'
                     }} className = {styles.main} >
                         <div className={styles.topBarContainer}>
-                            <TopBar changeSynthesis = {this.changeSynthesis} changeNumberOfOutputVars={this.changeNumberOfOutputVars} numberOfOutputVars={this.state.numberOfOutputVars} changeNumberOfInputVars = {this.changeNumberOfInputVars} numberOfInputVars = {this.state.numberOfInpVars} setMouseMode = {this.setMouseMode} mouseMode = {this.state.mouseMode}/>
+                            <TopBar circuitMode = {this.state.circuitMode} changeCircuitMode = {this.chnageCircuitMode} changeSynthesis = {this.changeSynthesis} changeNumberOfOutputVars={this.changeNumberOfOutputVars} numberOfOutputVars={this.state.numberOfOutputVars} changeNumberOfInputVars = {this.changeNumberOfInputVars} numberOfInputVars = {this.state.numberOfInpVars} setMouseMode = {this.setMouseMode} mouseMode = {this.state.mouseMode}/>
                         </div>
                         <div className={styles.canvasContainer} ref={this.canvasContainerRef}>
                             <canvas ref = {this.nodeCanvasRef} className={styles.canvas} />

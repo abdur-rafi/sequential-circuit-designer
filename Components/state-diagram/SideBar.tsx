@@ -128,7 +128,7 @@ const IONodeRender : React.FC<{
     circuitMode : circuitMode
 }> = (props)=>{
 
-    const outputComb = getInputCombination(props.numberOfOutputVars, 'synchronous' );
+    const outputComb = getInputCombination(props.numberOfOutputVars, 'synch' );
     
     const [color, setColor] = useState<string>(props.ioNode.color);
     // const [output, setOutput] = useState<string>('');

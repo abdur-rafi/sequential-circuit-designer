@@ -1,16 +1,24 @@
 import React from 'react'
-import { getLiteral } from './helperFunctions';
-import { simplifyFunctionReutnType, tabulationGroupItem } from './interfaces';
+import { getInputCombination, getLiteral } from './helperFunctions';
+import { circuitMode, simplifyFunctionReutnType, tabulationGroupItem } from './interfaces';
 import styles from '../../styles/equationAndImplicants.module.scss'
 
 let FuncionEquation : React.FC<{
     functionName : string,
     r : simplifyFunctionReutnType,
-    vars : string[]
+    vars : string[],
+    circuitMode : circuitMode,
+    numberOfInputs : number
 }> = (props)=>{
     let key = 0;
     let s = '';
-    props.r.selectedPIs.forEach(e=> s+= getLiteral(e.comb, props.vars) + ' + ' );
+    let pulses : string[] = ['']
+    if(props.circuitMode === 'pulse'){
+        pulses = getInputCombination(props.numberOfInputs, props.circuitMode);
+    }
+    pulses.forEach(p=>{
+        props.r[p].selectedPIs.forEach(e=> s+= p + getLiteral(e.comb, props.vars, props.circuitMode) + ' + ' );
+    })
     s = s.slice(0, s.length - 3);
     if(s == '')
         s = '0'

@@ -5,6 +5,7 @@ import {GrSelect} from 'react-icons/gr'
 import { MouseMode } from "./state-diagram-interfaces";
 import {AiFillCaretRight, AiOutlineDash, AiOutlinePlus} from 'react-icons/ai'
 import { useMediaQuery } from "react-responsive";
+import { circuitMode } from "../synthesis/interfaces";
 interface Props{
     setMouseMode : (mode : MouseMode)=>void
     mouseMode : 'addNode' | 'drag' | 'edge' | 'select',
@@ -12,7 +13,9 @@ interface Props{
     changeNumberOfInputVars : (vars : number)=> void,
     numberOfOutputVars : number,
     changeNumberOfOutputVars : (vars : number)=> void,
-    changeSynthesis : (b : boolean) => void
+    changeSynthesis : (b : boolean) => void,
+    changeCircuitMode : (c : circuitMode)=>void,
+    circuitMode : circuitMode
 }
 interface State{
 
@@ -87,6 +90,18 @@ const TopBar : React.FC<Props> = (props)=>{
                 
             </div>
             <div className = {styles.rightSideContainer}>
+                <div className = {styles.modeContainer} >
+                    <label>mode{' '}</label> 
+                    <select onChange = {(e)=>{
+                        if(e.target.value !== props.circuitMode){
+                            if(e.target.value === 'synch' || e.target.value === 'pulse')
+                                props.changeCircuitMode(e.target.value);
+                        }
+                    }} value = {props.circuitMode}>
+                        <option>synch</option>
+                        <option>pulse</option>
+                    </select>
+                </div>
                 <div className = {styles.inputVarContainer}>
                     <label> input</label>
                     <input type='number' value={props.numberOfInputVars}
