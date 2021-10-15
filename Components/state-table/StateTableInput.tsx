@@ -4,7 +4,7 @@ import { getInputCombination, nextStateMapFromStateTalbeInput } from '../synthes
 import styles from '../../styles/statetableinput.module.scss'
 import minimizeFunctionStyles from '../../styles/minimizefunction.module.scss'
 import { FromNextStateMap } from '../synthesis/results'
-import { nextStateMap, stringToStringMap } from '../synthesis/interfaces'
+import { circuitMode, nextStateMap, stringToStringMap } from '../synthesis/interfaces'
 
 interface lastSelected{
     i : number,
@@ -20,9 +20,10 @@ interface Error{
 }
 
 const TableHeader : React.FC<{
-    numberOfInputVars :number
+    numberOfInputVars :number,
+    circuitMode : circuitMode
 }> = (props)=>{
-    const inpCombs = getInputCombination(props.numberOfInputVars);
+    const inpCombs = getInputCombination(props.numberOfInputVars, props.circuitMode);
     return (
         <thead>
             <tr>
@@ -181,6 +182,7 @@ class StateTableInput extends React.Component<Props, {
     nextStateMap : nextStateMap | null,
     internalLabels : string[],
     internalToOriginalMap : stringToStringMap,
+    circuiMode : circuitMode
     
 }>{
 
@@ -220,7 +222,8 @@ class StateTableInput extends React.Component<Props, {
             showResults : false,
             internalLabels : [],
             internalToOriginalMap : {},
-            nextStateMap : null
+            nextStateMap : null,
+            circuiMode : "synchronous"
         }
         this.chekcValidity = this.chekcValidity.bind(this);
         this.changeEntry = this.changeEntry.bind(this);
@@ -476,8 +479,8 @@ class StateTableInput extends React.Component<Props, {
                         </div>
                         <div className = {styles.stateTableInputContainer}>
                             <table>
-                                <TableHeader numberOfInputVars = {this.state.numberOfInputVars} />
-                                <TableBody changeEntry = {this.changeEntry} changeOutput = {this.changeOutput} states = {this.state.states} outputs = {this.state.outputs}
+                                <TableHeader circuitMode = {this.state.circuiMode} numberOfInputVars = {this.state.numberOfInputVars} />
+                                <TableBody circuitMode = {this.state.circuiMode} changeEntry = {this.changeEntry} changeOutput = {this.changeOutput} states = {this.state.states} outputs = {this.state.outputs}
                                 numberOfStates = {this.state.numberOfStates} numberOfOutputVars = {this.state.numberOfOutputVars} numberOfInputVars = {this.state.numberOfInputVars} 
                                 lastSelected = {this.state.lastSelected} error = {this.state.error} entries = {this.state.entries} chnageStates = {this.chnageStates} />
                             </table>
@@ -485,7 +488,7 @@ class StateTableInput extends React.Component<Props, {
                         <div className = {styles.buttonContainer}>
                             <button onClick = {async ()=>{
                                 if(this.chekcValidity()){
-                                    let r = await nextStateMapFromStateTalbeInput(this.state.states,this.state.entries,this.state.outputs);
+                                    let r = await nextStateMapFromStateTalbeInput(this.state.states,this.state.entries,this.state.outputs, this.state.circuiMode);
                                     console.log(r);
                                     this.setState({
                                         nextStateMap : r.nextStateMap,
@@ -515,13 +518,14 @@ const Row : React.FC<{
     lastSelected : lastSelected,
     chnageStates : (i : number, val : string,index : number) => void,
     changeOutput : (i : number, j : number, val : string) => void,
-    changeEntry : (i : number, j : number, val : string) => void
+    changeEntry : (i : number, j : number, val : string) => void,
+    circuitMode : circuitMode
 }> = (props)=>{
     let stateError = false;
     if(props.error?.type === 'state' && props.error.i === props.index){
         stateError = true;
     }
-    const inpCombs = getInputCombination(props.numberOfInputVars);
+    const inpCombs = getInputCombination(props.numberOfInputVars, props.circuitMode);
     return(
         <tr>
             <StateEntry error = {stateError} errorMessage = {stateError ? props.error?.message : ''} lastSelected = {props.lastSelected} 
@@ -564,7 +568,8 @@ const TableBody : React.FC<{
     lastSelected : lastSelected,
     chnageStates : (i : number, val : string,index : number) => void,
     changeOutput : (i : number, j : number, val : string) => void,
-    changeEntry : (i : number, j : number, val : string) => void
+    changeEntry : (i : number, j : number, val : string) => void,
+    circuitMode : circuitMode
 
 }> = (props)=>{
     let t : React.ReactNode[] = [];

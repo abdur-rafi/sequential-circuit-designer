@@ -1,14 +1,15 @@
 import { StateNode } from "../state-diagram/state-diagram-interfaces";
 import { getInputCombination, getRequiredBitForStates, useLabelMap } from "./helperFunctions";
 import styles from '../../styles/design.module.scss'
-import { excitationInterface, stringToStringMap } from "./interfaces";
+import { circuitMode, excitationInterface, stringToStringMap } from "./interfaces";
 
 const ExcitaitonTable : React.FC<{
     stateLabels : string[],
     binRep : stringToStringMap,
     latchMap : {[key :string] : string},
     latchLabel : string,
-    excitations : excitationInterface[]
+    excitations : excitationInterface[],
+    circuitMode : circuitMode
 }> = (props)=>{
 
     if(props.excitations.length == 0){
@@ -21,11 +22,11 @@ const ExcitaitonTable : React.FC<{
     let upperHeadRow : React.ReactNode[] = [];
     let lowerHeadRow : React.ReactNode[] = [];
     let stateBitCount = getRequiredBitForStates(props.stateLabels.length);
-    let inpComb = getInputCombination(numberOfInputVars);
+    let inpComb = getInputCombination(numberOfInputVars, props.circuitMode);
     
     for(let i = 0; i < stateBitCount; ++i){
         upperHeadRow.push(
-            <th key = {i} colSpan = {Math.pow(2,numberOfInputVars)}>
+            <th key = {i} colSpan = { props.circuitMode === 'synchronous' ? Math.pow(2,numberOfInputVars) : numberOfInputVars}>
                 {props.latchLabel.length === 2 ? 
                 (<span>{props.latchLabel[0]}<sub>{i}</sub>{props.latchLabel[1]}<sub>{i}</sub></span>  ) :
                 (<span>{props.latchLabel}<sub>{i}</sub></span>)

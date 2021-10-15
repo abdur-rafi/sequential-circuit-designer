@@ -4,6 +4,7 @@ import {ImCancelCircle} from 'react-icons/im'
 import { IONode, StateNode } from './state-diagram-interfaces';
 import {BsArrowDown, BsArrowUp} from 'react-icons/bs'
 import { getInputCombination } from '../synthesis/helperFunctions';
+import { circuitMode } from '../synthesis/interfaces';
 class SideBar extends React.Component<{
     toggleSideBar : ()=>void,
     stateNode : StateNode | null,
@@ -14,7 +15,8 @@ class SideBar extends React.Component<{
     changeIoNodeColor : (state: IONode, color : string)=>void,
     changeNumberOfOutputVars : (n : number)=>void,
     numberOfOutputVars : number,
-    changeOutput : (ioNode : IONode, s : string) => void
+    changeOutput : (ioNode : IONode, s : string) => void,
+    circuitMode : circuitMode
 }, {}>{
 
     render() : React.ReactNode{
@@ -26,7 +28,7 @@ class SideBar extends React.Component<{
                     </div>
                 </div>
                 {
-                    this.props.ioNode && <IONodeRender changeOutput={this.props.changeOutput} numberOfOutputVars={this.props.numberOfOutputVars} changeNumberOfOutputVars={this.props.changeNumberOfOutputVars} changeIoNodeColor={this.props.changeIoNodeColor} ioNode={this.props.ioNode} />
+                    this.props.ioNode && <IONodeRender circuitMode = {this.props.circuitMode} changeOutput={this.props.changeOutput} numberOfOutputVars={this.props.numberOfOutputVars} changeNumberOfOutputVars={this.props.changeNumberOfOutputVars} changeIoNodeColor={this.props.changeIoNodeColor} ioNode={this.props.ioNode} />
                 }
                 {
                     this.props.stateNode && <StateNodeRender changeStateColor = {this.props.changeStateColor} changeStateNodeRadius = {this.props.changeStateNodeRadius} addIoNodeWithStateChange = {this.props.addIoNodeWithStateChange} stateNode={this.props.stateNode} />
@@ -122,10 +124,11 @@ const IONodeRender : React.FC<{
     ioNode : IONode,
     changeNumberOfOutputVars : (n : number)=>void,
     numberOfOutputVars : number,
-    changeOutput : (ioNode : IONode, s : string) => void
+    changeOutput : (ioNode : IONode, s : string) => void,
+    circuitMode : circuitMode
 }> = (props)=>{
 
-    const inpComb = getInputCombination(props.numberOfOutputVars);
+    const outputComb = getInputCombination(props.numberOfOutputVars, 'synchronous' );
     
     const [color, setColor] = useState<string>(props.ioNode.color);
     // const [output, setOutput] = useState<string>('');
@@ -162,7 +165,7 @@ const IONodeRender : React.FC<{
                         }
                     }} value={props.ioNode.output} >
                         {
-                            inpComb.map(c => <option key = {c}> {c} </option>)
+                            outputComb.map(c => <option key = {c}> {c} </option>)
                         }
                     </select>
                 </div>

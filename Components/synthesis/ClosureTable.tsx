@@ -1,16 +1,17 @@
 import React from "react";
 import { getInputCombination, useLabelMap } from "./helperFunctions";
-import { nextStateMap, stringToStringMap } from "./interfaces";
+import { circuitMode, nextStateMap, stringToStringMap } from "./interfaces";
 import styles from '../../styles/design.module.scss'
 
 
 const ClosureTable : React.FC<{
     maximalCompatibles : string[][],
     nextStateMap : nextStateMap,
+    circuitMode : circuitMode,
     labelMap? : stringToStringMap
 }> = (props)=>{
 
-    const inpComb = getInputCombination(props.nextStateMap.numberOfInputVar);
+    const inpComb = getInputCombination(props.nextStateMap.numberOfInputVar, props.circuitMode);
 
     // console.log(inpComb);
 

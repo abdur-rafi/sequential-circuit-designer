@@ -84,3 +84,5 @@ export interface simplifyFunctionReutnType{
         groupsPerStep? : tabulationGroupItem[][][]
     
 }
+
+export type circuitMode = 'pulse' | 'synchronous'

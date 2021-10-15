@@ -1,5 +1,5 @@
 import { StateNode } from "../state-diagram/state-diagram-interfaces";
-import { nextStateMap, stringToStringMap } from "./interfaces";
+import { circuitMode, nextStateMap, stringToStringMap } from "./interfaces";
 import { getInputCombination, useLabelMap } from "./helperFunctions";
 import styles from '../../styles/design.module.scss'
 
@@ -7,10 +7,11 @@ import styles from '../../styles/design.module.scss'
 const StateTable : React.FC<{
     stateLabels : string[],
     nextStateMap : nextStateMap,
-    labelMap? : stringToStringMap
+    labelMap? : stringToStringMap,
+    circuitMode : circuitMode
 }> = (props)=>{
 
-    let inpComb = getInputCombination(props.nextStateMap.numberOfInputVar);
+    let inpComb = getInputCombination(props.nextStateMap.numberOfInputVar, props.circuitMode);
 
     if(props.stateLabels.length == 0) 
         return(

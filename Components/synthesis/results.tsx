@@ -3,7 +3,7 @@ import { Edge, StateNode } from "../state-diagram/state-diagram-interfaces";
 import styles from '../../styles/design.module.scss'
 import StateTable from "./StateTable";
 import { generateKMap, getBinRepresentation, getLiteral, getNextStateMap, getRequiredBitForStates, getMaximals, simplifyFunction, stateMinimization, truthTablesFromExcitation, getExcitationsFromNextStateMap, getMinimumClosure, getReducedNextStateMap, getNewLabels, useLabelMap } from "./helperFunctions";
-import {  excitationInterface, implicationEntryMap, kMap, nextStateMap, stringToStringMap, truthTable } from "./interfaces";
+import {  circuitMode, excitationInterface, implicationEntryMap, kMap, nextStateMap, stringToStringMap, truthTable } from "./interfaces";
 import ExcitaitonTable from "./ExcitationTable";
 import KMap from './kMap'
 import ImplicationTable from "./ImplicationTable";
@@ -53,7 +53,8 @@ const Design : React.FC<{
     edges : Edge[],
     numberOfInpVar : number,
     changeSynthesis : (b : boolean) => void,
-    numberOfOutputVars : number
+    circuitMode : circuitMode
+    numberOfOutputVars : number,
 }> = (props)=>{
 
     const [nextStateMap , setNextStateMap] = useState<nextStateMap | null>(null);
@@ -62,7 +63,7 @@ const Design : React.FC<{
 
     let labels = props.stateNodes.map(s => s.label);
     useEffect(()=>{
-        getNextStateMap(props.stateNodes, props.numberOfInpVar, props.numberOfOutputVars).then(s=>{
+        getNextStateMap(props.stateNodes, props.numberOfInpVar, props.numberOfOutputVars,props.circuitMode).then(s=>{
             setNextStateMap(s);
         })
         
@@ -73,7 +74,7 @@ const Design : React.FC<{
                 !nextStateMap && <div className = {styles.processingTextContainer}> calculating... </div>
             }
             {
-                nextStateMap && <FromNextStateMap nextStateMap = {nextStateMap} labels = {labels} changeSynthesis={props.changeSynthesis} />
+                nextStateMap && <FromNextStateMap circuitMode = {props.circuitMode} nextStateMap = {nextStateMap} labels = {labels} changeSynthesis={props.changeSynthesis} />
             }
         </div>
     )
@@ -85,7 +86,8 @@ export const FromNextStateMap : React.FC<{
     labels : string[],
     nextStateMap : nextStateMap | null,
     changeSynthesis : (b : boolean) => void,
-    labelMap? : {[label : string] : string}
+    labelMap? : {[label : string] : string},
+    circuitMode : circuitMode
 }> = (props)=>{
     const [reducedNextStateMap, setReducedNextStateMap] = useState<nextStateMap | null>(null);
     const [excitations, setExcitations] = useState<excitationInterface[] | null>(null);
@@ -109,7 +111,7 @@ export const FromNextStateMap : React.FC<{
         const getAllTruthTables = async (excitations : excitationInterface[]) : Promise<truthTable[]>=>{
             let t : truthTable[] = [];
             excitations.forEach(async e =>{
-                let temp = await truthTablesFromExcitation(e,e.type === 'output' ? 'z' : 'D');
+                let temp = await truthTablesFromExcitation(e,e.type === 'output' ? 'z' : 'JK', props.circuitMode);
                 t.push(...temp);
             })
             return t;
@@ -118,31 +120,32 @@ export const FromNextStateMap : React.FC<{
         const getAllKmaps = async (truthTables : truthTable[]) : Promise<kMap[]> =>{
             let k : kMap[] = [];
             truthTables.forEach(async t=>{
-                let temp = await generateKMap(t);
-                k.push(temp)
+                let temp = await generateKMap(t, props.circuitMode,props.nextStateMap?.numberOfInputVar);
+                console.log(temp);
+                k.push(...temp);
             });
             return k;
         }
 
-        stateMinimization(props.labels, props.nextStateMap)
+        stateMinimization(props.labels, props.nextStateMap, props.circuitMode)
         .then(async s=>{
             setImplicationEntries(s);
             let mx = await getMaximals(props.labels,s);
             setMaximalCompatibles(mx);
             let mx2 = await getMaximals(props.labels, s, true);
-            setMaximalIncompatibles(mx2);
+            setMaximalIncompatibles(mx2); 
             let upperBound = mx.length > props.labels.length ? props.labels.length : mx.length;
             let lowerBound = upperBound;
             mx2.forEach(m => lowerBound = lowerBound > m.length ? m.length : lowerBound);
-            let comp = await getMinimumClosure(props.labels,mx, props.nextStateMap!,upperBound, lowerBound);
+            let comp = await getMinimumClosure(props.labels,mx, props.nextStateMap!,upperBound, lowerBound, props.circuitMode);
             setCompatibles(comp);
             let newLabels = await getNewLabels(comp.length);
             setNewLabels(newLabels);
             let binRep = getBinRepresentation(newLabels);
             setBinRep(binRep);
-            let newNxt = await getReducedNextStateMap(newLabels,comp, props.nextStateMap!);
+            let newNxt = await getReducedNextStateMap(newLabels,comp, props.nextStateMap!, props.circuitMode);
             setReducedNextStateMap(newNxt);
-            let e = await getExcitationsFromNextStateMap(newLabels,newNxt,binRep,DMap,1);
+            let e = await getExcitationsFromNextStateMap(newLabels,newNxt,binRep,JKMap,2, props.circuitMode);
             e = [...e.filter(e=> e.type === 'state'), ... e.filter(e=> e.type === 'output')]
             setExcitations(e);
             let t = await getAllTruthTables(e);
@@ -156,7 +159,7 @@ export const FromNextStateMap : React.FC<{
     return (
         <div className={styles.synthesisContainer}>
             <Details summary = {'State Table'} 
-            content = {props.nextStateMap && <StateTable labelMap = {props.labelMap}  nextStateMap = {props.nextStateMap} stateLabels = {props.labels}/>} />
+            content = {props.nextStateMap && <StateTable circuitMode = {props.circuitMode} labelMap = {props.labelMap}  nextStateMap = {props.nextStateMap} stateLabels = {props.labels}/>} />
             <Details summary = {'Implication Table'} 
             content = {implicationEntries && <ImplicationTable labelMap = {props.labelMap} labels = {props.labels} entries = {implicationEntries} />} />
             <Details summary = {'Merger Diagram For Compatibles'} 
@@ -212,7 +215,7 @@ export const FromNextStateMap : React.FC<{
             <Details summary = {'Closure Table'}
             content = {
                 maximalCompatibles && props.nextStateMap &&
-                <ClosureTable labelMap = {props.labelMap} nextStateMap = {props.nextStateMap} maximalCompatibles = {maximalCompatibles} />
+                <ClosureTable circuitMode = {props.circuitMode} labelMap = {props.labelMap} nextStateMap = {props.nextStateMap} maximalCompatibles = {maximalCompatibles} />
             }
             />
 
@@ -221,23 +224,23 @@ export const FromNextStateMap : React.FC<{
             />
 
             <Details summary = {'Reduced State Table'} 
-            content = {reducedNextStateMap && <StateTable   nextStateMap = {reducedNextStateMap} stateLabels = {newLabels}/>} />
+            content = {reducedNextStateMap && <StateTable circuitMode = {props.circuitMode}   nextStateMap = {reducedNextStateMap} stateLabels = {newLabels}/>} />
             
 
             <Details summary = {'State Assignment '} 
             content = { <StateAssignment binRep = {binRep} stateLabels = {newLabels}  />}/>
             
             <Details summary = {'Transition Table '} 
-            content = { reducedNextStateMap && <StateTable  nextStateMap = {reducedNextStateMap} labelMap = {binRep} stateLabels = {newLabels}/>}/>
+            content = { reducedNextStateMap && <StateTable circuitMode = {props.circuitMode} nextStateMap = {reducedNextStateMap} labelMap = {binRep} stateLabels = {newLabels}/>}/>
             
             <Details summary = {'Excitation Table'} 
-            content = {excitations && <ExcitaitonTable  excitations = {excitations} stateLabels = {newLabels} binRep = {binRep} latchLabel = 'D' latchMap = {DMap} />}/>
+            content = {excitations && <ExcitaitonTable circuitMode = {props.circuitMode}  excitations = {excitations} stateLabels = {newLabels} binRep = {binRep} latchLabel = 'JK' latchMap = {JKMap} />}/>
             
             
             <Details summary = {'KMaps'} 
             content = {kMaps &&
                 kMaps.map((k, index)=>{
-                    let r = simplifyFunction(truthTables![index]);
+                    // let r = simplifyFunction(truthTables![index], props.circuitMode);
                     // let s = '';
                     // r.selectedPIs.forEach(e=> s+= getLiteral(e.comb, truthTables![index].vars) + ' + ' );
                     // s = s.slice(0, s.length - 3);
@@ -251,7 +254,7 @@ export const FromNextStateMap : React.FC<{
                             content = {
                                 <div className = {styles.functionBlock}> 
                                     <KMap key = {key++} kMap = {k} />
-                                    <FuncionEquation functionName = {k.functionName} r = {r} vars = {truthTables![index].vars}  />
+                                    {/* <FuncionEquation functionName = {k.functionName} r = {r} vars = {truthTables![index].vars}  /> */}
                                     {/* <div> {k.functionName.split('').map(c => Number.isInteger(parseInt(c)) ? (<sub key={key++}>{c}</sub>) : c)} = {s.split('').map(c => Number.isInteger(Number.parseInt(c)) ? <sub key={key++}>{c}</sub> : c  )} </div> */}
                                 </div>
                             }

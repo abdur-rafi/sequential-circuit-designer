@@ -2,7 +2,7 @@ import React from 'react'
 import { useState } from 'react'
 import FuncionEquation from './FunctionEquation';
 import { generateKMap, simplifyFunction, truthTableFromMinterms } from './helperFunctions';
-import { kMap, simplifyFunctionReutnType, tabulationGroupItem, truthTable } from './interfaces';
+import { circuitMode, kMap, simplifyFunctionReutnType, tabulationGroupItem, truthTable } from './interfaces';
 import KMap from './kMap';
 import PrimeImplicants from './PrimeImplicants';
 import styles from '../../styles/minimizefunction.module.scss'
@@ -313,13 +313,13 @@ const MinimizeFunction : React.FC<{
         }
         
 
-        truthTableFromMinterms(termsNumber, vars, dontCaresNumber)
+        truthTableFromMinterms(termsNumber, vars, dontCaresNumber, 'synchronous')
         .then(async tr =>{
-            let k = await generateKMap(tr);
-            let r = simplifyFunction(tr, true);
+            let k = await generateKMap(tr,'synchronous' );
+            let r = simplifyFunction(tr, 'synchronous', true);
             setVarsArr(vars);
             setImplicants(r);
-            setKMap(k);
+            setKMap(k[0]);
         })
 
 

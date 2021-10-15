@@ -9,6 +9,7 @@ import TopBar from './topBar';
 import { canvasConfig, defalutIONodeConfig, defaultStateNodeConfig } from '../../defaultConfigs';
 import Design from '../synthesis/results';
 import { getInputCombination, StringIdGenerator } from '../synthesis/helperFunctions';
+import { circuitMode } from '../synthesis/interfaces';
 
 
 interface Props{
@@ -22,7 +23,8 @@ interface State{
     mouseMode : MouseMode,
     numberOfInpVars : number,
     synthesis : boolean ,
-    numberOfOutputVars : number
+    numberOfOutputVars : number,
+    circuitMode : circuitMode
 }
 
 
@@ -79,9 +81,10 @@ class Canvas extends React.Component<Props, State>{
             ioNodeToSideBar : null,
             stateNodeToSideBar : null,
             mouseMode : 'edge',
-            numberOfInpVars : 1,
+            numberOfInpVars : 3,
             synthesis : false,
-            numberOfOutputVars : 2
+            numberOfOutputVars : 2,
+            circuitMode : 'pulse'
         }
 
         this.changeNumberOfInputVars = this.changeNumberOfInputVars.bind(this);
@@ -217,7 +220,7 @@ class Canvas extends React.Component<Props, State>{
         }
     }
     
-    createStateNodeObject(inNodesCount : number, outNodesCount : number, center : Point,radius : number, label : string, inputCombTextLength : number, numberOfInputVars : number) : StateNode{
+    createStateNodeObject(inpCombs : string[], outNodesCount : number, center : Point,radius : number, label : string, inputCombTextLength : number, numberOfInputVars : number) : StateNode{
         let stateNode : StateNode = {
             center : center,
             radius : radius, 
@@ -230,16 +233,13 @@ class Canvas extends React.Component<Props, State>{
             minRadius : defaultStateNodeConfig.minRadius
         }
         
-        let gap = (Math.PI * 2) / (inNodesCount + outNodesCount);
+        let gap = (Math.PI * 2) / (inpCombs.length + outNodesCount);
         let out = '';
         for(let i = 0; i < this.state.numberOfOutputVars; ++i)
             out += '0';
         let s = 0;
-        for(let i = 0; i < inNodesCount; ++i){
-            let inpComb = i.toString(2);
-            while(inpComb.length !=  numberOfInputVars ){
-                inpComb = '0' + inpComb;
-            }
+        for(let i = 0; i < inpCombs.length; ++i){
+            let inpComb = inpCombs[i];
             let node = this.createIONodeObject(stateNode, s, 'in', defalutIONodeConfig['inNodeColor'], inpComb,out);
             s += gap;
             stateNode.ioNodes.push(node);
@@ -287,9 +287,10 @@ class Canvas extends React.Component<Props, State>{
         let j = 1000;
         let m : number;
         let last = stateNode;
+        let inputComb = getInputCombination(this.state.numberOfInpVars, this.state.circuitMode)
         while(i <= j){
             m = Math.floor((i + j) / 2);
-            let newNode = this.createStateNodeObject(this.getMaxNumberOfStates(),1,stateNode.center,m,
+            let newNode = this.createStateNodeObject(inputComb,1,stateNode.center,m,
             stateNode.label, stateNode.inputCombTextLength, this.state.numberOfInpVars);
             if(!this.doAnyCollide(newNode)){
                 j = m - 1;
@@ -810,12 +811,14 @@ class Canvas extends React.Component<Props, State>{
             return l + Math.floor(Math.random() * (r - l) ) + 1;
         }
 
-        const outComb = getInputCombination(this.state.numberOfOutputVars);
+        const outComb = getInputCombination(this.state.numberOfOutputVars,'synchronous');
 
         let n = 10;
 
+        let inpComb = getInputCombination(this.state.numberOfInpVars,this.state.circuitMode);
+
         for(let i = 0; i < n; ++i){
-            let state = this.createStateNodeObject(this.getMaxNumberOfStates(), 1, {x : 100 + i * 100, y : 100 + i * 100}, defaultStateNodeConfig.minRadius, this.nextLabel, this.inputCombTextLength, this.state.numberOfInpVars);
+            let state = this.createStateNodeObject(inpComb, 1, {x : 100 + i * 100, y : 100 + i * 100}, defaultStateNodeConfig.minRadius, this.nextLabel, this.inputCombTextLength, this.state.numberOfInpVars);
             this.nextLabel = this.stateLabels.next();
             state = this.getMinSizeStateNode(state);
             this.stateNodes.push(state);
@@ -981,7 +984,8 @@ class Canvas extends React.Component<Props, State>{
     canvasOnMouseMove(e : MouseEvent){
         // console.log(e);
         if(this.state.mouseMode === 'addNode'){
-            let state = this.createStateNodeObject(Math.pow(2, this.state.numberOfInpVars), 1, {x : e.offsetX, y : e.offsetY}, defaultStateNodeConfig.minRadius, this.nextLabel, this.inputCombTextLength, this.state.numberOfInpVars);
+            let inpComb = getInputCombination(this.state.numberOfInpVars, this.state.circuitMode)
+            let state = this.createStateNodeObject(inpComb, 1, {x : e.offsetX, y : e.offsetY}, defaultStateNodeConfig.minRadius, this.nextLabel, this.inputCombTextLength, this.state.numberOfInpVars);
             state = this.getMinSizeStateNode(state);
             clearCanvas(this.tempCanvasRef);
             this.drawStateNode(state, this.tempCanvasRef);
@@ -1143,7 +1147,7 @@ class Canvas extends React.Component<Props, State>{
         nodeContext.lineWidth = canvasConfig.nodeCanvasLineWidth;
         tempContext.lineWidth = canvasConfig.tempCanvasLineWidth;
 
-        // this.createTestGraph();
+        this.createTestGraph();
 
         
         window.addEventListener('resize', e=>{
@@ -1235,13 +1239,13 @@ class Canvas extends React.Component<Props, State>{
                         {
                             this.state.showSideBar &&
                         <div className = {styles.sideBarContainer}>
-                            <SideBar changeOutput={this.changeOutput} numberOfOutputVars={this.state.numberOfOutputVars} changeNumberOfOutputVars={this.changeNumberOfOutputVars} changeIoNodeColor = {this.changeIoNodeColor} changeStateColor = {this.changeStateColor} changeStateNodeRadius = {this.changeStateNodeRadius} addIoNodeWithStateChange = {this.addIoNodeWithStateChange} ioNode = {this.state.ioNodeToSideBar} stateNode = {this.state.stateNodeToSideBar} toggleSideBar = {this.toggleSideBar} />
+                            <SideBar circuitMode = {this.state.circuitMode} changeOutput={this.changeOutput} numberOfOutputVars={this.state.numberOfOutputVars} changeNumberOfOutputVars={this.changeNumberOfOutputVars} changeIoNodeColor = {this.changeIoNodeColor} changeStateColor = {this.changeStateColor} changeStateNodeRadius = {this.changeStateNodeRadius} addIoNodeWithStateChange = {this.addIoNodeWithStateChange} ioNode = {this.state.ioNodeToSideBar} stateNode = {this.state.stateNodeToSideBar} toggleSideBar = {this.toggleSideBar} />
                         </div>}
                     </div>
                 }
                     {
                         this.state.synthesis &&
-                        <Design numberOfOutputVars = {this.state.numberOfOutputVars} changeSynthesis={this.changeSynthesis} numberOfInpVar = {this.state.numberOfInpVars} stateNodes={this.stateNodes} edges = {this.edges} />    
+                        <Design circuitMode = {this.state.circuitMode} numberOfOutputVars = {this.state.numberOfOutputVars} changeSynthesis={this.changeSynthesis} numberOfInpVar = {this.state.numberOfInpVars} stateNodes={this.stateNodes} edges = {this.edges} />    
                     }
             </div>
             

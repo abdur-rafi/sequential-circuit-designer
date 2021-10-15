@@ -1,6 +1,6 @@
 
 import { StateNode } from "../state-diagram/state-diagram-interfaces";
-import { excitationInterface, nextStateMap, truthTable, kMap, tabulationGroupItem, implicationEntryMap, stringToStringMap, simplifyFunctionReutnType } from "./interfaces";
+import { excitationInterface, nextStateMap, truthTable, kMap, tabulationGroupItem, implicationEntryMap, stringToStringMap, simplifyFunctionReutnType, circuitMode } from "./interfaces";
 
 function nextChar(c : string) {
     return String.fromCharCode(c.charCodeAt(0) + 1);
@@ -95,28 +95,35 @@ export function getBinRepresentation(stateLabels : string[]) : stringToStringMap
     return m;
 }
 
-export function getInputCombination(d : number) : string[]{
+export function getInputCombination(d : number, circuitMode : circuitMode , labels? : string[]) : string[]{
     let n = Math.pow(2,d);
     let inps : string[] = []
-    for(let i = 0; i < n; ++i){
-        let curr = i.toString(2);
-        while(curr.length < d){
-            curr = '0' + curr;
-        }
-        inps.push(curr);
+    if(circuitMode === 'synchronous'){
+        for(let i = 0; i < n; ++i){
+            let curr = i.toString(2);
+            while(curr.length < d){
+                curr = '0' + curr;
+            }
+            inps.push(curr);
 
+        }
+    }
+    else if(circuitMode === 'pulse'){
+        for(let i = 0; i < d; ++i){
+            inps.push('x' + i);
+        }
     }
     return inps;
 }
 
-export async function getNextStateMap(stateNodes : StateNode[], numberOfInpVars : number, numberOfOutputVar : number) : Promise<nextStateMap>{
+export async function getNextStateMap(stateNodes : StateNode[], numberOfInpVars : number, numberOfOutputVar : number, circuitMode : circuitMode) : Promise<nextStateMap>{
     let map : nextStateMap = {
         nextStateMap : {},
         numberOfOutputVar : numberOfOutputVar,
         numberOfInputVar : numberOfInpVars
     };
 
-    let inpComb = getInputCombination(numberOfInpVars);
+    let inpComb = getInputCombination(numberOfInpVars, circuitMode);
     stateNodes.forEach(s=>{
         map.nextStateMap[s.label] = {}
         inpComb.forEach(comb=>{
@@ -149,7 +156,7 @@ export function getLabels(n : number, t : string): string[]{
     return vars;
 }
 
-export async function getExcitationsFromNextStateMap(stateLabels : string[], nextStateMap : nextStateMap, binMap : stringToStringMap, latchMap : {[key: string]: string} , numberOfLatchVars : number) : Promise<excitationInterface[]>{
+export async function getExcitationsFromNextStateMap(stateLabels : string[], nextStateMap : nextStateMap, binMap : stringToStringMap, latchMap : {[key: string]: string} , numberOfLatchVars : number, circuitMode : circuitMode) : Promise<excitationInterface[]>{
     const max = (n : number, n2 : number) : number=>{
         if(n > n2) return n;
         return n2;
@@ -158,7 +165,7 @@ export async function getExcitationsFromNextStateMap(stateLabels : string[], nex
     let numberOfStateBits = getRequiredBitForStates(stateLabels.length);
     let numberOfInputVar = nextStateMap.numberOfInputVar;
     let numberOfOutputVars = nextStateMap.numberOfOutputVar;
-    let inpComb = getInputCombination(numberOfInputVar);
+    let inpComb = getInputCombination(numberOfInputVar, circuitMode);
     let mx = max(numberOfOutputVars, numberOfStateBits);
     for(let i = 0; i < mx; ++i){
         let sIndex = i;
@@ -217,9 +224,19 @@ export async function getExcitationsFromNextStateMap(stateLabels : string[], nex
 }
 
 
-export async function truthTablesFromExcitation(excitation : excitationInterface, functionLabels : string) : Promise<truthTable[]>{
+export async function truthTablesFromExcitation(excitation : excitationInterface, functionLabels : string, circuitMode : circuitMode) : Promise<truthTable[]>{
     let numberOfVars = excitation.dims.row + excitation.dims.col;
-    let inpCombs = getInputCombination(numberOfVars);
+    let inpCombs : string[] = [];
+    if(circuitMode === 'synchronous'){
+        inpCombs = getInputCombination(numberOfVars, circuitMode);
+    }
+    else{
+        let stateCombs = getInputCombination(excitation.dims.row, 'synchronous');
+        let pulseCombs = getInputCombination(excitation.dims.col, circuitMode);
+        stateCombs.forEach(st =>{
+            pulseCombs.forEach(p => inpCombs.push(st + p))
+        })
+    }
     let tTable : truthTable[] = [];
     let fDim = excitation.dims.row;
     // if(pair) tTable.push({table : {}, dims : numberOfVars, functionName : '', vars : excitation.colLabels + excitation.rowLabels});
@@ -246,13 +263,40 @@ export async function truthTablesFromExcitation(excitation : excitationInterface
     
 }
 
-export async function generateKMap(truthTable : truthTable) : Promise<kMap>{
+export async function generateKMap(truthTable : truthTable, circuitMode : circuitMode, numberOfInput? : number) : Promise<kMap[]>{
+    if(circuitMode === 'pulse'){
+        let stateDim = truthTable.dims - numberOfInput!;
+        let numberOfinps = numberOfInput!;
+        let tablesForPulses : {
+            [pulse : string] : truthTable
+        } = {}
+        let pulseComb = getInputCombination(numberOfinps, 'pulse');
+        let stateComb = getInputCombination(stateDim,'synchronous');
+        let kmaps : kMap[] = []
+        pulseComb.forEach(async p =>{
+            let tr : truthTable = {
+                dims : stateDim,
+                functionName : truthTable.functionName + p,
+                table : {},
+                vars : truthTable.vars.slice(0,stateDim)
+            }
+            stateComb.forEach(s =>{
+                tr.table[s] = truthTable.table[s + p]
+            })
+            // tablesForPulses[p] = tr;
+            let mp = await generateKMap(tr, 'synchronous');
+            kmaps.push(mp[0]);
+        })
+
+        return kmaps;
+        
+    }
     let numberOfTotalVars = truthTable.dims;
     if(numberOfTotalVars < 5){
         let row = Math.floor(numberOfTotalVars / 2);
         let col = numberOfTotalVars - row;
-        let rowComb = getInputCombination(row);
-        let colComb = getInputCombination(col);
+        let rowComb = getInputCombination(row, 'synchronous');
+        let colComb = getInputCombination(col, 'synchronous');
         let kMap : kMap = {
             map : {},
             dims : {
@@ -275,13 +319,13 @@ export async function generateKMap(truthTable : truthTable) : Promise<kMap>{
                 kMap.map[''][rcomb][ccomb] = truthTable.table[rcomb + ccomb];
             })
         })
-        return kMap;
+        return [kMap];
     }
     else{
         
         let rem = numberOfTotalVars - 4;
-        let remCombs = getInputCombination(rem);
-        let comb = getInputCombination(4);
+        let remCombs = getInputCombination(rem, 'synchronous');
+        let comb = getInputCombination(4, 'synchronous');
 
         let kMap : kMap = {
             map : {},
@@ -308,10 +352,10 @@ export async function generateKMap(truthTable : truthTable) : Promise<kMap>{
             comb.forEach(c=>{
                 tTable.table[c] = truthTable.table[remComb + c];
             })
-            let temp = await generateKMap(tTable);
-            kMap.map[remComb] = temp.map[''];
+            let temp = await generateKMap(tTable, 'synchronous');
+            kMap.map[remComb] = temp[0].map[''];
         })
-        return kMap;
+        return [kMap];
     }
 }
 
@@ -356,9 +400,9 @@ export function mergeComb(s1 : string, s2 : string) : string{
     return r;
 }
 
-export function simplifyFunction(truthTable : truthTable, returnSteps ? : boolean) : simplifyFunctionReutnType   
+export function simplifyFunction(truthTable : truthTable,circuitMode : circuitMode, returnSteps ? : boolean) : simplifyFunctionReutnType   
 {
-    let inpComb = getInputCombination(truthTable.dims);
+    let inpComb = getInputCombination(truthTable.dims, circuitMode);
     let nonZeroinpComb = inpComb.filter(comb=>truthTable.table[comb] != '0');
     let groups : tabulationGroupItem[][] = [];
     let rGroups : tabulationGroupItem[][][] = [groups];
@@ -498,10 +542,10 @@ export function getLiteral(comb : string, vars : string[]): string{
     return r;
 }
 
-export async function stateMinimization(stateLabels : string[], nextStateMap : nextStateMap):Promise<implicationEntryMap>{
+export async function stateMinimization(stateLabels : string[], nextStateMap : nextStateMap, circuitMode : circuitMode):Promise<implicationEntryMap>{
     let separator = ' ';
     let numberOfInputVars = nextStateMap.numberOfInputVar;
-    let inpComb = getInputCombination(numberOfInputVars);
+    let inpComb = getInputCombination(numberOfInputVars,circuitMode);
 
     const combineStateLabels = (l1 : string, l2 : string) : string =>{
         if(l1 < l2) return l1 + separator + l2;
@@ -761,8 +805,8 @@ export async function getMaximals( labels : string[], entries : implicationEntry
 }
 
 
-export async function getMinimumClosure(labels : string[], maximalCompatibles : string[][], nextStateMap : nextStateMap, upperBound : number, lowerBound : number) : Promise<string[][]> {
-    let inputCombinations = getInputCombination(nextStateMap.numberOfInputVar);
+export async function getMinimumClosure(labels : string[], maximalCompatibles : string[][], nextStateMap : nextStateMap, upperBound : number, lowerBound : number, circuitMode : circuitMode) : Promise<string[][]> {
+    let inputCombinations = getInputCombination(nextStateMap.numberOfInputVar, circuitMode);
     let allChoices = getComibations(maximalCompatibles.length, upperBound);
     const indexesForParticularCombination = (comb : string) : number[]=>{
         let sets : number[] = [];
@@ -890,9 +934,9 @@ export async function getMinimumClosure(labels : string[], maximalCompatibles : 
     return [];
 }
 
-export async function getReducedNextStateMap(newLabels : string[], compatibles : string[][], nextStateMap : nextStateMap) {
+export async function getReducedNextStateMap(newLabels : string[], compatibles : string[][], nextStateMap : nextStateMap, circuitMode : circuitMode) {
     
-    const inpComb = getInputCombination(nextStateMap.numberOfInputVar);
+    const inpComb = getInputCombination(nextStateMap.numberOfInputVar, circuitMode);
 
     
 
@@ -961,7 +1005,7 @@ export async function getNewLabels(n : number, useDot = true){
     return newLabels;
 }
 
-export async function nextStateMapFromStateTalbeInput(states : string[], entries : string[][], outputs : string[][]){
+export async function nextStateMapFromStateTalbeInput(states : string[], entries : string[][], outputs : string[][], circuitMode : circuitMode){
     let n = states.length;
     let internalLabels = await getNewLabels(n,false);
     let numberOfInputs = Math.log2(entries[0].length);
@@ -973,7 +1017,7 @@ export async function nextStateMapFromStateTalbeInput(states : string[], entries
         [original : string] : string
     } = {}
     states.forEach((state, index)=> originalToInternalMap[state] = internalLabels[index])
-    let inpComb = getInputCombination(numberOfInputs);
+    let inpComb = getInputCombination(numberOfInputs, circuitMode);
     let nextStateMap : nextStateMap = {
         nextStateMap : {},
         numberOfInputVar : numberOfInputs,
@@ -998,7 +1042,7 @@ export function useLabelMap(label : string, labelMap : {[k : string] : string} |
     return labelMap[label];
 }
 
-export async function truthTableFromMinterms(terms : number[], vars : string[], dontCares : number[]){
+export async function truthTableFromMinterms(terms : number[], vars : string[], dontCares : number[], circuitMode : circuitMode){
     let trTable : truthTable = {
         table : {
 
@@ -1007,7 +1051,7 @@ export async function truthTableFromMinterms(terms : number[], vars : string[], 
         functionName : '',
         vars : vars
     }
-    let inpComb = getInputCombination(vars.length);
+    let inpComb = getInputCombination(vars.length, circuitMode);
     
     inpComb.forEach((comb, index)=>{
         if(terms.indexOf(index) != -1){
