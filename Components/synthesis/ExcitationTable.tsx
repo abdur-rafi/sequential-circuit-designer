@@ -1,15 +1,16 @@
 import { StateNode } from "../state-diagram/state-diagram-interfaces";
 import { getInputCombination, getRequiredBitForStates, useLabelMap } from "./helperFunctions";
 import styles from '../../styles/design.module.scss'
-import { circuitMode, excitationInterface, stringToStringMap } from "./interfaces";
+import { circuitMode, excitationInterface, LatchType, stringToStringMap } from "./interfaces";
 
 const ExcitaitonTable : React.FC<{
     stateLabels : string[],
     binRep : stringToStringMap,
     latchMap : {[key :string] : string},
-    latchLabel : string,
     excitations : excitationInterface[],
-    circuitMode : circuitMode
+    circuitMode : circuitMode,
+    latch : LatchType,
+    onLatchChange : (l : LatchType) => void
 }> = (props)=>{
 
     if(props.excitations.length == 0){
@@ -27,9 +28,9 @@ const ExcitaitonTable : React.FC<{
     for(let i = 0; i < stateBitCount; ++i){
         upperHeadRow.push(
             <th key = {i} colSpan = { props.circuitMode === 'synch' ? Math.pow(2,numberOfInputVars) : numberOfInputVars}>
-                {props.latchLabel.length === 2 ? 
-                (<span>{props.latchLabel[0]}<sub>{i}</sub>{props.latchLabel[1]}<sub>{i}</sub></span>  ) :
-                (<span>{props.latchLabel}<sub>{i}</sub></span>)
+                {props.latch.length === 2 ? 
+                (<span>{props.latch[0]}<sub>{i}</sub>{props.latch[1]}<sub>{i}</sub></span>  ) :
+                (<span>{props.latch}<sub>{i}</sub></span>)
                 }
             </th>
         )
@@ -45,6 +46,20 @@ const ExcitaitonTable : React.FC<{
 
     return(
         <div className = {styles.transitionTableContainer}>
+            <div>
+                <label> Latch </label>
+                <select value = {props.latch} onChange = {(e)=>{
+                    if(e.target.value === props.latch) return;
+                    if(e.target.value === 'JK' || e.target.value === 'SR'
+                    || e.target.value === 'D' || e.target.value === 'T')
+                    props.onLatchChange(e.target.value);
+                }}>
+                    <option>JK</option>
+                    <option>SR</option>
+                    <option>D</option>
+                    <option>T</option>
+                </select>
+            </div>
             <table className = {styles.transitionTable}>
                 <thead>
                     <tr>

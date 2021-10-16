@@ -3,7 +3,7 @@ import { Edge, StateNode } from "../state-diagram/state-diagram-interfaces";
 import styles from '../../styles/design.module.scss'
 import StateTable from "./StateTable";
 import { generateKMap, getBinRepresentation, getLiteral, getNextStateMap, getRequiredBitForStates, getMaximals, simplifyFunction, stateMinimization, truthTablesFromExcitation, getExcitationsFromNextStateMap, getMinimumClosure, getReducedNextStateMap, getNewLabels, useLabelMap } from "./helperFunctions";
-import {  circuitMode, excitationInterface, implicationEntryMap, kMap, nextStateMap, stringToStringMap, truthTable } from "./interfaces";
+import {  circuitMode, excitationInterface, implicationEntryMap, kMap, LatchType, nextStateMap, stringToStringMap, truthTable } from "./interfaces";
 import ExcitaitonTable from "./ExcitationTable";
 import KMap from './kMap'
 import ImplicationTable from "./ImplicationTable";
@@ -81,6 +81,13 @@ const Design : React.FC<{
     )
 }
 
+const getLatchMap = (l :LatchType)=>{
+    if(l === 'JK') return JKMap;
+    else if(l === 'SR') return SRMap;
+    else if(l === 'D') return DMap;
+    return TMap;
+}
+
 interface FNSMprops {
     labels : string[],
     nextStateMap : nextStateMap | null,
@@ -102,7 +109,8 @@ interface FNSMState{
     newLabels : string[] | null,
     binRep : stringToStringMap,
     labelMap : stringToStringMap | undefined,
-    reducedLabelMap : stringToStringMap | undefined
+    reducedLabelMap : stringToStringMap | undefined,
+    latch : LatchType
 }
 
 export class FromNextStateMap extends React.Component<FNSMprops ,FNSMState >{
@@ -121,12 +129,14 @@ export class FromNextStateMap extends React.Component<FNSMprops ,FNSMState >{
             newLabels : null,
             binRep : getBinRepresentation(this.props.labels),
             labelMap : this.props.labelMap,
-            reducedLabelMap : undefined
+            reducedLabelMap : undefined,
+            latch : 'JK'
         }
         this.getAllTruthTables = this.getAllTruthTables.bind(this);
         this.getAllKmaps = this.getAllKmaps.bind(this);
         this.onBinRepChange = this.onBinRepChange.bind(this);
         this.setReducedLabelMap = this.setReducedLabelMap.bind(this);
+        this.onLatchChange = this.onLatchChange.bind(this);
     }
 
     // const [reducedNextStateMap, setReducedNextStateMap] = useState<nextStateMap | null>(null);
@@ -143,10 +153,33 @@ export class FromNextStateMap extends React.Component<FNSMprops ,FNSMState >{
     // const [reducedLabelMap, setReducedLabelMap] = useState<stringToStringMap | undefined >(undefined);
     
 
-    getAllTruthTables = async (excitations : excitationInterface[]) : Promise<truthTable[]>=>{
+    onLatchChange = (newLatch : LatchType)=>{
+        getExcitationsFromNextStateMap(this.state.newLabels!, this.state.reducedNextStateMap!, this.state.binRep,
+            getLatchMap(newLatch),newLatch.length , this.props.circuitMode)
+            .then(async e=>{
+                e = await getExcitationsFromNextStateMap(this.state.newLabels!,this.state.reducedNextStateMap!,
+                    this.state.binRep,getLatchMap(newLatch),newLatch.length, this.props.circuitMode);
+                e = [...e.filter(e=> e.type === 'state'), ... e.filter(e=> e.type === 'output')]
+                console.log(e);
+                // setExcitations(e);
+                let t = await this.getAllTruthTables(e, newLatch);
+                // setTruthTables(t);
+                let k = await this.getAllKmaps(t);
+
+                this.setState({
+                    latch : newLatch,
+                    excitations : e,
+                    truthTables : t,
+                    kMaps : k
+                })
+            })
+    }
+
+
+    getAllTruthTables = async (excitations : excitationInterface[], latch : LatchType) : Promise<truthTable[]>=>{
         let t : truthTable[] = [];
         excitations.forEach(async e =>{
-            let temp = await truthTablesFromExcitation(e,e.type === 'output' ? 'z' : 'JK', this.props.circuitMode);
+            let temp = await truthTablesFromExcitation(e,e.type === 'output' ? 'z' : latch, this.props.circuitMode);
             t.push(...temp);
         })
         return t;
@@ -169,7 +202,7 @@ export class FromNextStateMap extends React.Component<FNSMprops ,FNSMState >{
             e = [...e.filter(e=> e.type === 'state'), ... e.filter(e=> e.type === 'output')]
             console.log(e);
             // setExcitations(e);
-            let t = await this.getAllTruthTables(e);
+            let t = await this.getAllTruthTables(e, this.state.latch);
             // setTruthTables(t);
             let k = await this.getAllKmaps(t);
 
@@ -235,7 +268,7 @@ export class FromNextStateMap extends React.Component<FNSMprops ,FNSMState >{
             e = [...e.filter(e=> e.type === 'state'), ... e.filter(e=> e.type === 'output')]
             this.setState({excitations : e})
             // setExcitations(e);
-            let t = await this.getAllTruthTables(e);
+            let t = await this.getAllTruthTables(e, this.state.latch);
             this.setState({truthTables : t})
             // setTruthTables(t);
             let k = await this.getAllKmaps(t);
@@ -332,7 +365,7 @@ export class FromNextStateMap extends React.Component<FNSMprops ,FNSMState >{
                 content = {this.state.newLabels && this.state.reducedNextStateMap && <StateTable circuitMode = {this.props.circuitMode} nextStateMap = {this.state.reducedNextStateMap} labelMap = {this.state.binRep} stateLabels = {this.state.newLabels}/>}/>
                 
                 <Details summary = {'Excitation Table'} 
-                content = {this.state.newLabels && this.state.excitations && <ExcitaitonTable circuitMode = {this.props.circuitMode}  excitations = {this.state.excitations} stateLabels = {this.state.newLabels} binRep = {this.state.binRep} latchLabel = 'JK' latchMap = {JKMap} />}/>
+                content = {this.state.newLabels && this.state.excitations && <ExcitaitonTable onLatchChange = {this.onLatchChange} latch = {this.state.latch} circuitMode = {this.props.circuitMode}  excitations = {this.state.excitations} stateLabels = {this.state.newLabels} binRep = {this.state.binRep} latchMap = {JKMap} />}/>
                 
                 
                 <Details summary = {'KMaps'} 

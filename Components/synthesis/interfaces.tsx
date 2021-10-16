@@ -106,3 +106,5 @@ export interface Error{
     type : 'state' | 'output' | 'entry', 
     message? : string
 }
+
+export type LatchType = 'JK' | 'SR' | 'D' | 'T'
