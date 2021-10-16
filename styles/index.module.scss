@@ -1,0 +1,50 @@
+$headerFontSize : 24px;
+$smallScreen : 760px;
+.root{
+    padding: 30px;
+
+}
+.titleContainer{
+    background-color: lightblue;
+    padding: 10px;
+    border-radius: 5px;
+    // border: 2px outset lightblue;
+}
+.card{
+    border: 2px outset lightblue;
+    &:hover{
+        border: 2px inset lightblue;
+    }
+    text-align: start;
+    width: 300px;
+    @media screen and (max-width : $smallScreen) {
+        width: 70vw;
+    }
+    display: inline-flex;
+    flex-direction: column;
+    background-color: red;
+    .header{
+        // background-color: green;
+        // font-size: $headerFontSize;
+        padding: 10px;
+        text-align: center;
+    }
+    .body{
+        font-size: 1.2em;
+        padding: 0px 30px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        flex-grow: 1;
+        // background-color: red;
+    }
+    border-radius: 10px;
+    background-color: rgba(0, 206, 209, 0.397);
+    min-height: 380px;
+    margin: 20px;
+}
+.cardsContainer{
+    // background-color: red;
+    justify-content: start;
+    text-align: center;
+}

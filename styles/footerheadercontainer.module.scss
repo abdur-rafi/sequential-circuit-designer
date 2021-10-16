@@ -46,8 +46,8 @@ $footerHeight : 100px;
     // align-items: center;
     @media (max-width : $breakpoint){
         display: block;
-            padding: 7.5px;
-            align-items: center;
+        padding: 7.5px;
+        align-items: center;
         // position: static;
     }
     .logoContainer{
@@ -64,6 +64,10 @@ $footerHeight : 100px;
         flex-direction: row;
         @media (max-width : $breakpoint){
             display: block;
+            >div{
+                padding-top: 10px;
+            }
+            // padding-top: 10px;
         }
         & div{
             width: 200px;
@@ -94,6 +98,13 @@ $footerHeight : 100px;
     }
     .rotateArrow{
         transform: rotate(180deg);
+    }
+
+    .sequentialOptionsContainer, .combinationalOptionsContainer{
+        // background-color: red;
+        >div{
+            padding: 5px;
+        }
     }
 }
 .footer{

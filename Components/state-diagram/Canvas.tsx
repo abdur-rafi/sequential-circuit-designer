@@ -90,7 +90,6 @@ class Canvas extends React.Component<Props, State>{
         this.changeNumberOfInputVars = this.changeNumberOfInputVars.bind(this);
         this.toggleSideBar = this.toggleSideBar.bind(this);
         this.setMouseMode = this.setMouseMode.bind(this);
-        this.setMouseMode = this.setMouseMode.bind(this);
         this.addIoNodeWithStateChange = this.addIoNodeWithStateChange.bind(this);
         this.changeStateNodeRadius = this.changeStateNodeRadius.bind(this);
         this.changeStateColor = this.changeStateColor.bind(this);
@@ -147,6 +146,9 @@ class Canvas extends React.Component<Props, State>{
     }
 
     changeSynthesis( s : boolean){
+        if(this.stateNodes.length == 0) return;
+        clearCanvas(this.tempCanvasRef);
+        this.resetModeVars();
         this.setState({
             synthesis : s
         })
@@ -375,6 +377,7 @@ class Canvas extends React.Component<Props, State>{
 
     setMouseMode(mode : MouseMode){
         this.resetModeVars();
+        clearCanvas(this.tempCanvasRef);
         this.setState(old=>({
             mouseMode : mode,
             showSideBar : false,
@@ -983,18 +986,44 @@ class Canvas extends React.Component<Props, State>{
                 y : e.offsetY
             }
             let selected =  this.checkInside(testPoint);
-            let x;
-            if(x = this.isIONode(selected.entity)){
-                if(x.type == 'in'){
-                    this.edgeStartNode = x;
-                    let context = this.tempCanvasRef.current?.getContext('2d');
-                    if(context){
-                        context.strokeStyle = 'black';
-                        context.beginPath();
-                        context.moveTo(x.center.x, x.center.y);
+
+            if(this.edgeStartNode != null){
+                let tempContext = this.tempCanvasRef.current?.getContext('2d');
+                if(tempContext == null || this.tempEdgePoints.length === 0) return;
+                clearCanvas(this.tempCanvasRef);
+                if(!selected.entity){
+                    clearCanvas(this.tempCanvasRef);
+                }
+                if(selected.entity != null && 'type' in selected.entity
+                    && selected.entity.type === 'out'){
+                        let from = this.edgeStartNode;
+                        let to = selected.entity;
+                        let edge = this.createEdge(from, to, this.tempEdgePoints);
+                        this.drawEdge(edge);
+                        this.edges.push(edge);
+                        from.edges.push(edge);
+                        to.edges.push(edge);
+                }
+                this.edgeStartNode = null;
+                this.tempEdgePoints = []
+            }
+            else{
+                let x;
+                if(x = this.isIONode(selected.entity)){
+                    if(x.type == 'in' && x.edges.length === 0){
+                        this.edgeStartNode = x;
+                        let context = this.tempCanvasRef.current?.getContext('2d');
+                        if(context){
+                            context.strokeStyle = 'black';
+                            context.beginPath();
+                            context.moveTo(x.center.x, x.center.y);
+                        }
                     }
                 }
             }
+
+
+            
         }
     }
 
@@ -1080,28 +1109,28 @@ class Canvas extends React.Component<Props, State>{
             this.moveContext = false;
         }
         else if(this.state.mouseMode === 'edge'){
-            if(this.edgeStartNode != null){
-                let tempContext = this.tempCanvasRef.current?.getContext('2d');
-                if(tempContext == null || this.tempEdgePoints.length === 0) return;
-                clearCanvas(this.tempCanvasRef);
-                let testPoint = {
-                    x : e.offsetX, 
-                    y : e.offsetY
-                }
-                let selected = this.checkInsideNode(testPoint);
-                if(selected.entity != null && 'type' in selected.entity
-                    && selected.entity.type === 'out'){
-                        let from = this.edgeStartNode;
-                        let to = selected.entity;
-                        let edge = this.createEdge(from, to, this.tempEdgePoints);
-                        this.drawEdge(edge);
-                        this.edges.push(edge);
-                        from.edges.push(edge);
-                        to.edges.push(edge);
-                }
-                this.edgeStartNode = null;
-                this.tempEdgePoints = []
-            }
+            // if(this.edgeStartNode != null){
+            //     let tempContext = this.tempCanvasRef.current?.getContext('2d');
+            //     if(tempContext == null || this.tempEdgePoints.length === 0) return;
+            //     clearCanvas(this.tempCanvasRef);
+            //     let testPoint = {
+            //         x : e.offsetX, 
+            //         y : e.offsetY
+            //     }
+            //     let selected = this.checkInsideNode(testPoint);
+            //     if(selected.entity != null && 'type' in selected.entity
+            //         && selected.entity.type === 'out'){
+            //             let from = this.edgeStartNode;
+            //             let to = selected.entity;
+            //             let edge = this.createEdge(from, to, this.tempEdgePoints);
+            //             this.drawEdge(edge);
+            //             this.edges.push(edge);
+            //             from.edges.push(edge);
+            //             to.edges.push(edge);
+            //     }
+            //     this.edgeStartNode = null;
+            //     this.tempEdgePoints = []
+            // }
         }
     }
 
@@ -1154,6 +1183,15 @@ class Canvas extends React.Component<Props, State>{
                     }
                     if(this.selectedEdge){
                         this.removeEdge(this.selectedEdge);
+                    }
+                }
+            }
+            else if(e.key === 'Escape'){
+                if(this.state.mouseMode === 'addNode'){
+                    if(this.tempStateNode){
+                        clearCanvas(this.tempCanvasRef);
+                        this.tempStateNode = null;
+                        this.setMouseMode('select');
                     }
                 }
             }
