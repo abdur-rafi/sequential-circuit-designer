@@ -93,3 +93,16 @@ export interface simplifyFunctionReutnType{
 }
 
 export type circuitMode = 'pulse' | 'synch'
+
+export interface lastSelected{
+    i : number,
+    j : number,
+    type : 'state' | 'entry' | 'output'
+}
+
+export interface Error{
+    i : number,
+    j : number,
+    type : 'state' | 'output' | 'entry', 
+    message? : string
+}

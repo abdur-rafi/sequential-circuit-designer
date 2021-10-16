@@ -4,20 +4,9 @@ import { getInputCombination, nextStateMapFromStateTalbeInput } from '../synthes
 import styles from '../../styles/statetableinput.module.scss'
 import minimizeFunctionStyles from '../../styles/minimizefunction.module.scss'
 import { FromNextStateMap } from '../synthesis/results'
-import { circuitMode, nextStateMap, stringToStringMap } from '../synthesis/interfaces'
+import { circuitMode, lastSelected, nextStateMap, stringToStringMap , Error} from '../synthesis/interfaces'
 
-interface lastSelected{
-    i : number,
-    j : number,
-    type : 'state' | 'entry' | 'output'
-}
 
-interface Error{
-    i : number,
-    j : number,
-    type : 'state' | 'output' | 'entry', 
-    message? : string
-}
 
 const TableHeader : React.FC<{
     numberOfInputVars :number,
@@ -48,12 +37,7 @@ const TableHeader : React.FC<{
 const chekcValidLetters = (tVal : string)=>{
     let n = tVal.length;
     for(let i = 0; i < n; ++i){
-        if((tVal[i] >= 'a' && tVal <= 'z') || (tVal[i] >= 'A' && tVal <= 'Z') || Number.isInteger(parseInt(tVal[i])) ){
-            ;
-        }
-        else{
-            return false;
-        }
+        if(/\s/.test(tVal[i])) return false;
     }
     return true;
 }
@@ -80,13 +64,14 @@ const ErrorText : React.FC<{
     )
 }
 
-const StateEntry : React.FC<{   
+ const  StateEntry : React.FC<{   
     val : string,
     index : number,
-    changeState : (i : number, val : string,index : number) => void,
+    changeState : (i : number, val : string) => void,
     lastSelected : lastSelected,
     error : boolean,
-    errorMessage? : string
+    errorMessage? : string,
+    disabled ? : boolean
 }> = (props)=>{
     const ref = useRef<HTMLInputElement>(null);
 
@@ -98,12 +83,12 @@ const StateEntry : React.FC<{
 
     return(
         <td className = {styles.stateEntryTd + (props.error ? ` ${styles.errorTd}` : '') }>
-            <input type = 'text' className = {(props.error ? ` ${styles.errorInput}` : '')} onChange = {e=>{
+            <input disabled = {props.disabled} type = 'text' className = {(props.error ? ` ${styles.errorInput}` : '')} onChange = {e=>{
                 let tVal = e.target.value;
                 if(tVal === 'd') return;
                 // console.log(tVal);
                 if(chekcValidLetters(tVal)){
-                    props.changeState(props.index, tVal,props.index);
+                    props.changeState(props.index, tVal);
                 }
                 console.log(ref.current);
                 // ref.current?.focus();
@@ -325,7 +310,7 @@ class StateTableInput extends React.Component<Props, {
         })
     }
 
-    chnageStates(i : number, val : string, index : number ){
+    chnageStates(i : number, val : string){
         let error = this.state.error;
         if(this.state.error?.type === 'state' && i === this.state.error.i){
             error = null;
@@ -530,7 +515,7 @@ class StateTableInput extends React.Component<Props, {
                                 <TableHeader circuitMode = {this.state.circuiMode} numberOfInputVars = {this.state.numberOfInputVars} />
                                 <TableBody circuitMode = {this.state.circuiMode} changeEntry = {this.changeEntry} changeOutput = {this.changeOutput} states = {this.state.states} outputs = {this.state.outputs}
                                 numberOfStates = {this.state.numberOfStates} numberOfOutputVars = {this.state.numberOfOutputVars} numberOfInputVars = {this.state.numberOfInputVars} 
-                                lastSelected = {this.state.lastSelected} error = {this.state.error} entries = {this.state.entries} chnageStates = {this.chnageStates} />
+                                lastSelected = {this.state.lastSelected} error = {this.state.error} entries = {this.state.entries} changeStates = {this.chnageStates} />
                             </table>
                         </div>
                         <div className = {styles.buttonContainer}>
@@ -564,7 +549,7 @@ const Row : React.FC<{
     numberOfInputVars : number,
     numberOfOutputVars : number,
     lastSelected : lastSelected,
-    chnageStates : (i : number, val : string,index : number) => void,
+    changeStates : (i : number, val : string) => void,
     changeOutput : (i : number, j : number, val : string) => void,
     changeEntry : (i : number, j : number, val : string) => void,
     circuitMode : circuitMode
@@ -577,7 +562,7 @@ const Row : React.FC<{
     return(
         <tr>
             <StateEntry error = {stateError} errorMessage = {stateError ? props.error?.message : ''} lastSelected = {props.lastSelected} 
-            val = {props.stateVal} changeState = {props.chnageStates} index = {props.index} /> 
+            val = {props.stateVal} changeState = {props.changeStates} index = {props.index} /> 
             {
                 
                 inpCombs.map((comb, j)=> {
@@ -614,7 +599,7 @@ const TableBody : React.FC<{
     numberOfOutputVars : number,
     numberOfStates : number,
     lastSelected : lastSelected,
-    chnageStates : (i : number, val : string,index : number) => void,
+    changeStates : (i : number, val : string) => void,
     changeOutput : (i : number, j : number, val : string) => void,
     changeEntry : (i : number, j : number, val : string) => void,
     circuitMode : circuitMode
@@ -633,3 +618,4 @@ const TableBody : React.FC<{
 
 export default StateTableInput;
 
+export {StateEntry, chekcValidLetters, ErrorText};

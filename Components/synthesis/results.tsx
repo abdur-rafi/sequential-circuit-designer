@@ -58,14 +58,14 @@ const Design : React.FC<{
     numberOfOutputVars : number,
 }> = (props)=>{
 
-    const [nextStateMap , setNextStateMap] = useState<nextStateMap | null>(null);
+    const [nextStateMap , setNextStateMap] = useState<nextStateMap | null>(nextStateMap2);
     // let labels = ['A', 'B', 'C', 'D', 'E']
-    // let labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+    let labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 
-    let labels = props.stateNodes.map(s => s.label);
+    // let labels = props.stateNodes.map(s => s.label);
     useEffect(()=>{
         getNextStateMap(props.stateNodes, props.numberOfInpVar, props.numberOfOutputVars,props.circuitMode).then(s=>{
-            setNextStateMap(s);
+            // setNextStateMap(s);
         })
         
     }, [props])
@@ -81,200 +81,298 @@ const Design : React.FC<{
     )
 }
 
-
-
-export const FromNextStateMap : React.FC<{
+interface FNSMprops {
     labels : string[],
     nextStateMap : nextStateMap | null,
     changeSynthesis : (b : boolean) => void,
     labelMap? : {[label : string] : string},
     circuitMode : circuitMode
-}> = (props)=>{
-    const [reducedNextStateMap, setReducedNextStateMap] = useState<nextStateMap | null>(null);
-    const [excitations, setExcitations] = useState<excitationInterface[] | null>(null);
-    const [implicationEntries, setImplicationEntries] = useState<implicationEntryMap | null>(null);
-    const [truthTables, setTruthTables] = useState<truthTable[] | null>(null);
-    const [kMaps, setKMaps] = useState<kMap[]|null>(null);
-    const [maximalCompatibles, setMaximalCompatibles] = useState<string[][] | null>(null);
-    const [maximalIncompatibles, setMaximalIncompatibles] = useState<string[][] | null>(null);
-    const [compatibles, setCompatibles] = useState<string[][] | null>();
-    const [newLabels , setNewLabels ] = useState<string[]>(props.labels);
-    const [binRep, setBinRep] = useState<stringToStringMap>(getBinRepresentation(props.labels));
+
+}
+
+interface FNSMState{
+    reducedNextStateMap : nextStateMap | null,
+    excitations : excitationInterface[] | null,
+    implicationEntries : implicationEntryMap | null,
+    truthTables : truthTable[] | null,
+    kMaps : kMap[] | null,
+    maximalCompatibles : string[][] | null
+    maximalIncompatibles : string[][] | null,
+    compatibles : string[][] | null,
+    newLabels : string[] | null,
+    binRep : stringToStringMap,
+    labelMap : stringToStringMap | undefined,
+    reducedLabelMap : stringToStringMap | undefined
+}
+
+export class FromNextStateMap extends React.Component<FNSMprops ,FNSMState >{
+
+    constructor(props : FNSMprops){
+        super(props);
+        this.state = {
+            reducedNextStateMap : null,
+            excitations : null,
+            implicationEntries : null,
+            truthTables : null,
+            kMaps : null,
+            maximalCompatibles : null,
+            maximalIncompatibles : null,
+            compatibles : null,
+            newLabels : null,
+            binRep : getBinRepresentation(this.props.labels),
+            labelMap : this.props.labelMap,
+            reducedLabelMap : undefined
+        }
+        this.getAllTruthTables = this.getAllTruthTables.bind(this);
+        this.getAllKmaps = this.getAllKmaps.bind(this);
+        this.onBinRepChange = this.onBinRepChange.bind(this);
+        this.setReducedLabelMap = this.setReducedLabelMap.bind(this);
+    }
+
+    // const [reducedNextStateMap, setReducedNextStateMap] = useState<nextStateMap | null>(null);
+    // const [excitations, setExcitations] = useState<excitationInterface[] | null>(null);
+    // const [implicationEntries, setImplicationEntries] = useState<implicationEntryMap | null>(null);
+    // const [truthTables, setTruthTables] = useState<truthTable[] | null>(null);
+    // const [kMaps, setKMaps] = useState<kMap[]|null>(null);
+    // const [maximalCompatibles, setMaximalCompatibles] = useState<string[][] | null>(null);
+    // const [maximalIncompatibles, setMaximalIncompatibles] = useState<string[][] | null>(null);
+    // const [compatibles, setCompatibles] = useState<string[][] | null>();
+    // const [newLabels , setNewLabels ] = useState<string[]>(this.props.labels);
+    // const [binRep, setBinRep] = useState<stringToStringMap>(getBinRepresentation(this.props.labels));
+    // const [labelMap, setLabelMap] = useState<{[label : string] : string} | undefined>(this.props.labelMap);
+    // const [reducedLabelMap, setReducedLabelMap] = useState<stringToStringMap | undefined >(undefined);
     
 
-
+    getAllTruthTables = async (excitations : excitationInterface[]) : Promise<truthTable[]>=>{
+        let t : truthTable[] = [];
+        excitations.forEach(async e =>{
+            let temp = await truthTablesFromExcitation(e,e.type === 'output' ? 'z' : 'JK', this.props.circuitMode);
+            t.push(...temp);
+        })
+        return t;
+    }
     
-    useEffect(()=>{
-        if(!props.nextStateMap) return;
-        let stateVars = getRequiredBitForStates(props.labels.length) ;
-        let numberOfVars = stateVars + props.nextStateMap.numberOfInputVar;
+    getAllKmaps = async (truthTables : truthTable[]) : Promise<kMap[]> =>{
+        let k : kMap[] = [];
+        truthTables.forEach(async t=>{
+            let temp = await generateKMap(t, this.props.circuitMode,this.props.nextStateMap?.numberOfInputVar);
+            console.log(temp);
+            k.push(...temp);
+        });
+        return k;
+    }
 
-        const getAllTruthTables = async (excitations : excitationInterface[]) : Promise<truthTable[]>=>{
-            let t : truthTable[] = [];
-            excitations.forEach(async e =>{
-                let temp = await truthTablesFromExcitation(e,e.type === 'output' ? 'z' : 'JK', props.circuitMode);
-                t.push(...temp);
+    onBinRepChange = (b : stringToStringMap)=>{
+        // setBinRep(b);
+        getExcitationsFromNextStateMap(this.state.newLabels!,this.state.reducedNextStateMap!,b,JKMap,2, this.props.circuitMode).then(async e=>{
+            e = await getExcitationsFromNextStateMap(this.state.newLabels!,this.state.reducedNextStateMap!,b,JKMap,2, this.props.circuitMode);
+            e = [...e.filter(e=> e.type === 'state'), ... e.filter(e=> e.type === 'output')]
+            console.log(e);
+            // setExcitations(e);
+            let t = await this.getAllTruthTables(e);
+            // setTruthTables(t);
+            let k = await this.getAllKmaps(t);
+
+            this.setState({
+                binRep : b,
+                excitations : e,
+                truthTables : t,
+                kMaps : k
             })
-            return t;
-        }
-    
-        const getAllKmaps = async (truthTables : truthTable[]) : Promise<kMap[]> =>{
-            let k : kMap[] = [];
-            truthTables.forEach(async t=>{
-                let temp = await generateKMap(t, props.circuitMode,props.nextStateMap?.numberOfInputVar);
-                console.log(temp);
-                k.push(...temp);
-            });
-            return k;
-        }
+            // setKMaps(k);
+        })
+    }
 
-        stateMinimization(props.labels, props.nextStateMap, props.circuitMode)
+    // useEffect(()=>{
+    //     getExcitationsFromNextStateMap(newLabels,reducedNextStateMap!,binRep,JKMap,2, this.props.circuitMode).then(async e=>{
+    //         e = await getExcitationsFromNextStateMap(newLabels,reducedNextStateMap!,binRep,JKMap,2, this.props.circuitMode);
+    //         e = [...e.filter(e=> e.type === 'state'), ... e.filter(e=> e.type === 'output')]
+    //         setExcitations(e);
+    //         let t = await getAllTruthTables(e);
+    //         setTruthTables(t);
+    //         let k = await getAllKmaps(t);
+    //         setKMaps(k);
+    //     })
+        
+    // }, [binRep])
+
+    
+    componentDidMount = ()=>{
+        if(!this.props.nextStateMap) return;
+        let stateVars = getRequiredBitForStates(this.props.labels.length) ;
+        let numberOfVars = stateVars + this.props.nextStateMap.numberOfInputVar;
+
+        
+
+        stateMinimization(this.props.labels, this.props.nextStateMap, this.props.circuitMode)
         .then(async s=>{
-            setImplicationEntries(s);
-            let mx = await getMaximals(props.labels,s);
-            setMaximalCompatibles(mx);
-            let mx2 = await getMaximals(props.labels, s, true);
-            setMaximalIncompatibles(mx2); 
-            let upperBound = mx.length > props.labels.length ? props.labels.length : mx.length;
+            this.setState({implicationEntries : s})
+            // setImplicationEntries(s);
+            let mx = await getMaximals(this.props.labels,s);
+            this.setState({maximalCompatibles : mx})
+            // setMaximalCompatibles(mx);
+            let mx2 = await getMaximals(this.props.labels, s, true);
+            this.setState({maximalIncompatibles : mx2})
+            // setMaximalIncompatibles(mx2); 
+            let upperBound = mx.length > this.props.labels.length ? this.props.labels.length : mx.length;
             let lowerBound = upperBound;
             mx2.forEach(m => lowerBound = lowerBound > m.length ? m.length : lowerBound);
-            let comp = await getMinimumClosure(props.labels,mx, props.nextStateMap!,upperBound, lowerBound, props.circuitMode);
-            setCompatibles(comp);
+            let comp = await getMinimumClosure(this.props.labels,mx, this.props.nextStateMap!,upperBound, lowerBound, this.props.circuitMode);
+            this.setState({
+                compatibles : comp
+            })
+            // setCompatibles(comp);
             let newLabels = await getNewLabels(comp.length);
-            setNewLabels(newLabels);
+            // this.setState({newLabels : newLabels})
+            // setNewLabels(newLabels);
             let binRep = getBinRepresentation(newLabels);
-            setBinRep(binRep);
-            let newNxt = await getReducedNextStateMap(newLabels,comp, props.nextStateMap!, props.circuitMode);
-            setReducedNextStateMap(newNxt);
-            let e = await getExcitationsFromNextStateMap(newLabels,newNxt,binRep,JKMap,2, props.circuitMode);
+            this.setState({binRep : binRep , newLabels : newLabels})
+            // setBinRep(binRep);
+            let newNxt = await getReducedNextStateMap(newLabels,comp, this.props.nextStateMap!, this.props.circuitMode);
+            this.setState({reducedNextStateMap : newNxt})
+            // setReducedNextStateMap(newNxt);
+            let e = await getExcitationsFromNextStateMap(newLabels,newNxt,binRep,JKMap,2, this.props.circuitMode);
             e = [...e.filter(e=> e.type === 'state'), ... e.filter(e=> e.type === 'output')]
-            setExcitations(e);
-            let t = await getAllTruthTables(e);
-            setTruthTables(t);
-            let k = await getAllKmaps(t);
-            setKMaps(k);
+            this.setState({excitations : e})
+            // setExcitations(e);
+            let t = await this.getAllTruthTables(e);
+            this.setState({truthTables : t})
+            // setTruthTables(t);
+            let k = await this.getAllKmaps(t);
+            // setKMaps(k);
+            this.setState({kMaps : k})
         })
         
-    }, [props])                
+    }   
+    
+    setReducedLabelMap = (labelMap : stringToStringMap | undefined)=>{
+        this.setState({
+            reducedLabelMap : labelMap
+        })
+    }
 
-    return (
-        <div className={styles.synthesisContainer}>
-            <Details summary = {'State Table'} 
-            content = {props.nextStateMap && <StateTable circuitMode = {props.circuitMode} labelMap = {props.labelMap}  nextStateMap = {props.nextStateMap} stateLabels = {props.labels}/>} />
-            <Details summary = {'Implication Table'} 
-            content = {implicationEntries && <ImplicationTable labelMap = {props.labelMap} labels = {props.labels} entries = {implicationEntries} />} />
-            <Details summary = {'Merger Diagram For Compatibles'} 
-            content = {implicationEntries && <MergerDiagram labelMap = {props.labelMap} entries = {implicationEntries} stateLabels = {props.labels} />} />
-            <Details summary = {'Merger Diagram For Incompatibles'} 
-            content = {implicationEntries && <MergerDiagram labelMap = {props.labelMap} inCompatibles={true} entries = {implicationEntries} stateLabels = {props.labels} />}/>
-            <Details summary = {'Maximal Compatibles'} 
-            content =  {maximalCompatibles && maximalCompatibles.map((arr, index) =>{
-                            return(
-                                <div key={index}>
-                                    {
-                                        arr.map((s, i)=>{
-                                            let t = useLabelMap(s, props.labelMap);
-                                            if(arr.length === 1){
-                                                return '{ ' + t + ' }'
-                                            }
-                                            if(i === 0){
-                                                return '{ ' + t + ', ';
-                                            }
-                                            else if(i === arr.length - 1){
-                                                return t + ' }';
-                                            }
-                                            return t + ', '
-                                        })
-                                    }
-                                </div>
-                            )
-                        })}/>
-            
-            <Details summary = {'Maximal Incompatibles'} 
-            content =  {maximalIncompatibles && maximalIncompatibles.map((arr, index) =>{
-                            return(
-                                <div key={index}>
-                                    {
-                                        arr.map((s, i)=>{
-                                            let t = useLabelMap(s, props.labelMap);
-                                            if(arr.length === 1){
-                                                return '{ ' + t + ' }'
-                                            }
-                                            if(i === 0){
-                                                return '{ ' + t + ', ';
-                                            }
-                                            else if(i === arr.length - 1){
-                                                return t + ' }';
-                                            }
-                                            return t + ', '
-                                        })
-                                    }
-                                </div>
-                            )
-                        })}/>
-            
-            <Details summary = {'Closure Table'}
-            content = {
-                maximalCompatibles && props.nextStateMap &&
-                <ClosureTable circuitMode = {props.circuitMode} labelMap = {props.labelMap} nextStateMap = {props.nextStateMap} maximalCompatibles = {maximalCompatibles} />
-            }
-            />
+    render(){
 
-            <Details summary = {'Reduced States'}
-            content = {compatibles && <ReducedStates labelMap = {props.labelMap} labels = {newLabels} compatibles = {compatibles} />}
-            />
-
-            <Details summary = {'Reduced State Table'} 
-            content = {reducedNextStateMap && <StateTable circuitMode = {props.circuitMode}   nextStateMap = {reducedNextStateMap} stateLabels = {newLabels}/>} />
-            
-
-            <Details summary = {'State Assignment '} 
-            content = { <StateAssignment binRep = {binRep} stateLabels = {newLabels}  />}/>
-            
-            <Details summary = {'Transition Table '} 
-            content = { reducedNextStateMap && <StateTable circuitMode = {props.circuitMode} nextStateMap = {reducedNextStateMap} labelMap = {binRep} stateLabels = {newLabels}/>}/>
-            
-            <Details summary = {'Excitation Table'} 
-            content = {excitations && <ExcitaitonTable circuitMode = {props.circuitMode}  excitations = {excitations} stateLabels = {newLabels} binRep = {binRep} latchLabel = 'JK' latchMap = {JKMap} />}/>
-            
-            
-            <Details summary = {'KMaps'} 
-            content = {kMaps &&
-                kMaps.map((k, index)=>{
-                    let r = simplifyFunction(truthTables![index], props.circuitMode,props.nextStateMap!.numberOfInputVar);
-                    console.log(r);
-                    // let s = '';
-                    // r.selectedPIs.forEach(e=> s+= getLiteral(e.comb, truthTables![index].vars) + ' + ' );
-                // s = s.slice(0, s.length - 3);
-                    // if(s == '')
-                    //     s = '0'
-                    let key = 0;
-                    return(
-                        <div key = {k.functionName} className={styles.functionBlockContainer}>
-                            <Details 
-                            summary={k.functionName.split('').map(c => Number.isInteger(parseInt(c)) ? (<sub key={key++}>{c}</sub>) : c)}
-                            content = {
-                                <div className = {styles.functionBlock}> 
-                                    <KMap key = {key++} kMap = {k} />
-                                    <div>
-                                        <FuncionEquation circuitMode = {props.circuitMode} numberOfInputs = {props.nextStateMap!.numberOfInputVar} functionName = {k.functionName} r = {r} vars = {truthTables![index].vars}  />
-                                        {/* <div> {k.functionName.split('').map(c => Number.isInteger(parseInt(c)) ? (<sub key={key++}>{c}</sub>) : c)} = {s.split('').map(c => Number.isInteger(Number.parseInt(c)) ? <sub key={key++}>{c}</sub> : c  )} </div> */}
-                                        <PrimeImplicants circuitMode = {props.circuitMode} 
-                                        numberOfInputs = {props.nextStateMap!.numberOfInputVar} vars = {truthTables![index].vars} r = {r} />
+        return (
+            <div className={styles.synthesisContainer}>
+                <Details summary = {'State Table'} 
+                content = {this.props.nextStateMap && <StateTable circuitMode = {this.props.circuitMode} labelMap = {this.state.labelMap}  nextStateMap = {this.props.nextStateMap} stateLabels = {this.props.labels}/>} />
+                <Details summary = {'Implication Table'} 
+                content = {this.state.implicationEntries && <ImplicationTable labelMap = {this.state.labelMap} labels = {this.props.labels} entries = {this.state.implicationEntries} />} />
+                <Details summary = {'Merger Diagram For Compatibles'} 
+                content = {this.state.implicationEntries && <MergerDiagram labelMap = {this.state.labelMap} entries = {this.state.implicationEntries} stateLabels = {this.props.labels} />} />
+                <Details summary = {'Merger Diagram For Incompatibles'} 
+                content = {this.state.implicationEntries && <MergerDiagram labelMap = {this.state.labelMap} inCompatibles={true} entries = {this.state.implicationEntries} stateLabels = {this.props.labels} />}/>
+                <Details summary = {'Maximal Compatibles'} 
+                content =  {this.state.maximalCompatibles && this.state.maximalCompatibles.map((arr, index) =>{
+                                return(
+                                    <div key={index}>
+                                        {
+                                            arr.map((s, i)=>{
+                                                let t = useLabelMap(s, this.state.labelMap);
+                                                if(arr.length === 1){
+                                                    return '{ ' + t + ' }'
+                                                }
+                                                if(i === 0){
+                                                    return '{ ' + t + ', ';
+                                                }
+                                                else if(i === arr.length - 1){
+                                                    return t + ' }';
+                                                }
+                                                return t + ', '
+                                            })
+                                        }
                                     </div>
-                                </div>
-                            }
-                            />
-                        </div>
-                    )
-                })
-            }/>
-            
-            <div className={styles.backButtonContainer}>
-                <button onClick = {()=> props.changeSynthesis(false)}> back to diagram </button>
+                                )
+                            })}/>
+                
+                <Details summary = {'Maximal Incompatibles'} 
+                content =  {this.state.maximalIncompatibles && this.state.maximalIncompatibles.map((arr, index) =>{
+                                return(
+                                    <div key={index}>
+                                        {
+                                            arr.map((s, i)=>{
+                                                let t = useLabelMap(s, this.state.labelMap);
+                                                if(arr.length === 1){
+                                                    return '{ ' + t + ' }'
+                                                }
+                                                if(i === 0){
+                                                    return '{ ' + t + ', ';
+                                                }
+                                                else if(i === arr.length - 1){
+                                                    return t + ' }';
+                                                }
+                                                return t + ', '
+                                            })
+                                        }
+                                    </div>
+                                )
+                            })}/>
+                
+                <Details summary = {'Closure Table'}
+                content = {
+                    this.state.maximalCompatibles && this.props.nextStateMap &&
+                    <ClosureTable circuitMode = {this.props.circuitMode} labelMap = {this.state.labelMap} nextStateMap = {this.props.nextStateMap} maximalCompatibles = {this.state.maximalCompatibles} />
+                }
+                />
+
+                <Details summary = {'Reduced States'}
+                content = {this.state.compatibles && this.state.newLabels && <ReducedStates setReduceLabelMap = {this.setReducedLabelMap} labelMap = {this.state.labelMap} labels = {this.state.newLabels} compatibles = {this.state.compatibles} />}
+                />
+
+                <Details summary = {'Reduced State Table'} 
+                content = {this.state.newLabels && this.state.reducedNextStateMap && <StateTable circuitMode = {this.props.circuitMode} labelMap = {this.state.reducedLabelMap}   nextStateMap = {this.state.reducedNextStateMap} stateLabels = {this.state.newLabels}/>} />
+                
+
+                <Details summary = {'State Assignment '} 
+                content = {this.state.newLabels && <StateAssignment changeBinRep
+                = {this.onBinRepChange} labelMap = {this.state.reducedLabelMap} binRep = {this.state.binRep} stateLabels = {this.state.newLabels}  />}/>
+                
+                <Details summary = {'Transition Table '} 
+                content = {this.state.newLabels && this.state.reducedNextStateMap && <StateTable circuitMode = {this.props.circuitMode} nextStateMap = {this.state.reducedNextStateMap} labelMap = {this.state.binRep} stateLabels = {this.state.newLabels}/>}/>
+                
+                <Details summary = {'Excitation Table'} 
+                content = {this.state.newLabels && this.state.excitations && <ExcitaitonTable circuitMode = {this.props.circuitMode}  excitations = {this.state.excitations} stateLabels = {this.state.newLabels} binRep = {this.state.binRep} latchLabel = 'JK' latchMap = {JKMap} />}/>
+                
+                
+                <Details summary = {'KMaps'} 
+                content = {this.state.kMaps &&
+                    this.state.kMaps.map((k, index)=>{
+                        let r = simplifyFunction(this.state.truthTables![index], this.props.circuitMode,this.props.nextStateMap!.numberOfInputVar);
+                        console.log(r);
+                        // let s = '';
+                        // r.selectedPIs.forEach(e=> s+= getLiteral(e.comb, truthTables![index].vars) + ' + ' );
+                    // s = s.slice(0, s.length - 3);
+                        // if(s == '')
+                        //     s = '0'
+                        let key = 0;
+                        return(
+                            <div key = {k.functionName} className={styles.functionBlockContainer}>
+                                <Details 
+                                summary={k.functionName.split('').map(c => Number.isInteger(parseInt(c)) ? (<sub key={key++}>{c}</sub>) : c)}
+                                content = {
+                                    <div className = {styles.functionBlock}> 
+                                        <KMap key = {key++} kMap = {k} />
+                                        <div>
+                                            <FuncionEquation circuitMode = {this.props.circuitMode} numberOfInputs = {this.props.nextStateMap!.numberOfInputVar} functionName = {k.functionName} r = {r} vars = {this.state.truthTables![index].vars}  />
+                                            {/* <div> {k.functionName.split('').map(c => Number.isInteger(parseInt(c)) ? (<sub key={key++}>{c}</sub>) : c)} = {s.split('').map(c => Number.isInteger(Number.parseInt(c)) ? <sub key={key++}>{c}</sub> : c  )} </div> */}
+                                            <PrimeImplicants circuitMode = {this.props.circuitMode} 
+                                            numberOfInputs = {this.props.nextStateMap!.numberOfInputVar} vars = {this.state.truthTables![index].vars} r = {r} />
+                                        </div>
+                                    </div>
+                                }
+                                />
+                            </div>
+                        )
+                    })
+                }/>
+                
+                <div className={styles.backButtonContainer}>
+                    <button onClick = {()=> this.props.changeSynthesis(false)}> back to diagram </button>
+                </div>
             </div>
-        </div>
-    )
+        )
+    }
 }
 
 const Details : React.FC<{

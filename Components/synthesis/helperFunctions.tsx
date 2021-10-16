@@ -768,6 +768,9 @@ export async function getMaximals( labels : string[], entries : implicationEntry
                 }
             }
         }
+        for(let i = 0; i < n; ++i){
+            adj[i].sort((a, b) => a - b);
+        }
 
         return adj;
     }
@@ -832,6 +835,7 @@ export async function getMaximals( labels : string[], entries : implicationEntry
     let combs = getComibations(n , upperBound);
     // console.log(combs);
     for(let i = upperBound; i > 0; --i){
+        combs[i].reverse();
         combs[i].forEach(comb=>{
             let indexes = getCombStates(comb);
             if(maximals.some(m => doesContain(m, indexes)))

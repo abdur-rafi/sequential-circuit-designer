@@ -163,6 +163,20 @@
             margin: 20px;
             border: none;
         }
+        input{
+            // background-color: red;
+            border: none;
+            outline : none;
+            border-bottom: 1px solid black;
+            &:focus{
+                border-bottom: 1px solid lightblue;
+            }
+            &:disabled{
+                background-color: white;
+            }
+
+        }
+
     }
     
     

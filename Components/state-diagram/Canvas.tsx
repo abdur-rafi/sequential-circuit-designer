@@ -81,10 +81,10 @@ class Canvas extends React.Component<Props, State>{
             ioNodeToSideBar : null,
             stateNodeToSideBar : null,
             mouseMode : 'edge',
-            numberOfInpVars : 3,
+            numberOfInpVars : 1,
             synthesis : false,
-            numberOfOutputVars : 2,
-            circuitMode : 'pulse'
+            numberOfOutputVars : 1,
+            circuitMode : 'synch'
         }
 
         this.changeNumberOfInputVars = this.changeNumberOfInputVars.bind(this);
