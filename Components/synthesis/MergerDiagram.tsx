@@ -12,9 +12,9 @@ const MergerDiagram : React.FC<{
 }> = (props)=>{
 
     const canvas = useRef<HTMLCanvasElement>(null);
-    const height = 300;
-    const widht = 300;
-    const gap = 20;
+    const height = 320;
+    const widht = 320;
+    const gap = 30;
     const radius = widht / 2 - gap;
     const center : Point = {
         x : widht / 2,
@@ -66,13 +66,13 @@ const MergerDiagram : React.FC<{
                 let label = useLabelMap(props.stateLabels[i], props.labelMap);
                 let labelWidht = context!.measureText(label).width;
                 if(Math.abs(s - 1.5 * Math.PI) < .0001){
-                    context!.strokeText(label, p.x - labelWidht / 2, p.y - labelWidht - gap);
+                    context!.fillText(label, p.x - labelWidht / 2, p.y - fontSize - gap);
                 }
                 else if(Math.abs(s - 2.5 * Math.PI) < .0001){
-                    context!.strokeText(label, p.x - labelWidht / 2, p.y + labelWidht + gap);
+                    context!.fillText(label, p.x - labelWidht / 2, p.y + fontSize + gap);
                 }
                 else if(s > 2.5 * Math.PI){
-                    context!.strokeText(label, p.x - labelWidht - gap ,p.y);
+                    context!.fillText(label, p.x - labelWidht - gap ,p.y);
                 }
                 else{
                     context!.fillText(label, p.x + gap ,p.y);

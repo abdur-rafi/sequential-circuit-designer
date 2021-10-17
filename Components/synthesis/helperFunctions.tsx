@@ -116,7 +116,7 @@ export function getInputCombination(d : number, circuitMode : circuitMode , labe
     return inps;
 }
 
-export async function getNextStateMap(stateNodes : StateNode[], numberOfInpVars : number, numberOfOutputVar : number, circuitMode : circuitMode) : Promise<nextStateMap>{
+export async function  getNextStateMap(stateNodes : StateNode[], internalLabel : stringToStringMap, numberOfInpVars : number, numberOfOutputVar : number, circuitMode : circuitMode) : Promise<nextStateMap>{
     let map : nextStateMap = {
         nextStateMap : {},
         numberOfOutputVar : numberOfOutputVar,
@@ -125,7 +125,7 @@ export async function getNextStateMap(stateNodes : StateNode[], numberOfInpVars 
 
     let inpComb = getInputCombination(numberOfInpVars, circuitMode);
     stateNodes.forEach(s=>{
-        map.nextStateMap[s.label] = {}
+        map.nextStateMap[internalLabel[s.label]] = {}
         inpComb.forEach(comb=>{
 
             let from = s.ioNodes.filter(ioNode => ioNode.inputComb === comb)[0];
@@ -134,10 +134,10 @@ export async function getNextStateMap(stateNodes : StateNode[], numberOfInpVars 
                 nxtState = 'd';
             }
             else{
-                nxtState = from.edges[0].to.originNode.label;
+                nxtState = internalLabel[from.edges[0].to.originNode.label];
             }
 
-            map.nextStateMap[s.label][comb] = {
+            map.nextStateMap[internalLabel[s.label]][comb] = {
                 state : nxtState,
                 output : from.output
             }
@@ -209,7 +209,7 @@ export async function getExcitationsFromNextStateMap(stateLabels : string[], nex
             inpComb.forEach(comb=>{
                 // let from = s.ioNodes.filter(ioNode => ioNode.inputComb === comb)[0];
                 if(i < numberOfOutputVars)
-                    excitations[oIndex].map[currBin!][comb] = nextStateMap.nextStateMap[currStateLabel][comb].output;
+                    excitations[oIndex].map[currBin!][comb] = nextStateMap.nextStateMap[currStateLabel][comb].output[i];
                 if(i < numberOfStateBits){
                     let nxtStateLabel = nextStateMap.nextStateMap[currStateLabel][comb].state;
                     let nextBin = useLabelMap(nxtStateLabel, binMap);

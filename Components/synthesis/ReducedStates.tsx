@@ -23,9 +23,7 @@ const ReducedStates : React.FC<{
 
     const changeState = (index : number,val : string )=>{
         if(!edit) return;
-        if(index === error?.i){
-            setError(null);
-        }
+        setError(null);
         let s = [...states];
         s[index] = val;
         let temp = {

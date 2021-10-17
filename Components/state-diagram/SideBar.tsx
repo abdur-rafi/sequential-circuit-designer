@@ -16,7 +16,8 @@ class SideBar extends React.Component<{
     changeNumberOfOutputVars : (n : number)=>void,
     numberOfOutputVars : number,
     changeOutput : (ioNode : IONode, s : string) => void,
-    circuitMode : circuitMode
+    circuitMode : circuitMode,
+    onLabelChange : (s : StateNode, l : string) => void
 }, {}>{
 
     render() : React.ReactNode{
@@ -31,7 +32,7 @@ class SideBar extends React.Component<{
                     this.props.ioNode && <IONodeRender circuitMode = {this.props.circuitMode} changeOutput={this.props.changeOutput} numberOfOutputVars={this.props.numberOfOutputVars} changeNumberOfOutputVars={this.props.changeNumberOfOutputVars} changeIoNodeColor={this.props.changeIoNodeColor} ioNode={this.props.ioNode} />
                 }
                 {
-                    this.props.stateNode && <StateNodeRender changeStateColor = {this.props.changeStateColor} changeStateNodeRadius = {this.props.changeStateNodeRadius} addIoNodeWithStateChange = {this.props.addIoNodeWithStateChange} stateNode={this.props.stateNode} />
+                    this.props.stateNode && <StateNodeRender onLabelChange = {this.props.onLabelChange} changeStateColor = {this.props.changeStateColor} changeStateNodeRadius = {this.props.changeStateNodeRadius} addIoNodeWithStateChange = {this.props.addIoNodeWithStateChange} stateNode={this.props.stateNode} />
                 }
             </div>
         )
@@ -42,7 +43,8 @@ const StateNodeRender : React.FC<{
     stateNode : StateNode
     addIoNodeWithStateChange : (stateNode : StateNode, type : 'in' | 'out')=>boolean
     changeStateNodeRadius : (state : StateNode, r : number) =>void,
-    changeStateColor : (state: StateNode, color : string)=>void
+    changeStateColor : (state: StateNode, color : string)=>void,
+    onLabelChange : (s : StateNode, l : string) => void
     
 }> = (props)=>{
 
@@ -94,8 +96,29 @@ const StateNodeRender : React.FC<{
                         props.changeStateColor(props.stateNode, e.target.value);
                     }} ></input>
                 </div>
+
                 
             </div>
+            <div className = {styles.stateLabelContainer}>
+                <div className = {styles.labelContainer}>
+                    <div>
+                        <label>
+                            Label: 
+                        </label>  
+                    </div>
+                </div>
+                
+                <div>
+                    <input type='text' value={props.stateNode.label} onChange={(e)=>{
+                        props.onLabelChange(props.stateNode,e.target.value);
+                        // setColor(e.target.value);
+                        // props.changeStateColor(props.stateNode, e.target.value);
+                    }} ></input>
+                </div>
+
+                
+            </div>
+            
             <div className = {styles.radiusContainer}>
                 <div>
                     radius : {props.stateNode.radius}

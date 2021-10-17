@@ -1,10 +1,11 @@
 
 export const defaultStateNodeConfig : defaultStateNodeConfig = {
-    minRadius : 20,
+    minRadius : 22,
     color : '#ffffff',
     gap : 6,
     ioNodeDiameter : 8,
     font : 'bold 20px serif',
+    fontSize : 20
     
 }
 
@@ -42,6 +43,7 @@ interface defaultStateNodeConfig {
     gap : number,
     ioNodeDiameter : number,
     font : string,
+    fontSize : number
 }
 interface canvasConfig{
     nodeCanvasLineWidth : number,

@@ -2,7 +2,7 @@ import React from "react";
 import { Edge, StateNode } from "../state-diagram/state-diagram-interfaces";
 import styles from '../../styles/design.module.scss'
 import StateTable from "./StateTable";
-import { generateKMap, getBinRepresentation, getLiteral, getNextStateMap, getRequiredBitForStates, getMaximals, simplifyFunction, stateMinimization, truthTablesFromExcitation, getExcitationsFromNextStateMap, getMinimumClosure, getReducedNextStateMap, getNewLabels, useLabelMap } from "./helperFunctions";
+import { generateKMap, getBinRepresentation, getLiteral, getNextStateMap, getRequiredBitForStates, getMaximals, simplifyFunction, stateMinimization, truthTablesFromExcitation, getExcitationsFromNextStateMap, getMinimumClosure, getReducedNextStateMap, getNewLabels, useLabelMap, StringIdGenerator } from "./helperFunctions";
 import {  circuitMode, excitationInterface, implicationEntryMap, kMap, LatchType, nextStateMap, stringToStringMap, truthTable } from "./interfaces";
 import ExcitaitonTable from "./ExcitationTable";
 import KMap from './kMap'
@@ -58,14 +58,25 @@ const Design : React.FC<{
     numberOfOutputVars : number,
 }> = (props)=>{
 
-    const [nextStateMap , setNextStateMap] = useState<nextStateMap | null>(nextStateMap2);
-    // let labels = ['A', 'B', 'C', 'D', 'E']
-    let labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-
-    // let labels = props.stateNodes.map(s => s.label);
+    const [nextStateMap , setNextStateMap] = useState<nextStateMap | null>(null);
+    const [labelMap, setLabelMap] = useState<stringToStringMap | undefined>(undefined);
+    const [labels, setLabels] = useState<string[]>([]);
     useEffect(()=>{
-        getNextStateMap(props.stateNodes, props.numberOfInpVar, props.numberOfOutputVars,props.circuitMode).then(s=>{
-            // setNextStateMap(s);
+        let ids = new StringIdGenerator();
+        let temp : stringToStringMap = {};
+        let internalMap : stringToStringMap = {};
+        props.stateNodes.forEach(s =>{
+            // let t = s.label;
+            // s.label = ids.next();
+            // temp[s.label] = t;
+            let iLabel = ids.next();
+            temp[iLabel] = s.label;
+            internalMap[s.label] = iLabel;
+        })
+        setLabelMap(temp);
+        setLabels(props.stateNodes.map(s => internalMap[s.label]))
+        getNextStateMap(props.stateNodes, internalMap, props.numberOfInpVar, props.numberOfOutputVars,props.circuitMode).then(s=>{
+            setNextStateMap(s);
         })
         
     }, [props])
@@ -75,7 +86,8 @@ const Design : React.FC<{
                 !nextStateMap && <div className = {styles.processingTextContainer}> calculating... </div>
             }
             {
-                nextStateMap && <FromNextStateMap circuitMode = {props.circuitMode} nextStateMap = {nextStateMap} labels = {labels} changeSynthesis={props.changeSynthesis} />
+                nextStateMap && <FromNextStateMap circuitMode = {props.circuitMode} nextStateMap = {nextStateMap} 
+                labelMap = {labelMap} labels = {labels} changeSynthesis={props.changeSynthesis} />
             }
         </div>
     )

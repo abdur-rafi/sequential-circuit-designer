@@ -59,10 +59,11 @@ const StateAssignment : React.FC<{
 
 
     const changeInputVal =  (i : number, val : string) =>{
-        console.log('here');
-        if(i === error?.i){
-            setError(null);
-        }
+        // console.log('here');
+        // if(i === error?.i){
+        //     setError(null);
+        // }
+        setError(null);
         setLastSelected({
             ...lastSelected, 
             i : i

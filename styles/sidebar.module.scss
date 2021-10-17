@@ -21,7 +21,7 @@
     .stateNodeContainer, .ioNodeContainer{
         margin: 5px;
         // background-color: blue;
-        .inNodeContainer , .outNodeContainer, .radiusContainer{
+        .inNodeContainer , .outNodeContainer, .radiusContainer, .stateLabelContainer{
             // background-color: green;
             display: flex;
             flex-direction: row;
@@ -35,6 +35,19 @@
                 margin: 0px 2px;
                 &:hover{
                     opacity: .7;
+                }
+            }
+        }
+        .stateLabelContainer{
+            input{
+                width: 30px;
+                outline: none;
+                border: none;
+                background-color: transparent;
+                border-bottom: 1px solid black;
+                margin: 10px;
+                &:focus{
+                    border-bottom: 1px solid lightblue;
                 }
             }
         }

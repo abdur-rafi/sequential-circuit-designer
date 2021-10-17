@@ -98,6 +98,33 @@ class Canvas extends React.Component<Props, State>{
         this.changeNumberOfOutputVars = this.changeNumberOfOutputVars.bind(this);
         this.changeOutput = this.changeOutput.bind(this);
         this.chnageCircuitMode = this.chnageCircuitMode.bind(this);
+        this.onLabelChange = this.onLabelChange.bind(this);
+    }
+
+    doLabelCollide(stateNode : StateNode, label : string){
+        let context = this.nodeCanvasRef.current?.getContext('2d');
+        if(!context) return;
+        
+        let w = context.measureText(label).width;
+        let fSize = defaultStateNodeConfig.fontSize;
+        let perpendicular = fSize / 2 + 1;
+        let hypotenuse = stateNode.radius;
+        let base = Math.sqrt(hypotenuse * hypotenuse - perpendicular * perpendicular);
+
+        if(w >= 2 * base) return true;
+        return false;
+    }
+
+    onLabelChange(stateNode : StateNode, newLabel : string){
+        
+        if(this.doLabelCollide(stateNode, newLabel)) return;
+
+        if(stateNode.label === newLabel) return;
+        stateNode.label = newLabel;
+        this.eraseStateNode(stateNode, this.nodeCanvasRef);
+        this.drawStateNode(stateNode, this.nodeCanvasRef);
+        this.setState({stateNodeToSideBar : stateNode});
+
     }
 
     chnageCircuitMode(circuitMode : circuitMode){
@@ -346,6 +373,12 @@ class Canvas extends React.Component<Props, State>{
 
     changeStateNodeRadius(stateNode : StateNode, radius : number){
         if(this.checkIfStateNodeContainsEdge(stateNode) || (radius < stateNode.minRadius)) return;
+        let temp = stateNode.radius;
+        stateNode.radius = radius;
+        if(this.doLabelCollide(stateNode, stateNode.label)){
+            stateNode.radius = temp;
+            return;
+        }
         this.eraseStateNode(stateNode, this.nodeCanvasRef);
         let r = radius + stateNode.gap + stateNode.ioNodeDiameter / 2;
         for(let i = 0; i < stateNode.ioNodes.length; ++i){
@@ -1295,7 +1328,12 @@ class Canvas extends React.Component<Props, State>{
                         {
                             this.state.showSideBar &&
                         <div className = {styles.sideBarContainer}>
-                            <SideBar circuitMode = {this.state.circuitMode} changeOutput={this.changeOutput} numberOfOutputVars={this.state.numberOfOutputVars} changeNumberOfOutputVars={this.changeNumberOfOutputVars} changeIoNodeColor = {this.changeIoNodeColor} changeStateColor = {this.changeStateColor} changeStateNodeRadius = {this.changeStateNodeRadius} addIoNodeWithStateChange = {this.addIoNodeWithStateChange} ioNode = {this.state.ioNodeToSideBar} stateNode = {this.state.stateNodeToSideBar} toggleSideBar = {this.toggleSideBar} />
+                            <SideBar onLabelChange = {this.onLabelChange} circuitMode = {this.state.circuitMode} 
+                            changeOutput={this.changeOutput} numberOfOutputVars={this.state.numberOfOutputVars} 
+                            changeNumberOfOutputVars={this.changeNumberOfOutputVars} changeIoNodeColor = {this.changeIoNodeColor} 
+                            changeStateColor = {this.changeStateColor} changeStateNodeRadius = {this.changeStateNodeRadius} 
+                            addIoNodeWithStateChange = {this.addIoNodeWithStateChange} ioNode = {this.state.ioNodeToSideBar} 
+                            stateNode = {this.state.stateNodeToSideBar} toggleSideBar = {this.toggleSideBar} />
                         </div>}
                     </div>
                 }
