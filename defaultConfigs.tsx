@@ -2,7 +2,7 @@
 export const defaultStateNodeConfig : defaultStateNodeConfig = {
     minRadius : 22,
     color : '#ffffff',
-    gap : 6,
+    gap : 8,
     ioNodeDiameter : 8,
     font : 'bold 20px serif',
     fontSize : 20
@@ -15,7 +15,8 @@ export const defalutIONodeConfig : defalutIONodeConfig = {
     inputLabelGap : 8,
     font : 'bold 12px serif',
     fontSize : 12,
-    inpCombLengthExtra : 12
+    inpCombLengthExtra : 12,
+    focusGap : 6
 }
 export const canvasConfig : canvasConfig = {
     nodeCanvasLineWidth : 2,
@@ -34,7 +35,8 @@ interface defalutIONodeConfig{
     inputLabelGap : number,
     font : string,
     fontSize : number,
-    inpCombLengthExtra : number
+    inpCombLengthExtra : number,
+    focusGap : number
 }
 
 interface defaultStateNodeConfig {

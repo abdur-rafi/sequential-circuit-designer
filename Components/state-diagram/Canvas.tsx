@@ -408,6 +408,18 @@ class Canvas extends React.Component<Props, State>{
         return newIoNode != null;
     }
 
+    drawCircleAroundIoNode(type : 'in' | 'out'){
+        this.stateNodes.forEach(s =>{
+            s.ioNodes.forEach(ioNode =>{
+                if(ioNode.type !== type) return;
+                let context = this.tempCanvasRef.current?.getContext('2d');
+                if(context){
+                    drawCircle(this.tempCanvasRef,ioNode.center,ioNode.radius + defalutIONodeConfig.focusGap,'red');
+                }
+            })
+        })
+    }
+
     setMouseMode(mode : MouseMode){
         this.resetModeVars();
         clearCanvas(this.tempCanvasRef);
@@ -416,7 +428,11 @@ class Canvas extends React.Component<Props, State>{
             showSideBar : false,
             ioNodeToSideBar : null,
             stateNodeToSideBar : null
-        }))
+        }), ()=>{
+            if(this.state.mouseMode === 'edge'){
+                this.drawCircleAroundIoNode('in');
+            }
+        })
     }
 
     checkIfStateNodeContainsEdge(state : StateNode) : boolean{
@@ -499,7 +515,11 @@ class Canvas extends React.Component<Props, State>{
             }
             for(let j = 0; j < stateNode.ioNodes.length; ++j){
                 let ioNode = stateNode.ioNodes[j];
-                if(checkInsideCircle(ioNode.center, ioNode.radius, testPoint)){
+                let radius = ioNode.radius;
+                if(this.state.mouseMode === 'edge'){
+                    radius += defalutIONodeConfig.focusGap;
+                }
+                if(checkInsideCircle(ioNode.center, radius, testPoint)){
                     return { entity : ioNode, index : j};
                 }
             }
@@ -917,9 +937,7 @@ class Canvas extends React.Component<Props, State>{
                 clearCanvas(this.tempCanvasRef);
                 this.drawTempNodeOnNodeCanvas();
                 this.tempStateNode = null;
-                this.setState({
-                    mouseMode : 'edge'
-                })
+                this.setMouseMode('edge')
                 this.nextLabel = this.stateLabels.next();
             }
         }
@@ -1026,6 +1044,7 @@ class Canvas extends React.Component<Props, State>{
                 clearCanvas(this.tempCanvasRef);
                 if(!selected.entity){
                     clearCanvas(this.tempCanvasRef);
+                    this.drawCircleAroundIoNode('in');
                 }
                 if(selected.entity != null && 'type' in selected.entity
                     && selected.entity.type === 'out'){
@@ -1044,6 +1063,8 @@ class Canvas extends React.Component<Props, State>{
                 let x;
                 if(x = this.isIONode(selected.entity)){
                     if(x.type == 'in' && x.edges.length === 0){
+                        clearCanvas(this.tempCanvasRef);
+                        this.drawCircleAroundIoNode('out');
                         this.edgeStartNode = x;
                         let context = this.tempCanvasRef.current?.getContext('2d');
                         if(context){
@@ -1236,7 +1257,7 @@ class Canvas extends React.Component<Props, State>{
         nodeContext.lineWidth = canvasConfig.nodeCanvasLineWidth;
         tempContext.lineWidth = canvasConfig.tempCanvasLineWidth;
 
-        this.createTestGraph();
+        // this.createTestGraph();
 
         
         window.addEventListener('resize', e=>{
