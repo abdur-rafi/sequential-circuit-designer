@@ -412,6 +412,7 @@ class Canvas extends React.Component<Props, State>{
         this.stateNodes.forEach(s =>{
             s.ioNodes.forEach(ioNode =>{
                 if(ioNode.type !== type) return;
+                if(ioNode.type === 'in' && ioNode.edges.length != 0) return;
                 let context = this.tempCanvasRef.current?.getContext('2d');
                 if(context){
                     drawCircle(this.tempCanvasRef,ioNode.center,ioNode.radius + defalutIONodeConfig.focusGap,'red');
@@ -1044,7 +1045,6 @@ class Canvas extends React.Component<Props, State>{
                 clearCanvas(this.tempCanvasRef);
                 if(!selected.entity){
                     clearCanvas(this.tempCanvasRef);
-                    this.drawCircleAroundIoNode('in');
                 }
                 if(selected.entity != null && 'type' in selected.entity
                     && selected.entity.type === 'out'){
@@ -1056,6 +1056,7 @@ class Canvas extends React.Component<Props, State>{
                         from.edges.push(edge);
                         to.edges.push(edge);
                 }
+                this.drawCircleAroundIoNode('in');
                 this.edgeStartNode = null;
                 this.tempEdgePoints = []
             }
@@ -1328,7 +1329,7 @@ class Canvas extends React.Component<Props, State>{
                         <div className={styles.topBarContainer}>
                             <TopBar circuitMode = {this.state.circuitMode} changeCircuitMode = {this.chnageCircuitMode} changeSynthesis = {this.changeSynthesis} changeNumberOfOutputVars={this.changeNumberOfOutputVars} numberOfOutputVars={this.state.numberOfOutputVars} changeNumberOfInputVars = {this.changeNumberOfInputVars} numberOfInputVars = {this.state.numberOfInpVars} setMouseMode = {this.setMouseMode} mouseMode = {this.state.mouseMode}/>
                         </div>
-                        <div className={styles.canvasContainer} ref={this.canvasContainerRef}>
+                        <div className={styles.canvasContainer } ref={this.canvasContainerRef}  >
                             <canvas ref = {this.nodeCanvasRef} className={styles.canvas} />
                             <canvas ref={this.edgeCanvasRef} className={styles.canvas} />
                             <canvas ref={this.tempCanvasRef} className={styles.canvas} style={{
