@@ -10,10 +10,20 @@ interface Props{
     pulse : string,
     remComb : string,
     implicants : simplifyFunctionReutnType,
-    colorMap : stringToStringMap
+    colorMap : stringToStringMap,  
+    mx : number
 }
 interface State{
 
+}
+
+const doesCombMatch = (piComb : string, comb : string) =>{
+    let n = comb.length;
+    for(let i = 0; i < n; ++i){
+        if(piComb[i] ==='_') continue;
+        if(piComb[i] !== comb[i]) return false;
+    }
+    return true;
 }
 
 const KMapCanvas : React.FC<Props> = (props)=>{
@@ -27,14 +37,7 @@ const KMapCanvas : React.FC<Props> = (props)=>{
         if(!canvasRef.current) return;
         let context =canvasRef.current.getContext('2d');
         if(!context) return;
-        let currImplicants = props.implicants[props.pulse].selectedPIs.filter(pi =>{
-            let n = props.remComb.length;
-            for(let i = 0; i < n; ++i){
-                if(pi.comb[i] ==='_') continue;
-                if(pi.comb[i] !== props.remComb[i]) return false;
-            }
-            return true;
-        })
+        let currImplicants = props.implicants[props.pulse].selectedPIs.filter(pi =>doesCombMatch(pi.comb, props.remComb));
         let rowDim = props.kMap.dims.row;
         let colDim = props.kMap.dims.col;
         let rowCount = 1 << rowDim;
@@ -44,8 +47,9 @@ const KMapCanvas : React.FC<Props> = (props)=>{
         let startPoint : Point = {x : leftPadding, y : topPadding};
         let gap = 4;
         let delta = 5;
-        let vGap = 2 * currImplicants.length * delta + gap + 30;
-        let hGap = 2 * currImplicants.length * delta + gap + 30;;
+        let impCount = props.mx;
+        let vGap = 2 * impCount * delta + gap + 30;
+        let hGap = 2 * impCount * delta + gap + 30;;
         let mapWidth = hGap * colCount;
         let mapHeight = vGap * rowCount;
         let bottomPadding = 20;
@@ -315,6 +319,72 @@ const KMapCanvas : React.FC<Props> = (props)=>{
 
 }
 
+const Legends : React.FC<{
+    implicants : simplifyFunctionReutnType,
+    pulse : string,
+    colorMap : stringToStringMap,
+    kMap : kMap
+}> = (props)=>{
+
+    const canvasRef = React.createRef<HTMLCanvasElement>()
+
+    useEffect(()=>{
+
+        if(!canvasRef.current){
+            return;
+        }
+        let context = canvasRef.current.getContext('2d');
+        if(!context) return;
+        context.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+        let vars : string[] = [...props.kMap.vars.rem, ...props.kMap.vars.row, ...props.kMap.vars.col]
+        let mxWidth = 0;
+        let terms : string[] = [];
+        let colors : string[] = [];
+        let fSize = 18;
+        let top = fSize;
+        let leftPadding = 10;
+        
+        props.implicants[props.pulse].selectedPIs.forEach(pi =>{
+            let n = pi.comb.length;
+            let curr = props.pulse;
+            for(let i = 0; i < n; ++i){
+                if(pi.comb[i] === '_') continue;
+                else if(pi.comb[i] === '0') curr += vars[i] + "'";
+                else curr += vars[i];
+            }
+            // console.log(curr);
+            terms.push(curr);
+            colors.push(props.colorMap[pi.comb])
+            let w = context!.measureText(curr).width;
+            mxWidth = mxWidth > w ? mxWidth : w;
+            top += 1.5 * fSize ;
+        })
+
+        
+        canvasRef.current.width = mxWidth + leftPadding + 100;
+        canvasRef.current.height = top + 100;
+        context.font = `bold ${fSize}px serif`;
+        context.textBaseline = 'middle';
+
+        top = fSize;
+
+        terms.forEach((term, i) =>{
+            if(!context) return;
+            context.fillStyle = colors[i];
+            context.fillRect(leftPadding + 5, top - fSize / 4, fSize / 2, fSize / 2);
+            context.fill();
+            context.fillStyle = 'black';
+            context.fillText(term,leftPadding + 5 + fSize, top);
+            context.stroke();
+            top += 1.5 * fSize;
+        })
+
+    }, [props])
+
+    return(
+        <canvas ref = {canvasRef} />
+    )
+}
 const KMap : React.FC<{
     kMap : kMap,
     implicants : simplifyFunctionReutnType
@@ -335,13 +405,13 @@ const KMap : React.FC<{
         remComb.push('');
     }
 
-    let colors = ['red', 'green', 'blue', 'orange', 'DarkViolet', 'brown',
-     'fuschia' , 'indigo', 'seaGreen', 'steelBlue' , 'Tan', 'Teal'];
-    // colors = colors.slice(4);
-
-
+    let colors = ['red', 'green', 'blue', 'orange', 'brown',
+     'fuchsia' , 'indigo', 'steelBlue' , 'Tan', 'khaki','turquoise'];
+    // colors = colors.slice(10);
 
     let key = 0;
+
+
 
     return(
         <div className = {styles.kMapContainer}>
@@ -353,8 +423,19 @@ const KMap : React.FC<{
                         colorMap[pi.comb] = colors[ci];
                         ci = (ci + 1) % colors.length;
                     })
+                    let mx = 0;
+                    remComb.forEach(remComb =>{
+                        let t = props.implicants[p].selectedPIs.filter(pi => doesCombMatch(pi.comb, remComb)).length;
+                        mx = mx > t ? mx : t;
+                    })
                     return(
-                        remComb.map(rem => <KMapCanvas colorMap = {colorMap} implicants = {props.implicants} key = {rem} kMap = {props.kMap} remComb = {rem} pulse = {p} />)
+                        <div key = {p}>
+                            <Legends colorMap = {colorMap} implicants = {props.implicants} kMap = {props.kMap}
+                            pulse = {p}  />
+                        {
+                            remComb.map(rem => <KMapCanvas mx = {mx} colorMap = {colorMap} implicants = {props.implicants} key = {rem} kMap = {props.kMap} remComb = {rem} pulse = {p} />)
+                        }
+                        </div>
                     )
                 })
             }
