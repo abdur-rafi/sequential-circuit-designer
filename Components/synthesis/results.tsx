@@ -5,7 +5,7 @@ import StateTable from "./StateTable";
 import { generateKMap, getBinRepresentation, getLiteral, getNextStateMap, getRequiredBitForStates, getMaximals, simplifyFunction, stateMinimization, truthTablesFromExcitation, getExcitationsFromNextStateMap, getMinimumClosure, getReducedNextStateMap, getNewLabels, useLabelMap, StringIdGenerator } from "./helperFunctions";
 import {  circuitMode, excitationInterface, implicationEntryMap, kMap, LatchType, nextStateMap, stringToStringMap, truthTable } from "./interfaces";
 import ExcitaitonTable from "./ExcitationTable";
-import KMap from './kMap'
+import KMap from './KMapCanvas'
 import ImplicationTable from "./ImplicationTable";
 import StateAssignment from "./StateAssignment";
 import MergerDiagram from "./MergerDiagram";
@@ -397,7 +397,7 @@ export class FromNextStateMap extends React.Component<FNSMprops ,FNSMState >{
                                 summary={k.functionName.split('').map(c => Number.isInteger(parseInt(c)) ? (<sub key={key++}>{c}</sub>) : c)}
                                 content = {
                                     <div className = {styles.functionBlock}> 
-                                        <KMap key = {key++} kMap = {k} />
+                                        <KMap implicants = {r} key = {key++} kMap = {k} />
                                         <div>
                                             <FuncionEquation circuitMode = {this.props.circuitMode} numberOfInputs = {this.props.nextStateMap!.numberOfInputVar} functionName = {k.functionName} r = {r} vars = {this.state.truthTables![index].vars}  />
                                             {/* <div> {k.functionName.split('').map(c => Number.isInteger(parseInt(c)) ? (<sub key={key++}>{c}</sub>) : c)} = {s.split('').map(c => Number.isInteger(Number.parseInt(c)) ? <sub key={key++}>{c}</sub> : c  )} </div> */}

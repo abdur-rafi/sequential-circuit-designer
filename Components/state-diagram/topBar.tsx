@@ -22,7 +22,7 @@ interface State{
 }
 const TopBar : React.FC<Props> = (props)=>{
 
-    const removeTextFromOptions = useMediaQuery({query : '(max-width:750px)'});
+    const removeTextFromOptions = useMediaQuery({query : '(max-width:800px)'});
 
     
     return(

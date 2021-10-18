@@ -83,7 +83,7 @@ class Canvas extends React.Component<Props, State>{
             mouseMode : 'edge',
             numberOfInpVars : 1,
             synthesis : false,
-            numberOfOutputVars : 1,
+            numberOfOutputVars : 2,
             circuitMode : 'synch'
         }
 
@@ -888,6 +888,7 @@ class Canvas extends React.Component<Props, State>{
 
         const outComb = getInputCombination(this.state.numberOfOutputVars,'synch');
 
+
         let n = 10;
 
         let inpComb = getInputCombination(this.state.numberOfInpVars,this.state.circuitMode);
@@ -1258,7 +1259,7 @@ class Canvas extends React.Component<Props, State>{
         nodeContext.lineWidth = canvasConfig.nodeCanvasLineWidth;
         tempContext.lineWidth = canvasConfig.tempCanvasLineWidth;
 
-        // this.createTestGraph();
+        this.createTestGraph();
 
         
         window.addEventListener('resize', e=>{

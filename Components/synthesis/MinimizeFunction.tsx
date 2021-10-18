@@ -3,7 +3,7 @@ import { useState } from 'react'
 import FuncionEquation from './FunctionEquation';
 import { generateKMap, simplifyFunction, truthTableFromMinterms } from './helperFunctions';
 import { circuitMode, kMap, simplifyFunctionReutnType, tabulationGroupItem, truthTable } from './interfaces';
-import KMap from './kMap';
+import KMap from './KMapCanvas';
 import PrimeImplicants from './PrimeImplicants';
 import styles from '../../styles/minimizefunction.module.scss'
 
@@ -417,7 +417,7 @@ const MinimizeFunction : React.FC<{
             
             <div className = {styles.mapContainer}>
                 {
-                   !props.useTabulaion && kMap && <KMap kMap = {kMap} />
+                   !props.useTabulaion && implicants && kMap && <KMap implicants = {implicants} kMap = {kMap} />
                     
                 }
                 {
