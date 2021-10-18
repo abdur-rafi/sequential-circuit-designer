@@ -6,6 +6,7 @@ import { circuitMode, kMap, simplifyFunctionReutnType, tabulationGroupItem, trut
 import KMap from './KMapCanvas';
 import PrimeImplicants from './PrimeImplicants';
 import styles from '../../styles/minimizefunction.module.scss'
+import SecondTable from './tabulationSecondTable';
 
 const TabualationTableCell : React.FC<{
     rowIndex : number,
@@ -200,6 +201,7 @@ const MinimizeFunction : React.FC<{
 
     const [sumOfMinterm, setSumOfMinterm] = useState<boolean>(true);
     const [varsArr, setVarsArr] = useState<string[]>([]);
+    const [minterms , setMinterms] = useState<number[]>([]);
 
     let regex = /\s*,\s*/;
 
@@ -311,7 +313,8 @@ const MinimizeFunction : React.FC<{
         if(!sumOfMinterm){
             termsNumber = getRemainingTerms(termsNumber, dontCaresNumber,maxTermNumber);
         }
-        
+        termsNumber.sort((a, b) => a - b);
+        setMinterms(termsNumber);
 
         truthTableFromMinterms(termsNumber, vars, dontCaresNumber, 'synch')
         .then(async tr =>{
@@ -421,7 +424,11 @@ const MinimizeFunction : React.FC<{
                     
                 }
                 {
-                    props.useTabulaion && implicants && <TabulationTable allGroups = {implicants[''].groupsPerStep!} vars = {varsArr} />
+                    props.useTabulaion && implicants && 
+                    <div>
+                        <TabulationTable allGroups = {implicants[''].groupsPerStep!} vars = {varsArr} />
+                        <SecondTable implicants={implicants} vars={varsArr} pulse={''} minterms={minterms}  />
+                    </div>
                 }
                 {
                     implicants &&
