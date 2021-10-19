@@ -106,27 +106,10 @@
 }
 
 
-.synthesisContainer{
+.synthesisContainer, .designContainer{
     // margin: 10px;
     details{
         text-align: center;
-        
-        // background: hsla(186, 33%, 94%, 1);
-
-        // background: linear-gradient(90deg, hsla(186, 33%, 94%, 1) 0%, hsla(216, 41%, 79%, 1) 100%);
-
-        // background: hsla(259, 84%, 78%, 1);
-
-        // background: linear-gradient(90deg, hsla(259, 84%, 78%, 1) 0%, hsla(206, 67%, 75%, 1) 100%);
-        
-        // background: hsla(211, 66%, 87%, 1);
-
-        // background: linear-gradient(90deg, hsla(211, 66%, 87%, 1) 0%, hsla(348, 67%, 88%, 1) 50%, hsla(272, 26%, 72%, 1) 100%);
-    
-        // background: hsla(139, 72%, 83%, 1);
-
-        // background: linear-gradient(90deg, hsla(139, 72%, 83%, 1) 0%, hsla(229, 89%, 62%, 1) 100%);
-        
     }
     summary{
         padding: 20px;
@@ -135,20 +118,6 @@
         // background-color: rgba(155, 23, 23, 0.308);
         color: white;
         text-align: start;
-        
-        // background: hsla(186, 33%, 94%, 1);
-
-        // background: linear-gradient(90deg, hsla(186, 33%, 94%, 1) 0%, hsla(216, 41%, 79%, 1) 100%);
-
-
-        // background: hsla(259, 84%, 78%, 1);
-
-        // background: linear-gradient(90deg, hsla(259, 84%, 78%, 1) 0%, hsla(206, 67%, 75%, 1) 100%);
-
-        // background: hsla(139, 72%, 83%, 1);
-
-        // background: linear-gradient(90deg, hsla(139, 72%, 83%, 1) 0%, hsla(229, 89%, 62%, 1) 100%);
-        
     }
     
     .stateTableContainer, .stateAssignmentContainer, .transitionTableContainer, .implicationTableContainer, .closureTableContainer, .reducedStateContainer, .stateTableInputContainer{

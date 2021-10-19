@@ -22,12 +22,19 @@ const ImplicationTable : React.FC<{
             let txt : React.ReactNode;
             let entry = props.entries[s1][s2];
             if(entry.isCompatible){
+
+                let t = {...props.labelMap}
+                // console.log(t);
                 
                 txt = <TiTick />
                 if(entry.dependencies.length > 0){
                     txt = '';
                     entry.dependencies.forEach((e, index) => {
-                        let temp = e.split(' ').map(s => useLabelMap(s, props.labelMap)).reduce((prev, curr) => prev + ' ' + useLabelMap(curr,props.labelMap));
+                        let temp = e.split(' ').map(s => useLabelMap(s, props.labelMap)).reduce((prev, curr) =>{
+                                console.log(curr);
+                                return prev + ' ' + curr;
+                            });
+                        if(props.labelMap) console.log(props.labelMap['E']);
                         txt += ((index === entry.dependencies.length - 1) ? temp : (temp + '/')).replace(' ', ',')
                     });
                     

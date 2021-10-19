@@ -40,6 +40,7 @@ const KMapCanvas : React.FC<Props> = (props)=>{
         let currImplicants = props.implicants[props.pulse].selectedPIs.filter(pi =>doesCombMatch(pi.comb, props.remComb));
         let rowDim = props.kMap.dims.row;
         let colDim = props.kMap.dims.col;
+        
         let rowCount = 1 << rowDim;
         let colCount = 1 << colDim;
         let topPadding = 30;
@@ -68,6 +69,13 @@ const KMapCanvas : React.FC<Props> = (props)=>{
         canvasRef.current.height = captionHeight + topPadding + cornerLineComponent + mapHeight + bottomPadding;
         canvasRef.current.width = leftPadding + cornerLineComponent + mapWidth + rightPadding;
         context.clearRect(0, 0, canvasRef.current.width,canvasRef.current.width);
+
+        if(rowDim === 0 || colDim === 0){
+            context.font = 'bold 20px serif';
+            context.textBaseline = 'middle';
+            context.fillText('N/A', leftPadding, topPadding);
+            return;   
+        }
 
         context.font = `bold ${captionFontSize}px serif`
 
@@ -143,7 +151,7 @@ const KMapCanvas : React.FC<Props> = (props)=>{
             context.lineTo(currPoint.x + i * hGap, currPoint.y + mapHeight); 
             context.stroke();
             let labelWidth = context.measureText(colComb[i]).width;
-            context.fillText(rowComb[i], currPoint.x + i * hGap + hGap * .5 - labelWidth / 2, currPoint.y - labelGap - mapFSize / 2);
+            context.fillText(colComb[i], currPoint.x + i * hGap + hGap * .5 - labelWidth / 2, currPoint.y - labelGap - mapFSize / 2);
         
         }
 
@@ -335,6 +343,7 @@ const Legends : React.FC<{
         }
         let context = canvasRef.current.getContext('2d');
         if(!context) return;
+        if(props.kMap.dims.row === 0 || props.kMap.dims.col === 0) return;
         context.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
         let vars : string[] = [...props.kMap.vars.rem, ...props.kMap.vars.row, ...props.kMap.vars.col]
         let mxWidth = 0;

@@ -57,6 +57,9 @@ const StateAssignment : React.FC<{
     const [error, setError] = useState<Error | null>(null);
     const [edit ,setEdit] = useState<boolean>(false);
 
+    useEffect(()=>{
+        setBinInputs(props.stateLabels.map(s => props.binRep[s]))
+    }, [props])
 
     const changeInputVal =  (i : number, val : string) =>{
         // console.log('here');

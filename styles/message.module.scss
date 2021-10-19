@@ -1,0 +1,40 @@
+.root{
+    // background-color: red;
+    display: flex;
+    flex-direction: column-reverse;
+    position: absolute;
+    bottom: 50px;
+    left : 50px;
+    z-index: 1000;
+}
+
+.messageContainer{
+    // background-color: blue;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 200px;
+    padding: 10px;
+    border-radius: 10px;
+    background-color: teal;
+    color: white;
+}
+.crossIconContainer{
+    // background-color: red;
+    // padding: 3px;
+    align-items: center;
+    display: flex;
+
+
+}
+.crossIcon{
+    // background-color: orange;
+    color : black;
+    font-size: small;
+    padding: 5px;
+    border-radius: 10px;
+    background-color: white;
+    &:hover{
+        opacity: .7;
+    }
+}

@@ -108,3 +108,7 @@ export interface Error{
 }
 
 export type LatchType = 'JK' | 'SR' | 'D' | 'T'
+
+export interface Message{
+    message : string
+}

@@ -1,0 +1,15 @@
+.root{
+    background-color: rgba(220, 241, 241, 0.438);
+    border: 1px solid black;
+    position: absolute;
+    bottom: 30px;
+    right: 23px;
+    z-index: 50;
+    user-select: none;
+    width: 150px;
+}
+
+.textContainer{
+    font-size: 12px;
+    padding: 5px;
+}

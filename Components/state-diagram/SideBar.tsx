@@ -176,13 +176,25 @@ const IONodeRender : React.FC<{
                 </div>
                 
             </div>
-            <div className={styles.outputContainer}>
+            {props.ioNode.type === 'in' &&
+                <div className={styles.outputContainer}>
                 <div>
                     output
                 </div>
                 <div>
+                    
+                    <input type = 'text' onChange = {(e)=>{
+                        let n = e.target.value.length;
+                        if(n > props.numberOfOutputVars) return;
+                        for(let i = 0; i < n; ++i){
+                            if( e.target.value[i] !== '0' && e.target.value[i] !== '1' && e.target.value[i] !== 'd'){
+                                return;
+                            }
+                        }
+                        props.changeOutput(props.ioNode,e.target.value);
+                    }} value = {props.ioNode.output}/>
                     {/* <input value={props.ioNode.output}  type='string'/> */}
-                    <select onChange = {(e)=>{
+                    {/* <select onChange = {(e)=>{
                         if(e.target.value !== props.ioNode.output){
                             props.changeOutput(props.ioNode, e.target.value);
                         }
@@ -190,9 +202,9 @@ const IONodeRender : React.FC<{
                         {
                             outputComb.map(c => <option key = {c}> {c} </option>)
                         }
-                    </select>
+                    </select> */}
                 </div>
-            </div>
+            </div>}
         </div>
     )
 }

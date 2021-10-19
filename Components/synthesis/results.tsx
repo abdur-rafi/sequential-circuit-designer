@@ -14,6 +14,7 @@ import ClosureTable from "./ClosureTable";
 import ReducedStates from "./ReducedStates";
 import FuncionEquation from "./FunctionEquation";
 import PrimeImplicants from "./PrimeImplicants";
+import StateOrderTable from "../state-diagram/stateOrderTable";
 
 
 const SRMap = {
@@ -56,8 +57,13 @@ const Design : React.FC<{
     changeSynthesis : (b : boolean) => void,
     circuitMode : circuitMode
     numberOfOutputVars : number,
+    changeStateNodeOrder : (l : string[]) => void
 }> = (props)=>{
 
+    const changeStateNodeOrder = (l : string[])=>{
+        setNextStateMap(null);
+        props.changeStateNodeOrder(l);
+    }
     const [nextStateMap , setNextStateMap] = useState<nextStateMap | null>(null);
     const [labelMap, setLabelMap] = useState<stringToStringMap | undefined>(undefined);
     const [labels, setLabels] = useState<string[]>([]);
@@ -81,7 +87,9 @@ const Design : React.FC<{
         
     }, [props])
     return (
-        <div>
+        <div className = {styles.designContainer}>
+            <Details summary={'Change State Order'} 
+            content={<StateOrderTable changeStateNodeOrder = {changeStateNodeOrder} labels={props.stateNodes.map(s => s.label)}   />}  />
             {
                 !nextStateMap && <div className = {styles.processingTextContainer}> calculating... </div>
             }
@@ -149,6 +157,7 @@ export class FromNextStateMap extends React.Component<FNSMprops ,FNSMState >{
         this.onBinRepChange = this.onBinRepChange.bind(this);
         this.setReducedLabelMap = this.setReducedLabelMap.bind(this);
         this.onLatchChange = this.onLatchChange.bind(this);
+        this.onReducedStateOrderChange = this.onReducedStateOrderChange.bind(this);
     }
 
     // const [reducedNextStateMap, setReducedNextStateMap] = useState<nextStateMap | null>(null);
@@ -296,6 +305,28 @@ export class FromNextStateMap extends React.Component<FNSMprops ,FNSMState >{
         })
     }
 
+    async onReducedStateOrderChange(l : string[]){
+        let newLabels = l;
+        // let binRep = getBinRepresentation(newLabels);
+        this.setState({
+            newLabels : newLabels,
+            // binRep : binRep
+        })
+        // let newNxt = await getReducedNextStateMap(newLabels,this.state.compatibles!, this.props.nextStateMap!, this.props.circuitMode);
+        // let e = await getExcitationsFromNextStateMap(newLabels,newNxt,binRep,JKMap,2, this.props.circuitMode);
+        // e = [...e.filter(e=> e.type === 'state'), ... e.filter(e=> e.type === 'output')]
+        // let t = await this.getAllTruthTables(e, this.state.latch);
+        // let k = await this.getAllKmaps(t);
+        // this.setState({
+        //     kMaps : k,
+        //     newLabels : newLabels,
+        //     binRep : binRep,
+        //     reducedNextStateMap : newNxt,
+        //     excitations : e,
+        //     truthTables : t
+        // })
+    }
+
     render(){
 
         return (
@@ -364,6 +395,9 @@ export class FromNextStateMap extends React.Component<FNSMprops ,FNSMState >{
                 <Details summary = {'Reduced States'}
                 content = {this.state.compatibles && this.state.newLabels && <ReducedStates setReduceLabelMap = {this.setReducedLabelMap} labelMap = {this.state.labelMap} labels = {this.state.newLabels} compatibles = {this.state.compatibles} />}
                 />
+                <Details summary = {'Change Reduced state orders'}
+                content = {this.state.newLabels && <StateOrderTable labelMap = {this.state.reducedLabelMap} labels = {this.state.newLabels} changeStateNodeOrder={this.onReducedStateOrderChange} />}
+                />
 
                 <Details summary = {'Reduced State Table'} 
                 content = {this.state.newLabels && this.state.reducedNextStateMap && <StateTable circuitMode = {this.props.circuitMode} labelMap = {this.state.reducedLabelMap}   nextStateMap = {this.state.reducedNextStateMap} stateLabels = {this.state.newLabels}/>} />
@@ -422,10 +456,11 @@ export class FromNextStateMap extends React.Component<FNSMprops ,FNSMState >{
 
 const Details : React.FC<{
     summary : React.ReactNode,
-    content : React.ReactNode
+    content : React.ReactNode,
+    open? : boolean
 }> = (props)=>{
     return(
-        <details>
+        <details open = {props.open} >
             <summary> {props.summary} </summary>
             {props.content}
         </details>
