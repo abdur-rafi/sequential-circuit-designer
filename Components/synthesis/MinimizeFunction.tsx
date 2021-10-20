@@ -420,7 +420,7 @@ const MinimizeFunction : React.FC<{
             
             <div className = {styles.mapContainer}>
                 {
-                   !props.useTabulaion && implicants && kMap && <KMap implicants = {implicants} kMap = {kMap} />
+                   !props.useTabulaion && implicants && kMap && <KMap circuitMode = {'synch'} implicants = {implicants} kMap = {kMap} />
                     
                 }
                 {

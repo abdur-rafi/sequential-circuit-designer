@@ -1367,7 +1367,7 @@ class Canvas extends React.Component<Props, State>{
         nodeContext.lineWidth = canvasConfig.nodeCanvasLineWidth;
         tempContext.lineWidth = canvasConfig.tempCanvasLineWidth;
 
-        this.createTestGraph();
+        // this.createTestGraph();
 
         
         window.addEventListener('resize', e=>{
