@@ -1,50 +1,147 @@
-$headerFontSize : 24px;
-$smallScreen : 760px;
-.root{
-    padding: 30px;
+// $headerFontSize : 24px;
+// $smallScreen : 760px;
+// .root{
+//     padding: 30px;
 
-}
-.titleContainer{
-    background-color: lightblue;
-    padding: 10px;
-    border-radius: 5px;
-    // border: 2px outset lightblue;
-}
-.card{
-    border: 2px outset lightblue;
-    &:hover{
-        border: 2px inset lightblue;
-    }
-    text-align: start;
-    width: 300px;
-    @media screen and (max-width : $smallScreen) {
-        width: 70vw;
-    }
-    display: inline-flex;
-    flex-direction: column;
-    background-color: red;
-    .header{
-        // background-color: green;
-        // font-size: $headerFontSize;
-        padding: 10px;
-        text-align: center;
-    }
-    .body{
-        font-size: 1.2em;
-        padding: 0px 30px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        flex-grow: 1;
-        // background-color: red;
-    }
-    border-radius: 10px;
-    background-color: rgba(0, 206, 209, 0.397);
-    min-height: 380px;
-    margin: 20px;
-}
+// }
+// .titleContainer{
+//     background-color: lightblue;
+//     padding: 10px;
+//     border-radius: 5px;
+//     // border: 2px outset lightblue;
+// }
+// .card{
+//     border: 2px outset lightblue;
+//     &:hover{
+//         border: 2px inset lightblue;
+//     }
+//     text-align: start;
+//     width: 300px;
+//     @media screen and (max-width : $smallScreen) {
+//         width: 70vw;
+//     }
+//     display: inline-flex;
+//     flex-direction: column;
+//     background-color: red;
+//     .header{
+//         // background-color: green;
+//         // font-size: $headerFontSize;
+//         padding: 10px;
+//         text-align: center;
+//     }
+//     .body{
+//         font-size: 1.2em;
+//         padding: 0px 30px;
+//         display: flex;
+//         flex-direction: column;
+//         justify-content: center;
+//         flex-grow: 1;
+//         // background-color: red;
+//     }
+//     border-radius: 10px;
+//     background-color: rgba(0, 206, 209, 0.397);
+//     min-height: 380px;
+//     margin: 20px;
+// }
+// .cardsContainer{
+//     // background-color: red;
+//     justify-content: start;
+//     text-align: center;
+// }
+
+
+
+// .root{
+//     // background-color: red;
+//     // background-color: rgba(134, 130, 130, 0.486);
+//     // background-color: #c2dbe4;
+//     // background-color: black;
+//     // background-color: #485461;
+//     // background-image: linear-gradient(315deg, #485461 0%, #28313b 74%);
+// }
+
 .cardsContainer{
     // background-color: red;
-    justify-content: start;
+    margin: 10px 10px;
+    text-align: center;
+}
+.card{
+    // background-color: blue;
+    display: flex;
+    flex-direction: column;
+    display: inline-block;
+    // padding: 5px;
+    margin: 10px 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    &:hover {
+        box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+      }
+    // background-color: #1a7e3b;
+
+}
+
+.cardBody{
+    // background-color: red;
+    // background-color: white;
+    flex-grow: 1;
+    text-align: center;
+}
+
+.cardImageContainer{
+    padding: 2px;
+    background-color: #1a7e3b ;
+    border-radius: 2px 2px 0px 0px;
+    padding-bottom: 10px;
+}
+
+.cardImage{
+    width: 200px;
+}
+
+// .sequentialTitle{
+//     // background-color: red;
+//     // padding: 3px;
+//     text-align: center;
+//     // color: #680707;
+// }
+.modeContainer, .produceContainer , .drawStateDiagramContainer , .implicantsCotainer,
+ .simplifyContainer, .kmapContainer, .tabulationContainer{
+    // background-color: red;
+    padding: 20px;
+    text-align: center;
+    // background-color: red;
+    background-color: #add8e6;
+    border-radius: 10px;
+    margin: 2vw;
+}
+
+.modeContainer , .produceContainer>.title, .simplifyContainer, .implicantsCotainer{
+
+    font-weight: bold;
+    font-size: 25px;
+}
+.drawStateDiagramContainer, .kmapContainer, .tabulationContainer{
+    display: inline-flex;
+    flex-direction: row;
+    justify-content: space-between;
+    font-size: 25px;
+    align-items: center;
+    a:visited{
+        color: black;
+    }
+    max-width: 500px;
+
+    @media screen and (max-width : 600px) {
+        flex-direction: column;
+        font-size: medium;
+        div:first-child{
+            // background-color: red;
+            margin: 5px;
+        }
+    }
+}
+
+.sequentialContainer, .combinationalContainer{
     text-align: center;
 }

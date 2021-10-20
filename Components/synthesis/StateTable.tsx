@@ -25,7 +25,7 @@ const StateTable : React.FC<{
                 <thead >
                     <tr>
                         <th rowSpan={2}>previous state</th>
-                        <th colSpan={Math.pow(2,props.nextStateMap.numberOfInputVar)} > next state </th>
+                        <th colSpan={Math.pow(2,props.nextStateMap.numberOfInputVar)} > next state/output </th>
                     </tr>
                     <tr>
                         {

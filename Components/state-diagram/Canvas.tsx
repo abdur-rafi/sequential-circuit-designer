@@ -88,7 +88,7 @@ class Canvas extends React.Component<Props, State>{
             synthesis : false,
             numberOfOutputVars : 0,
             circuitMode : 'synch',
-            message : {message : 'this issdf sad asdf asdf asdfsadfsadf asdf sadff sdf sadf a test message'}
+            message : null
         }
 
         this.changeNumberOfInputVars = this.changeNumberOfInputVars.bind(this);

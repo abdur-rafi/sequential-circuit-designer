@@ -1,10 +1,33 @@
 import HeaderFooterContent from "../Components/FooterHeaderContent";
 import styles from '../styles/index.module.scss'
+import stateTableImage from '../public/images/statetable2.png';
+import mergerDiagramImage from '../public/images/mergerdiagram2.png';
+import implicationTableImage from '../public/images/implicationtable2.png';
+import maximalCompatiblesImage from '../public/images/maximalcompatibles2.png'
+import maximalIncompatiblesImage from '../public/images/maximalincompatibles2.png'
+import closureTableImage from '../public/images/closuretable2.png'
+import reducedStateImage from '../public/images/reducedstates2.png'
+
+import reducedStateTableImage from '../public/images/reducedstatetable.png'
+import transitionTableImage from '../public/images/transitiontable2.png'
+import excitationTableImage from '../public/images/excitationtable.png'
+import kmapImage from '../public/images/kmap.png'
+import latchEquationsImage from '../public/images/latcheqns.png'
+import stateDiagramImage from '../public/images/statediagram.png'
+import stateTableInput from '../public/images/statetableinput.png'
+import tabulationFirst from '../public/images/tabulation12.png'
+
+
+
+
+
+// const merger = require
+import Image from 'next/image'
 
 function Index(){
 
     return(
-    <HeaderFooterContent useFooter = {true} useHeight = {false} content = {<Index_></Index_>} />
+    <HeaderFooterContent useFooter = {true} useHeight = {false} content = {<Index__></Index__>} />
     )
 
 }
@@ -125,6 +148,104 @@ const Index_ : React.FC<{
                 </div>
 
                 
+
+            </div>
+            
+        </div>
+    )
+}
+
+const Card : React.FC<{
+    file : StaticImageData,
+    title : string
+}> = (props)=>{
+    return(
+        <div className = {styles.card}>
+            <div className = {styles.cardImageContainer}>
+                <Image src = {props.file} className = {styles.cardImage} quality = {100} height = {250} width = {220}/>
+            </div>
+            <div className = {styles.cardBody}>
+                <h3> {props.title} </h3>
+            </div>
+        </div>
+    )
+}
+
+function Index__(){
+    return(
+        <div className = {styles.root}>
+            <div className = {styles.sequentialContainer}>
+                <div className = {styles.sequentialTitle}>
+                    <h1> Sequential circuits </h1>
+                </div>
+                <div className = {styles.modeContainer}> 
+                    2 Modes of operation<br/>
+                    synchronous <br/> &amp;
+                    asynchronous pulse mode
+                </div>
+                <div className = {styles.produceContainer}>
+                    <div className = {styles.title}>
+                        From state digrams or state table Determine:
+                    </div>
+                    <div className = {styles.cardsContainer}>
+                        <Card file={stateTableImage} title={"State Table"}  />
+                        <Card file = {mergerDiagramImage} title = {'Merger Diagram'} />
+                        <Card file = {implicationTableImage} title = {'Implication Table'} />
+                        <Card file = {maximalCompatiblesImage} title = {'Maximal compatibles'} />
+                        <Card file = {maximalIncompatiblesImage} title = {'Maximal Incompatibles'} />
+                        <Card file = {closureTableImage} title = {'Closure Table'} />
+                        <Card file = {reducedStateImage} title = {'Reduced States'} />
+                        <Card file = {reducedStateTableImage} title = {'Reduced State Table'} />
+                        <Card file = {transitionTableImage} title = {'Transition Table'} />
+                        <Card file = {excitationTableImage} title = {'Excitation Table'} />
+                        <Card file = {kmapImage} title = {'Kmap'} />
+                        <Card file = {latchEquationsImage} title = {'latch & output equations'} />
+
+                    </div>
+                </div>
+                <div className = {styles.drawStateDiagramContainer}>
+                    <div>
+                        Circuit synthesis from state diagram 
+                    </div>
+                    <div>
+                        <Image src={stateDiagramImage} height = {300} width = {300} />
+                    </div>
+                </div>
+                <div className = {styles.drawStateDiagramContainer}>
+                    <div>
+                         Circuit synthesis from state table
+                    </div>
+                    <div>
+                        <Image src={stateTableInput} height = {300} width = {300} />
+                    </div>
+                </div>
+            </div>
+            <div className = {styles.combinationalContainer}>
+                <div>
+                    <h1>Combinational circuits</h1>
+                </div>
+                <div className = {styles.simplifyContainer}>
+                    Simplify functions from sum of minterms or product of maxterms
+                </div>
+                <div className = {styles.implicantsCotainer}>
+                    Determine All prime implicants and essential prime implicants
+                </div>
+                <div className = {styles.kmapContainer}>
+                    <div>
+                        Generate kmaps with bounding boxes
+                    </div>
+                    <div>
+                        <Image src = {kmapImage} height = {300} width = {300}  />
+                    </div>
+                </div>
+                <div className = {styles.tabulationContainer}>
+                    <div>
+                             Generate steps of tabuation method 
+                    </div>
+                    <div>
+                        <Image src = {tabulationFirst} height = {300} width = {300}  />
+                    </div>
+                </div>
 
             </div>
             

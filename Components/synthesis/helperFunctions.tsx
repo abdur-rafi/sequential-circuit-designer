@@ -110,7 +110,7 @@ export function getInputCombination(d : number, circuitMode : circuitMode , labe
         }
     }
     else if(circuitMode === 'pulse'){
-        for(let i = 0; i < d; ++i){
+        for(let i = 1; i <= d; ++i){
             inps.push('x' + i);
         }
     }
@@ -149,7 +149,7 @@ export async function  getNextStateMap(stateNodes : StateNode[], internalLabel :
 
 export function getLabels(n : number, t : string): string[]{
     let vars : string[] = []
-    for(let i = 0; i < n; ++i){
+    for(let i = 1; i <= n; ++i){
         let s = t + i;
         vars.push(s);
     }

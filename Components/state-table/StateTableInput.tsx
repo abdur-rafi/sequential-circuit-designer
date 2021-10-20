@@ -17,7 +17,7 @@ const TableHeader : React.FC<{
         <thead>
             <tr>
                 <th rowSpan = {2} >Previous States</th>
-                <th colSpan = {inpCombs.length}> Next States </th>
+                <th colSpan = {inpCombs.length}> Next States/output </th>
             </tr>
             <tr>
                 {
