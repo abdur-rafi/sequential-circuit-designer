@@ -68,10 +68,16 @@ class StateOrderTable extends React.Component<{
         if(newIndex < 0) newIndex = 0;
         else if(newIndex >= this.state.labels.length) newIndex = this.state.labels.length - 1;
         newIndex = Math.floor(newIndex);
-        let temp = [...this.state.labels]
-        let t = temp[this.state.zoomIndex];
-        temp[this.state.zoomIndex] = temp[newIndex];
-        temp[newIndex] = t;
+        let oldIndex = this.state.zoomIndex;
+        let t = this.state.labels[oldIndex]
+        let temp = [...this.state.labels.slice(0, oldIndex), ...this.state.labels.slice(oldIndex + 1)];
+
+        temp = [... temp.slice(0, newIndex), t, ...temp.slice(newIndex)]
+
+
+        // let t = temp[this.state.zoomIndex];
+        // temp[this.state.zoomIndex] = temp[newIndex];
+        // temp[newIndex] = t;
         // console.log(newIndex);
         // console.log(temp);
         this.resetState();

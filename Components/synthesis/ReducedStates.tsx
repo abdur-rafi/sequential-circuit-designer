@@ -129,7 +129,6 @@ const ReducedStates : React.FC<{
                     setEdit(true);
                 }}>Edit</button>}
                 {edit && <button onClick = {confirm}>Confirm</button>}
-                <button onClick = {()=>reset()}>Reset</button>
 
             </div>
         </div>

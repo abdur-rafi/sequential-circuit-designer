@@ -25,14 +25,13 @@ const Index_ : React.FC<{
                 <div className = {styles.card}>
                     <div className = {styles.header}>
                         <h1>
-                            3 Modes of Operation
+                            2 Modes of Operation
                         </h1>
                     </div>  
                     <div className = {styles.body}>
                         <ul>
                             <li>Synchronous</li>
                             <li>Pulse Mode</li>
-                            <li>Fundamental Mode</li>
                         </ul>
                     </div>
                 </div>

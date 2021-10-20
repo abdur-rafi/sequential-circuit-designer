@@ -24,7 +24,7 @@ export interface IONode{
     type : 'in' | 'out',
     color : string,
     edges : Edge[]
-    inputComb : string,
+    inputComb : string | null,
     output : string
 }
 

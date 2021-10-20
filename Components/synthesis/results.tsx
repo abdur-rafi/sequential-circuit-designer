@@ -334,7 +334,7 @@ export class FromNextStateMap extends React.Component<FNSMprops ,FNSMState >{
                 <Details summary = {'State Table'} 
                 content = {this.props.nextStateMap && <StateTable circuitMode = {this.props.circuitMode} labelMap = {this.state.labelMap}  nextStateMap = {this.props.nextStateMap} stateLabels = {this.props.labels}/>} />
                 <Details summary = {'Implication Table'} 
-                content = {this.state.implicationEntries && <ImplicationTable labelMap = {this.state.labelMap} labels = {this.props.labels} entries = {this.state.implicationEntries} />} />
+                content = {this.state.implicationEntries && <ImplicationTable numberOfOutputVars = {this.props.nextStateMap!.numberOfOutputVar} labelMap = {this.state.labelMap} labels = {this.props.labels} entries = {this.state.implicationEntries} />} />
                 <Details summary = {'Merger Diagram For Compatibles'} 
                 content = {this.state.implicationEntries && <MergerDiagram labelMap = {this.state.labelMap} entries = {this.state.implicationEntries} stateLabels = {this.props.labels} />} />
                 <Details summary = {'Merger Diagram For Incompatibles'} 
@@ -431,7 +431,7 @@ export class FromNextStateMap extends React.Component<FNSMprops ,FNSMState >{
                                 summary={k.functionName.split('').map(c => Number.isInteger(parseInt(c)) ? (<sub key={key++}>{c}</sub>) : c)}
                                 content = {
                                     <div className = {styles.functionBlock}> 
-                                        <KMap implicants = {r} key = {key++} kMap = {k} />
+                                        <KMap circuitMode = {this.props.circuitMode} implicants = {r} key = {key++} kMap = {k} />
                                         <div>
                                             <FuncionEquation circuitMode = {this.props.circuitMode} numberOfInputs = {this.props.nextStateMap!.numberOfInputVar} functionName = {k.functionName} r = {r} vars = {this.state.truthTables![index].vars}  />
                                             {/* <div> {k.functionName.split('').map(c => Number.isInteger(parseInt(c)) ? (<sub key={key++}>{c}</sub>) : c)} = {s.split('').map(c => Number.isInteger(Number.parseInt(c)) ? <sub key={key++}>{c}</sub> : c  )} </div> */}

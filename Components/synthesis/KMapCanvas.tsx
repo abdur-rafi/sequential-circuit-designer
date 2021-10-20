@@ -1,6 +1,6 @@
-import { generateGreyCode, getInputCombination } from "./helperFunctions";
+import { generateGreyCode, getInputCombination, getLiteral } from "./helperFunctions";
 import styles from '../../styles/design.module.scss'
-import { kMap, simplifyFunctionReutnType, stringToStringMap } from "./interfaces";
+import { circuitMode, kMap, simplifyFunctionReutnType, stringToStringMap } from "./interfaces";
 import React from "react";
 import { Point } from "../state-diagram/state-diagram-interfaces";
 import { useEffect, useRef } from "react";
@@ -11,7 +11,8 @@ interface Props{
     remComb : string,
     implicants : simplifyFunctionReutnType,
     colorMap : stringToStringMap,  
-    mx : number
+    mx : number,
+    circuitMode : circuitMode
 }
 interface State{
 
@@ -331,7 +332,8 @@ const Legends : React.FC<{
     implicants : simplifyFunctionReutnType,
     pulse : string,
     colorMap : stringToStringMap,
-    kMap : kMap
+    kMap : kMap,
+    circuitMode : circuitMode
 }> = (props)=>{
 
     const canvasRef = React.createRef<HTMLCanvasElement>()
@@ -355,12 +357,7 @@ const Legends : React.FC<{
         
         props.implicants[props.pulse].selectedPIs.forEach(pi =>{
             let n = pi.comb.length;
-            let curr = props.pulse;
-            for(let i = 0; i < n; ++i){
-                if(pi.comb[i] === '_') continue;
-                else if(pi.comb[i] === '0') curr += vars[i] + "'";
-                else curr += vars[i];
-            }
+            let curr = getLiteral(pi.comb,vars,props.circuitMode);
             // console.log(curr);
             terms.push(curr);
             colors.push(props.colorMap[pi.comb])
@@ -396,7 +393,8 @@ const Legends : React.FC<{
 }
 const KMap : React.FC<{
     kMap : kMap,
-    implicants : simplifyFunctionReutnType
+    implicants : simplifyFunctionReutnType,
+    circuitMode : circuitMode
 }> = (props)=>{
 
     let rem = props.kMap.dims.rem;
@@ -439,10 +437,10 @@ const KMap : React.FC<{
                     })
                     return(
                         <div key = {p}>
-                            <Legends colorMap = {colorMap} implicants = {props.implicants} kMap = {props.kMap}
+                            <Legends circuitMode = {props.circuitMode} colorMap = {colorMap} implicants = {props.implicants} kMap = {props.kMap}
                             pulse = {p}  />
                         {
-                            remComb.map(rem => <KMapCanvas mx = {mx} colorMap = {colorMap} implicants = {props.implicants} key = {rem} kMap = {props.kMap} remComb = {rem} pulse = {p} />)
+                            remComb.map(rem => <KMapCanvas circuitMode = {props.circuitMode} mx = {mx} colorMap = {colorMap} implicants = {props.implicants} key = {rem} kMap = {props.kMap} remComb = {rem} pulse = {p} />)
                         }
                         </div>
                     )

@@ -84,10 +84,10 @@ class Canvas extends React.Component<Props, State>{
             ioNodeToSideBar : null,
             stateNodeToSideBar : null,
             mouseMode : 'edge',
-            numberOfInpVars : 1,
+            numberOfInpVars : 0,
             synthesis : false,
-            numberOfOutputVars : 2,
-            circuitMode : 'pulse',
+            numberOfOutputVars : 0,
+            circuitMode : 'synch',
             message : {message : 'this issdf sad asdf asdf asdfsadfsadf asdf sadff sdf sadf a test message'}
         }
 
@@ -141,9 +141,10 @@ class Canvas extends React.Component<Props, State>{
     }
 
     chnageCircuitMode(circuitMode : circuitMode){
-        this.setState({
-            circuitMode : circuitMode
-        },()=>{
+        this.setState(old=>({
+            circuitMode : circuitMode,
+            numberOfInpVars : old.numberOfInpVars === 0 ? 1 : old.numberOfInpVars
+        }),()=>{
             clearCanvas(this.nodeCanvasRef);
             clearCanvas(this.tempCanvasRef);
             clearCanvas(this.edgeCanvasRef);
@@ -242,8 +243,8 @@ class Canvas extends React.Component<Props, State>{
     createEdge(from : IONode, to : IONode, tempEdgePoints: Point[]) : Edge{
         let s = new Set<string>();
         tempEdgePoints = tempEdgePoints.filter(p =>{
-            return !(checkInsideCircle(to.center,to.radius,p)
-            || checkInsideCircle(from.center, from.radius,p))
+            return !(checkInsideCircle(to.center,to.radius + defalutIONodeConfig.focusGap,p)
+            || checkInsideCircle(from.center, from.radius + defalutIONodeConfig.focusGap,p))
         })
         tempEdgePoints.forEach(p=>{
             s.add(pointToString(p));
@@ -309,7 +310,7 @@ class Canvas extends React.Component<Props, State>{
         return null;
     }
 
-    createIONodeObject(stateNode : StateNode, angle : number, type : 'in' | 'out',color : string, inputComb : string, output : string) : IONode{
+    createIONodeObject(stateNode : StateNode, angle : number, type : 'in' | 'out',color : string, inputComb : string | null, output : string) : IONode{
         return{
             angle : angle,
             center : calculateIONodeCenter(stateNode, angle),
@@ -348,7 +349,7 @@ class Canvas extends React.Component<Props, State>{
             stateNode.ioNodes.push(node);
         }
         for(let i = 1; i <= outNodesCount; ++i){
-            let node = this.createIONodeObject(stateNode, s, 'out', defalutIONodeConfig['outNodeColor'], '','');
+            let node = this.createIONodeObject(stateNode, s, 'out', defalutIONodeConfig['outNodeColor'], null,'');
             s += gap;
             stateNode.ioNodes.push(node);
         }
@@ -956,7 +957,7 @@ class Canvas extends React.Component<Props, State>{
         const outComb = getInputCombination(this.state.numberOfOutputVars,'synch');
 
 
-        let n = 4;
+        let n = 8;
 
         let inpComb = getInputCombination(this.state.numberOfInpVars,this.state.circuitMode);
 

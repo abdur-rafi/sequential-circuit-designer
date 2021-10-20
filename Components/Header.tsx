@@ -17,7 +17,7 @@ const Header : React.FC<{
     return(
         <div className = {styles.header}>
             <div className = {styles.logoContainer} >
-                <div>Logo</div>
+                <div> <a href = '/' > Logo </a></div>
                 {
                     isSmallScreen && 
                     <div className = {styles.menuButtonContainer + (showLinks ? ` ${styles.pressed}` : '')}>

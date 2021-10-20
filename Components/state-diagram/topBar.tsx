@@ -114,7 +114,10 @@ const TopBar : React.FC<Props> = (props)=>{
                     <input type='number' value={props.numberOfInputVars}
                     onChange = {(e)=>{
                         let n = parseInt(e.target.value);
-                        if(n > 4 || n < 1) return;
+                        if(props.circuitMode === 'pulse'){
+                            if(n < 1) return;
+                        }
+                        if(n > 4 || n < 0) return;
                         props.changeNumberOfInputVars(n);
                         
                         }} />
@@ -131,7 +134,7 @@ const TopBar : React.FC<Props> = (props)=>{
                 <label> output bits </label>
                     <input type='number' value={props.numberOfOutputVars} onChange={(e)=>{
                         let n = parseInt(e.target.value);
-                        if(n > 0 && n < 5){
+                        if(n > -1 && n < 5){
                             props.changeNumberOfOutputVars(n);
                         }
                     }} />

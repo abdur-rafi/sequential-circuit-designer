@@ -62,10 +62,6 @@ const StateAssignment : React.FC<{
     }, [props])
 
     const changeInputVal =  (i : number, val : string) =>{
-        // console.log('here');
-        // if(i === error?.i){
-        //     setError(null);
-        // }
         setError(null);
         setLastSelected({
             ...lastSelected, 
@@ -141,7 +137,6 @@ const StateAssignment : React.FC<{
                     setEdit(true);
                 }}>Edit</button>}
                 {edit && <button onClick = {confirm}>Confirm</button>}
-                <button onClick = {()=>reset()}>Reset</button>
 
             </div>
         </div>

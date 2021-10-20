@@ -8,7 +8,8 @@ import { useLabelMap } from "./helperFunctions";
 const ImplicationTable : React.FC<{
     entries : implicationEntryMap,
     labels  : string[],
-    labelMap? : stringToStringMap
+    labelMap? : stringToStringMap,
+    numberOfOutputVars : number
 }>
  = (props)=>{
     let rows : React.ReactNode[] = []; 
@@ -71,6 +72,7 @@ const ImplicationTable : React.FC<{
      
     return(
         <div className={styles.implicationTableContainer}>
+            {props.numberOfOutputVars === 0 && <div> states are assumed to be incompatible if number of ouput bit is 0 </div>}
             <table className = {styles.implicationTable}>
                 <tbody>
                     {rows}

@@ -98,6 +98,7 @@ export function getBinRepresentation(stateLabels : string[]) : stringToStringMap
 export function getInputCombination(d : number, circuitMode : circuitMode , labels? : string[]) : string[]{
     let n = Math.pow(2,d);
     let inps : string[] = []
+    if(d === 0) return [''];
     if(circuitMode === 'synch'){
         for(let i = 0; i < n; ++i){
             let curr = i.toString(2);
@@ -621,6 +622,7 @@ export async function stateMinimization(stateLabels : string[], nextStateMap : n
         return arr;
     }
     const doesOutputMatch = (s1 : string, s2 : string) : boolean =>{
+        if(nextStateMap.numberOfOutputVar === 0) return false;
         for(let i = 0; i < inpComb.length; ++i){
             let comb = inpComb[i];
             let out1 = nextStateMap.nextStateMap[s1][comb].output;
