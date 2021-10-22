@@ -10,14 +10,15 @@ import { circuitMode, lastSelected, nextStateMap, stringToStringMap , Error} fro
 
 const TableHeader : React.FC<{
     numberOfInputVars :number,
-    circuitMode : circuitMode
+    circuitMode : circuitMode,
+    numberOfOutputVars : number
 }> = (props)=>{
     const inpCombs = getInputCombination(props.numberOfInputVars, props.circuitMode);
     return (
         <thead>
             <tr>
                 <th rowSpan = {2} >Previous States</th>
-                <th colSpan = {inpCombs.length}> Next States/output </th>
+                <th colSpan = {inpCombs.length}> {'Next States' + (props.numberOfOutputVars !== 0 ? '/output' : '')}</th>
             </tr>
             <tr>
                 {
@@ -139,12 +140,15 @@ const Entry : React.FC<{
                     props.changeEntry(props.i, props.j, e.target.value);
                 }
             }} value = {props.val} ref={entryRef} />
-            /
-            <input type='text' className = {styles.outputEntryInput + (props.outputError ? ` ${styles.errorInput}` : '')} onChange = {(e)=>{
-                if(checkOutput(e.target.value, props.numberOfOutputVars)){
-                    props.changeOutput(props.i,props.j, e.target.value);
-                }
-            }} value = {props.output} ref={outputRef} />
+            { props.numberOfOutputVars !== 0 && '/'}
+            {
+                props.numberOfOutputVars !== 0 &&
+                <input type='text' className = {styles.outputEntryInput + (props.outputError ? ` ${styles.errorInput}` : '')} onChange = {(e)=>{
+                    if(checkOutput(e.target.value, props.numberOfOutputVars)){
+                        props.changeOutput(props.i,props.j, e.target.value);
+                    }
+                }} value = {props.output} ref={outputRef} />
+            }
             {
                 props.errorMessage && <ErrorText message = {props.errorMessage} />
             }
@@ -473,7 +477,8 @@ class StateTableInput extends React.Component<Props, {
                                 <label> inputs </label>
                                 <input type = 'number' onChange = {e => {
                                     let n = parseInt(e.target.value);
-                                    if(n >0 && n < 5){
+                                    if(this.state.circuiMode === 'pulse' && n <= 0) return;
+                                    if(n >= 0 && n < 5){
                                         this.onInputVarChange(n);
                                     }
                                 }} value = {this.state.numberOfInputVars}></input>
@@ -482,18 +487,18 @@ class StateTableInput extends React.Component<Props, {
                                 <label> outputs </label>
                                 <input type = 'number' onChange = {e => {
                                     let n = parseInt(e.target.value);
-                                    if(n >0){
+                                    if(n >= 0){
                                         this.onOutputChange(n);
                                     }
                                 }}
-                                value = {this.state.numberOfOutputVars}
+                                value = {this.state.numberOfOutputVars} 
                                 ></input>
                             </div>
                             <div className = {minimizeFunctionStyles.statesContainer}>
                                 <label> states </label>
                                 <input type = 'number' onChange = {e => {
                                     let n = parseInt(e.target.value);
-                                    if(n >0){
+                                    if(n >= 0){
                                         this.onStateChange(n);
                                     }
                                 }} value = {this.state.numberOfStates} ></input>
@@ -512,7 +517,7 @@ class StateTableInput extends React.Component<Props, {
                         </div>
                         <div className = {styles.stateTableInputContainer}>
                             <table>
-                                <TableHeader circuitMode = {this.state.circuiMode} numberOfInputVars = {this.state.numberOfInputVars} />
+                                <TableHeader numberOfOutputVars = {this.state.numberOfOutputVars} circuitMode = {this.state.circuiMode} numberOfInputVars = {this.state.numberOfInputVars} />
                                 <TableBody circuitMode = {this.state.circuiMode} changeEntry = {this.changeEntry} changeOutput = {this.changeOutput} states = {this.state.states} outputs = {this.state.outputs}
                                 numberOfStates = {this.state.numberOfStates} numberOfOutputVars = {this.state.numberOfOutputVars} numberOfInputVars = {this.state.numberOfInputVars} 
                                 lastSelected = {this.state.lastSelected} error = {this.state.error} entries = {this.state.entries} changeStates = {this.chnageStates} />
@@ -520,8 +525,9 @@ class StateTableInput extends React.Component<Props, {
                         </div>
                         <div className = {styles.buttonContainer}>
                             <button onClick = {async ()=>{
+                                if(this.state.states.length === 0) return;
                                 if(this.chekcValidity()){
-                                    let r = await nextStateMapFromStateTalbeInput(this.state.states,this.state.entries,this.state.outputs, this.state.circuiMode);
+                                    let r = await nextStateMapFromStateTalbeInput(this.state.states,this.state.entries,this.state.outputs, this.state.circuiMode, this.state.numberOfInputVars, this.state.numberOfOutputVars);
                                     console.log(r);
                                     this.setState({
                                         nextStateMap : r.nextStateMap,

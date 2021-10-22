@@ -23,6 +23,7 @@ import tabulationFirst from '../public/images/tabulation12.png'
 
 // const merger = require
 import Image from 'next/image'
+import Link from "next/link";
 
 function Index(){
 
@@ -179,13 +180,13 @@ function Index__(){
                     <h1> Sequential circuits </h1>
                 </div>
                 <div className = {styles.modeContainer}> 
-                    2 Modes of operation<br/>
-                    synchronous <br/> &amp;
-                    asynchronous pulse mode
+                    2 Modes of Operation<br/>
+                    Synchronous <br/> &amp;
+                    Asynchronous Pulse Mode
                 </div>
                 <div className = {styles.produceContainer}>
                     <div className = {styles.title}>
-                        From state digrams or state table Determine:
+                        From State Diagram or State Table Determine:
                     </div>
                     <div className = {styles.cardsContainer}>
                         <Card file={stateTableImage} title={"State Table"}  />
@@ -205,7 +206,11 @@ function Index__(){
                 </div>
                 <div className = {styles.drawStateDiagramContainer}>
                     <div>
-                        Circuit synthesis from state diagram 
+                        <Link href = '/statediagram' >
+                            <a>
+                                Circuit synthesis from state diagram 
+                            </a>
+                        </Link>
                     </div>
                     <div>
                         <Image src={stateDiagramImage} height = {300} width = {300} />
@@ -213,7 +218,11 @@ function Index__(){
                 </div>
                 <div className = {styles.drawStateDiagramContainer}>
                     <div>
-                         Circuit synthesis from state table
+                        <Link href = '/statetable'>
+                            <a>
+                                Circuit synthesis from state table
+                            </a>
+                        </Link>
                     </div>
                     <div>
                         <Image src={stateTableInput} height = {300} width = {300} />
@@ -232,7 +241,11 @@ function Index__(){
                 </div>
                 <div className = {styles.kmapContainer}>
                     <div>
-                        Generate kmaps with bounding boxes
+                        <Link href = '/functionminimization/kmap' >
+                            <a>
+                                Generate kmaps with bounding boxes
+                            </a>
+                        </Link>
                     </div>
                     <div>
                         <Image src = {kmapImage} height = {300} width = {300}  />
@@ -240,7 +253,11 @@ function Index__(){
                 </div>
                 <div className = {styles.tabulationContainer}>
                     <div>
-                             Generate steps of tabuation method 
+                        <Link href = '/functionminimization/tabulation'>
+                            <a>
+                                Generate steps of tabuation method 
+                            </a>
+                        </Link>
                     </div>
                     <div>
                         <Image src = {tabulationFirst} height = {300} width = {300}  />

@@ -97,6 +97,9 @@ const StateAssignment : React.FC<{
             }
             st.add(binInputs[i]);
         }
+        let t = '';
+        for(let i = 0; i < numberOfStateBits; ++i) t+='d'
+        newBinRep['d'] = t;
         props.changeBinRep(newBinRep);
         setEdit(false);
     }

@@ -4,6 +4,7 @@ import styles from '../styles/footerheadercontainer.module.scss'
 import { useMediaQuery } from 'react-responsive'
 import {IoMenuSharp} from 'react-icons/io5'
 import {IoIosArrowDown} from 'react-icons/io'
+import Link from 'next/link'
 
 
 const Header : React.FC<{
@@ -17,7 +18,13 @@ const Header : React.FC<{
     return(
         <div className = {styles.header}>
             <div className = {styles.logoContainer} >
-                <div> <a href = '/' > Logo </a></div>
+                <div> 
+                    <Link href='/'>
+                        <a>
+                            Logo
+                        </a>
+                    </Link>
+                </div>
                 {
                     isSmallScreen && 
                     <div className = {styles.menuButtonContainer + (showLinks ? ` ${styles.pressed}` : '')}>
@@ -38,10 +45,19 @@ const Header : React.FC<{
                         }}> Combiantional Circuits <sub> <IoIosArrowDown className={ShowCombLinks ? styles.rotateArrow : ''} /> </sub> </div>
                         <div className = {styles.combinationalOptionsContainer  + (ShowCombLinks ? '' : ` ${styles.noneDisplay}`) }>
                             <div>
-                                <a href='/functionminimization/kmap'> Kmap </a>
+                                <Link href = '/functionminimization/kmap'>
+                                    <a>
+                                        KMap
+                                    </a>
+                                </Link>
+                                {/* <a href='/functionminimization/kmap'> Kmap </a> */}
                             </div>
                             <div>   
-                                <a href='/functionminimization/tabulation'> Tabulation </a>
+                                <Link href='/functionminimization/tabulation'>
+                                    <a>
+                                        Tabulation 
+                                    </a>    
+                                </Link>
 
                             </div>
                         </div>
@@ -56,11 +72,19 @@ const Header : React.FC<{
                         }}>Sequential circuits <sub> <IoIosArrowDown className={ShowSeqLinks ? styles.rotateArrow : ''} /> </sub> </div>
                         <div className = {styles.sequentialOptionsContainer + (ShowSeqLinks ? '' : ` ${styles.noneDisplay}` )}>
                             <div>
-                                <a href='/statediagram'> State Diagram </a>
+                                <Link href='/statediagram'>
+                                    <a>
+                                        State Diagram
+                                    </a>
+                                </Link>
 
                             </div>
                             <div>
-                                <a href='/statetable'> State Table </a>
+                                <Link href='/statetable'>
+                                    <a>
+                                        State Table
+                                    </a>
+                                </Link>
 
                             </div>
                         </div>

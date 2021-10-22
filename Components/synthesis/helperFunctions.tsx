@@ -1065,15 +1065,15 @@ export async function getNewLabels(n : number, useDot = true){
     return newLabels;
 }
 
-export async function nextStateMapFromStateTalbeInput(states : string[], entries : string[][], outputs : string[][], circuitMode : circuitMode){
+export async function nextStateMapFromStateTalbeInput(states : string[], entries : string[][], outputs : string[][], circuitMode : circuitMode,numberOfInputVars : number, numberOfOutputVars : number){
     let n = states.length;
     let internalLabels = await getNewLabels(n,false);
-    let numberOfInputs : number = 0;
-    if(circuitMode === 'synch')
-        numberOfInputs = Math.log2(entries[0].length);
-    else if(circuitMode === 'pulse'){
-        numberOfInputs = entries[0].length;
-    }
+    let numberOfInputs : number = numberOfInputVars;
+    // if(circuitMode === 'synch')
+    //     numberOfInputs = Math.log2(entries[0].length);
+    // else if(circuitMode === 'pulse'){
+    //     numberOfInputs = entries[0].length;
+    // }
     let internalToOriginalMap : {
         [internal : string] : string
     } = {}
@@ -1086,7 +1086,7 @@ export async function nextStateMapFromStateTalbeInput(states : string[], entries
     let nextStateMap : nextStateMap = {
         nextStateMap : {},
         numberOfInputVar : numberOfInputs,
-        numberOfOutputVar : outputs[0][0].length
+        numberOfOutputVar : numberOfOutputVars
     }
     for(let i = 0; i < n; ++i){
         nextStateMap.nextStateMap[internalLabels[i]] = {}
@@ -1102,7 +1102,7 @@ export async function nextStateMapFromStateTalbeInput(states : string[], entries
 }
 
 export function useLabelMap(label : string, labelMap : {[k : string] : string} | null | undefined ){
-    if(label === 'd') return label;
+    if(label === 'd' && (!labelMap || !labelMap['d'])) return label;
     if(!labelMap) return label;
     return labelMap[label];
 }

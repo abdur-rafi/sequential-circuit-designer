@@ -1,7 +1,15 @@
 
 .root{
-    margin : 10px;
+    padding : 10px;
+    // width: 100vw;
     text-align: center;
+    background: hsla(221, 45%, 73%, 1);
+
+    background: linear-gradient(0deg, hsla(221, 45%, 73%, 1) 0%, hsla(220, 78%, 29%, 1) 100%);
+
+    flex-grow: 1;
+    min-width: fit-content;
+    // overflow-x: auto;
 }
 
 .stateTableInputContainer{
@@ -26,12 +34,14 @@
         // padding: 10px;
         border: none;
         border-bottom: 1px solid;
+        // color: white;
         &:focus{
             border: none;
             // color : red;
             outline: none;
-            border-bottom: 1px solid lightblue;
+            border-bottom: 1px solid white;
         }
+        background-color: transparent;
     }
 
     

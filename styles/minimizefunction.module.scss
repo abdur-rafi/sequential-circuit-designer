@@ -1,21 +1,33 @@
 $smallScreen : 820px;
 $fontSize : 1.1em;
 .root{
-    margin: 10px;
+    padding: 10px;
     text-align: center;
+    background: hsla(221, 45%, 73%, 1);
+
+    background: linear-gradient(0deg, hsla(221, 45%, 73%, 1) 0%, hsla(220, 78%, 29%, 1) 100%);
+
+    flex-grow: 1;
+    min-width: fit-content;
 }
 
 
 .introContainer{
-    background-color: lightblue;
+    // background-color: lightblue;
+    background-color: rgba(255, 255, 255, 0.25);
     padding: 20px;
     margin: 10px;
     div{
         font-size: $fontSize;
     }
-    border-radius: 10px;
+    border-radius: 3px;
     min-height: 20vh;
     
+    h1{
+        color: white;
+    }    
+    
+    // color: white;
     
 }
 
@@ -32,8 +44,9 @@ $fontSize : 1.1em;
     
     // background-color: red;
     background-color: red;
-    background-color: lightblue;
-    border-radius: 10px;
+    // background-color: lightblue;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
     display: inline-block;
     padding: 20px 10px;
     width: 400px;
@@ -52,13 +65,16 @@ $fontSize : 1.1em;
         margin-left: 10px;
         outline : none;
         border: none;
-        border-bottom: 1px solid rgb(146, 143, 143);
+        border-bottom: 1px solid black;
         &:focus{
-            border-bottom: 1px solid lightblue;
+            border-bottom: 1px solid white;
         }
+        background-color: transparent;
     }
     select{
         font-size: $fontSize;
+        background-color: transparent;
+        border: none;
         
     }
 
@@ -81,7 +97,8 @@ $fontSize : 1.1em;
     }
 }
 .errorTextContainer{
-    color : red;
+    // color : red;
+    color: white;
     font-size: 12px;
 }
 .buttonContainer{
@@ -167,10 +184,11 @@ $fontSize : 1.1em;
 // }
 
 .equationAndImplicationsContainer{
-    background-color: lightblue;
+    // background-color: lightblue;
+    background-color: rgba(255, 255, 255, 0.3);
     padding: 10px;
     margin: 10px;
     font-size: 1.1em;
-    border-radius: 10px;
+    border-radius: 3px;
     min-height: 10vh;
 }
