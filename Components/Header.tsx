@@ -42,7 +42,7 @@ const Header : React.FC<{
                                 setShowCombLinks(false);
                             }
                             else setShowCombLinks(true)
-                        }}> Combiantional Circuits <sub> <IoIosArrowDown className={ShowCombLinks ? styles.rotateArrow : ''} /> </sub> </div>
+                        }}> Combinational Circuits <sub> <IoIosArrowDown className={ShowCombLinks ? styles.rotateArrow : ''} /> </sub> </div>
                         <div className = {styles.combinationalOptionsContainer  + (ShowCombLinks ? '' : ` ${styles.noneDisplay}`) }>
                             <div>
                                 <Link href = '/functionminimization/kmap'>

@@ -3,7 +3,7 @@ import StateTableInput from "../Components/state-table/StateTableInput";
 
 function S(){
     return(
-        <HeaderFooterContent useHeight = {false} content = {<StateTableInput />} useFooter = {true} />
+        <HeaderFooterContent useMinWidth = {true} useHeight = {false} content = {<StateTableInput />} useFooter = {true} />
     )
 }
 

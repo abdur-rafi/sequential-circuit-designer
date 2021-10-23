@@ -14,7 +14,10 @@
 
 .stateTableInputContainer{
     text-align: center;
-    
+    // background-color: red;
+    background-color: rgba(255, 255, 255, 0.3);
+    margin: 10px;
+    border-radius: 3px;
     table, th, td{
         border: solid 1px black;
         border-collapse: collapse;
@@ -71,7 +74,8 @@
 
 .errorMessageContainer{
     font-size: 12px;
-    color: rgb(243, 38, 38);
+    // color: rgb(243, 38, 38);
+    color: white;
 }
 
 .inputsContainer, .outputsContainer, .statesContainer{

@@ -6,12 +6,13 @@ import styles from '../styles/footerheadercontainer.module.scss'
 const HeaderFooterContent : React.FC<{
     content : React.ReactNode,
     useFooter : boolean,
-    useHeight : boolean
+    useHeight : boolean,
+    useMinWidth : boolean
 }> = (props)=>{
 
 
     return(
-        <div className = {styles.root} >
+        <div className = {styles.root + (props.useMinWidth ? ` ${styles.fitContent}` : '')} >
             <Header/>
             <div className = {styles.contentContainer + (props.useHeight ? ` ${styles.contentHeight}` : '')}>
                 {props.content}

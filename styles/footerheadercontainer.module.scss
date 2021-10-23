@@ -9,7 +9,12 @@ $footerHeight : 100px;
     height: 100%;
     flex-direction: column;
     justify-content: space-between;
+    // min-width: fit-content;
 
+}
+
+.fitContent{
+    min-width: fit-content;
 }
 
 .contentContainer{
@@ -130,6 +135,7 @@ $footerHeight : 100px;
     background-color: black;
     color: white;
     text-align: center;
+    // min-width: fit-content;
     .linksContainer{
         display: flex;
         flex-direction: row;
@@ -142,6 +148,7 @@ $footerHeight : 100px;
             font-size: 2em;
         }
     }
+    min-width: fit-content;
 }
 
 .cardContainer{

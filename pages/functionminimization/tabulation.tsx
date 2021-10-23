@@ -4,7 +4,7 @@ import MinimizeFunction from "../../Components/synthesis/MinimizeFunction"
 
 const Tabulation = ()=>{
     return(
-        <HeaderFooterContent useHeight = {false} useFooter = {true} content = {<MinimizeFunction useTabulaion = {true} />} />
+        <HeaderFooterContent useMinWidth = {true} useHeight = {false} useFooter = {true} content = {<MinimizeFunction useTabulaion = {true} />} />
         
     )
 }

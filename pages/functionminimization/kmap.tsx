@@ -7,7 +7,7 @@ const MinimizeUsingKMap : React.FC<{
 
 }> = (props)=>{
     return(
-        <HeaderFooterContent useHeight = {false} useFooter = {true} content = {<MinimizeFunction />} />
+        <HeaderFooterContent useMinWidth = {true} useHeight = {false} useFooter = {true} content = {<MinimizeFunction />} />
     )
 }
 

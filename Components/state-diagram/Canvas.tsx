@@ -957,7 +957,7 @@ class Canvas extends React.Component<Props, State>{
         const outComb = getInputCombination(this.state.numberOfOutputVars,'synch');
 
 
-        let n = 8;
+        let n = 15;
 
         let inpComb = getInputCombination(this.state.numberOfInpVars,this.state.circuitMode);
 
@@ -1367,7 +1367,7 @@ class Canvas extends React.Component<Props, State>{
         nodeContext.lineWidth = canvasConfig.nodeCanvasLineWidth;
         tempContext.lineWidth = canvasConfig.tempCanvasLineWidth;
 
-        // this.createTestGraph();
+        this.createTestGraph();
 
         
         window.addEventListener('resize', e=>{

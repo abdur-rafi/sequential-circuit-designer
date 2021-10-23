@@ -28,7 +28,7 @@ import Link from "next/link";
 function Index(){
 
     return(
-    <HeaderFooterContent useFooter = {true} useHeight = {false} content = {<Index__></Index__>} />
+    <HeaderFooterContent useMinWidth = {true} useFooter = {true} useHeight = {false} content = {<Index__></Index__>} />
     )
 
 }

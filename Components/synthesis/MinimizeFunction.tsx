@@ -341,30 +341,37 @@ const MinimizeFunction : React.FC<{
         <div className = {styles.root}>
             <div className = {styles.introContainer} >
                 <h1>
-                    Minimize / Simplify Function
+                    Minimize / Simplify Function - {props.useTabulaion ? 'Tabulation Method' : 'KMap'}
                 </h1>
                 <div>
-                Provide the function as sum of minterms or product of maxterms. The function is then minimized using {props.useTabulaion ? 'Tabulation Method' : 'KMap'}.
-                Additionally all Prime Implicants and essential prime implicants are provided</div>
+                Provide the function as sum of minterms or product of maxterms and generate {props.useTabulaion ? 'steps of tabulation method' : 'kmap with visuals' }.
+                Additionally, all prime implicants and essential prime implicants are calculated.</div>
             </div>
             <div className = {styles.inputsContainer}>
 
               
                 <div className = {styles.variablesInputContainer} >
-                    <label>Variables:</label>
-                    <input type = 'text' onChange = {(e)=>{
-                            setVariables(e.target.value);
-                            resetError('vars')
-                        }} value = {variables} />
+                    <div>
+                        <label>Variables:</label>
+                        <input type = 'text' onChange = {(e)=>{
+                                setVariables(e.target.value);
+                                resetError('vars')
+                            }} value = {variables} placeholder = 'eg: a,b,c,d,e' />
 
-                    {error && error.type === 'vars' &&
-                        <div className = {styles.errorTextContainer} >
-                            {error.message}
-                        </div>
-                    }
+                        {error && error.type === 'vars' &&
+                            <div className = {styles.errorTextContainer} >
+                                {error.message}
+                            </div>
+                        }
+                    </div>
+                    <div>
+                        Specify the variables separated by comma
+                    </div>
+                    
                 </div>
                 <div className = {styles.optionsContainer}>
-                    <select onChange = {(e)=>{
+                    <div>
+                        <select onChange = {(e)=>{
                             if(e.target.value === 'sum of minterms'){
                                 setSumOfMinterm(true);
                             }
@@ -375,42 +382,47 @@ const MinimizeFunction : React.FC<{
                             <option> sum of minterms </option>
                             <option> product of maxterms </option>
                         </select>
+                    </div>
+                    <div>
+                        sum of minterms/product of maxterms
+                    </div>
+                    
                 </div>
                 <div className = {styles.termContainer}>
-                        {/* <select onChange = {(e)=>{
-                            if(e.target.value === 'sum of minterms'){
-                                setSumOfMinterm(true);
-                            }
-                            else{
-                                setSumOfMinterm(false);
-                            }
-                        }} defaultValue = {'sum of minterms'} >
-                            <option> sum of minterms </option>
-                            <option> product of maxterms </option>
-                        </select> */}
+                    <div>
+                        <label> Terms </label>    
+                        <input type = 'text' onChange = {(e)=>{
+                                setFunctionTerms(e.target.value);
+                                resetError('terms')
+                            }} value = {functionTerms} placeholder='eg: 0,1,2,3,5' />
+                        {error && error.type === 'terms' &&
+                            <div className = {styles.errorTextContainer} >
+                                {error.message}
+                            </div>
+                        }
+                    </div>
+                    <div>
+                        Specify the minterms/maxterms separated by comma
+                    </div>
                     
-                    <label> Terms </label>    
-                    <input type = 'text' onChange = {(e)=>{
-                            setFunctionTerms(e.target.value);
-                            resetError('terms')
-                        }} value = {functionTerms} />
-                    {error && error.type === 'terms' &&
-                        <div className = {styles.errorTextContainer} >
-                            {error.message}
-                        </div>
-                    }
                 </div>
                 <div className = {styles.dontCareContainer}>
-                    <label> don't cares: </label>
-                    <input type = 'text' onChange = {(e)=>{
-                            setDontCares(e.target.value);
-                            resetError('dontCares');
-                        }} value = {dontCares} />
-                    {error && error.type === 'dontCares' &&
-                        <div className = {styles.errorTextContainer} >
-                            {error.message}
-                        </div>
-                    }
+                    <div>
+                        <label> don't cares: </label>
+                        <input type = 'text' onChange = {(e)=>{
+                                setDontCares(e.target.value);
+                                resetError('dontCares');
+                            }} value = {dontCares} placeholder='eg: 0,1,3,6' />
+                        {error && error.type === 'dontCares' &&
+                            <div className = {styles.errorTextContainer} >
+                                {error.message}
+                            </div>
+                        }
+                    </div>
+                    <div>
+                        Specify the don't care terms separated by comma
+                    </div>
+                    
                 </div>
                 <div className = {styles.buttonContainer} >
                     <button onClick = {()=>validate()}> {props.useTabulaion ? 'Generate Table' : 'Generate KMap'} </button>
@@ -420,12 +432,16 @@ const MinimizeFunction : React.FC<{
             
             <div className = {styles.mapContainer}>
                 {
-                   !props.useTabulaion && implicants && kMap && <KMap circuitMode = {'synch'} implicants = {implicants} kMap = {kMap} />
+                   !props.useTabulaion && implicants && kMap && 
+                   <div className = {styles.kmapContainer}>
+                        <KMap circuitMode = {'synch'} implicants = {implicants} kMap = {kMap} />
+                   </div>
+
                     
                 }
                 {
                     props.useTabulaion && implicants && 
-                    <div>
+                    <div className = {styles.tabulationContainer}>
                         <TabulationTable allGroups = {implicants[''].groupsPerStep!} vars = {varsArr} />
                         <SecondTable implicants={implicants} vars={varsArr} pulse={''} minterms={minterms}  />
                     </div>

@@ -5,7 +5,7 @@ import styles from '../../styles/statetableinput.module.scss'
 import minimizeFunctionStyles from '../../styles/minimizefunction.module.scss'
 import { FromNextStateMap } from '../synthesis/results'
 import { circuitMode, lastSelected, nextStateMap, stringToStringMap , Error} from '../synthesis/interfaces'
-
+import Link from 'next/link'
 
 
 const TableHeader : React.FC<{
@@ -18,7 +18,7 @@ const TableHeader : React.FC<{
         <thead>
             <tr>
                 <th rowSpan = {2} >Previous States</th>
-                <th colSpan = {inpCombs.length}> {'Next States' + (props.numberOfOutputVars !== 0 ? '/output' : '')}</th>
+                <th colSpan = {inpCombs.length}> {'Next State' + (props.numberOfOutputVars !== 0 ? '/output' : '')}</th>
             </tr>
             <tr>
                 {
@@ -468,51 +468,81 @@ class StateTableInput extends React.Component<Props, {
                                 Synthesize Sequential Circuit From State Table 
                             </h1>
                             <div>
-                                Provide only the state Table and We will do the rest
+                                Alternatively, synthesize circuit directly from state diagram using the {' '}
+                                <Link  href = '/statediagram'>
+                                    <a>
+                                        state diagram drawer
+                                    </a>
+                                </Link>
                             </div>
                         </div>
 
                         <div className = {minimizeFunctionStyles.inputsContainer} >
                             <div className = {minimizeFunctionStyles.inputContainer}>
-                                <label> inputs </label>
-                                <input type = 'number' onChange = {e => {
-                                    let n = parseInt(e.target.value);
-                                    if(this.state.circuiMode === 'pulse' && n <= 0) return;
-                                    if(n >= 0 && n < 5){
-                                        this.onInputVarChange(n);
-                                    }
-                                }} value = {this.state.numberOfInputVars}></input>
+                                <div>
+                                    <label> inputs </label>
+                                    <input type = 'number' onChange = {e => {
+                                        let n = parseInt(e.target.value);
+                                        if(this.state.circuiMode === 'pulse' && n <= 0) return;
+                                        if(n >= 0 && n < 5){
+                                            this.onInputVarChange(n);
+                                        }
+                                    }} value = {this.state.numberOfInputVars}></input>
+                                </div>
+                                <div>
+                                    Specify number of input bits({this.state.circuiMode === 'synch'? '0' : '1'} to 4)
+                                </div>
+                                
                             </div>
                             <div className = {minimizeFunctionStyles.outputsContainer}>
-                                <label> outputs </label>
-                                <input type = 'number' onChange = {e => {
-                                    let n = parseInt(e.target.value);
-                                    if(n >= 0){
-                                        this.onOutputChange(n);
-                                    }
-                                }}
-                                value = {this.state.numberOfOutputVars} 
-                                ></input>
+                                <div>
+                                    <label> outputs </label>
+                                    <input type = 'number' onChange = {e => {
+                                        let n = parseInt(e.target.value);
+                                        if(n >= 0){
+                                            this.onOutputChange(n);
+                                        }
+                                    }}
+                                    value = {this.state.numberOfOutputVars} 
+                                    ></input>
+                                </div>
+                                <div>
+                                    Specify number of output bits(0 to 4)
+                                </div>
+                               
                             </div>
                             <div className = {minimizeFunctionStyles.statesContainer}>
-                                <label> states </label>
-                                <input type = 'number' onChange = {e => {
-                                    let n = parseInt(e.target.value);
-                                    if(n >= 0){
-                                        this.onStateChange(n);
-                                    }
-                                }} value = {this.state.numberOfStates} ></input>
+                                <div>
+                                    <label> states </label>
+                                    <input type = 'number' onChange = {e => {
+                                        let n = parseInt(e.target.value);
+                                        if(n >= 0){
+                                            this.onStateChange(n);
+                                        }
+                                    }} value = {this.state.numberOfStates} ></input>
+                                </div>
+                                <div>
+                                    Specify number of states
+                                </div>
+                                
                             </div>
                             <div className = {minimizeFunctionStyles.modeContainer}>
-                                <label>Mode</label>
-                                <select onChange = {(e)=>{
-                                    if(e.target.value === 'synch' || e.target.value === 'pulse'){
-                                        this.onModeChange(e.target.value);
-                                    }
-                                }} value = {this.state.circuiMode}>
-                                    <option>synch</option>
-                                    <option>pulse</option>
-                                </select>
+                                <div>
+                                    <label>Mode</label>
+                                    <select onChange = {(e)=>{
+                                        if(e.target.value === 'synch' || e.target.value === 'pulse'){
+                                            this.onModeChange(e.target.value);
+                                        }
+                                    }} value = {this.state.circuiMode}>
+                                        <option>synch</option>
+                                        <option>pulse</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    synchronous or asynchronous pulse mode
+                                </div>
+
+                                
                             </div>
                         </div>
                         <div className = {styles.stateTableInputContainer}>

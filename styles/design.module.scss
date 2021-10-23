@@ -110,17 +110,22 @@
     // margin: 10px;
     details{
         text-align: center;
+        background-color: rgba(255, 255, 255, 0.3);
+        margin: 10px;
+        padding: 5px;
     }
     summary{
-        padding: 20px;
-        margin: 10px;
-        background-color :  #1a7e3b;
+        // padding: 15px;
+        margin: 15px;
+        // background-color :  #1a7e3b;
         // background-color: rgba(155, 23, 23, 0.308);
-        color: white;
+        // color: white;
         text-align: start;
+        user-select: none;
     }
     
-    .stateTableContainer, .stateAssignmentContainer, .transitionTableContainer, .implicationTableContainer, .closureTableContainer, .reducedStateContainer, .stateTableInputContainer{
+    .stateTableContainer, .stateAssignmentContainer, .transitionTableContainer,
+     .implicationTableContainer, .closureTableContainer, .reducedStateContainer, .stateTableInputContainer{
         display: inline-block;
         table, th, td{
             border: solid 1px black;
@@ -140,9 +145,10 @@
             &:focus{
                 border-bottom: 1px solid lightblue;
             }
-            &:disabled{
-                background-color: white;
-            }
+            // &:disabled{
+            //     background-color: white;
+            // }
+            background-color: transparent;
 
         }
 
@@ -159,11 +165,16 @@
         padding-left: 20px;
         text-align: center;
         summary{
-            background-color :mediumaquamarine ;
+            background-color : unset ;
+            color: black;
             text-align: start;
         }
         .fucntionBlock{
             padding: 10px;
+        }
+        details{
+            // background-color: red;
+            background-color: rgba(255, 255, 255, 0.1);
         }
     }
 
@@ -179,6 +190,13 @@
         }
     }
     
+}
+
+.designContainer{
+    background: hsla(221, 45%, 73%, 1);
+
+    background: linear-gradient(0deg, hsla(221, 45%, 73%, 1) 0%, hsla(220, 78%, 29%, 1) 100%);
+
 }
 
 .processingTextContainer{
