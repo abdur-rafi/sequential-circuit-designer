@@ -151,6 +151,13 @@
             background-color: transparent;
 
         }
+        button{
+            background-color: transparent;
+            padding: 5px 20px;
+        }
+        select{
+            background-color: transparent;
+        }
 
     }
     
@@ -184,9 +191,10 @@
         button{
             height: 40px;
             width: 120px;
-            background-color :palegreen;
-            color: black;
-            border-color: cadetblue;
+            background-color: transparent;
+            // background-color :palegreen;
+            // color: black;
+            // border-color: cadetblue;
         }
     }
     

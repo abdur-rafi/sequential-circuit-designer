@@ -84,9 +84,9 @@ class Canvas extends React.Component<Props, State>{
             ioNodeToSideBar : null,
             stateNodeToSideBar : null,
             mouseMode : 'edge',
-            numberOfInpVars : 0,
+            numberOfInpVars : 1,
             synthesis : false,
-            numberOfOutputVars : 0,
+            numberOfOutputVars : 1,
             circuitMode : 'synch',
             message : null
         }
@@ -108,7 +108,10 @@ class Canvas extends React.Component<Props, State>{
         this.drawStateNode = this.drawStateNode.bind(this);
         this.createStateNodeObject = this.createStateNodeObject.bind(this);
         this.changeStateNodeOrder = this.changeStateNodeOrder.bind(this);
+        this.resetAll = this.resetAll.bind(this);
     }
+
+    
 
     setMessage(message : Message | null){
         this.setState({message : message})
@@ -140,20 +143,22 @@ class Canvas extends React.Component<Props, State>{
 
     }
 
+    resetAll(){
+        this.resetModeVars();
+        clearCanvas(this.nodeCanvasRef);
+        clearCanvas(this.tempCanvasRef);
+        clearCanvas(this.edgeCanvasRef);
+        this.stateNodes = []
+        this.edges = []
+        this.stateLabels = new StringIdGenerator();
+        this.nextLabel = this.stateLabels.next();
+    }
+
     chnageCircuitMode(circuitMode : circuitMode){
         this.setState(old=>({
             circuitMode : circuitMode,
             numberOfInpVars : old.numberOfInpVars === 0 ? 1 : old.numberOfInpVars
-        }),()=>{
-            clearCanvas(this.nodeCanvasRef);
-            clearCanvas(this.tempCanvasRef);
-            clearCanvas(this.edgeCanvasRef);
-            this.stateNodes = []
-            this.edges = []
-            this.resetModeVars();
-            this.stateLabels = new StringIdGenerator();
-            this.nextLabel = this.stateLabels.next();
-        })
+        }),this.resetAll);
     }
 
     changeOutput(ioNode : IONode, out : string){
@@ -1367,7 +1372,7 @@ class Canvas extends React.Component<Props, State>{
         nodeContext.lineWidth = canvasConfig.nodeCanvasLineWidth;
         tempContext.lineWidth = canvasConfig.tempCanvasLineWidth;
 
-        this.createTestGraph();
+        // this.createTestGraph();
 
         
         window.addEventListener('resize', e=>{
@@ -1450,7 +1455,7 @@ class Canvas extends React.Component<Props, State>{
                         display : this.state.synthesis ? 'none' : 'flex'
                     }} className = {styles.main} >
                         <div className={styles.topBarContainer}>
-                            <TopBar deleteSelected = {this.deleteSelected} circuitMode = {this.state.circuitMode} changeCircuitMode = {this.chnageCircuitMode} changeSynthesis = {this.changeSynthesis} changeNumberOfOutputVars={this.changeNumberOfOutputVars} numberOfOutputVars={this.state.numberOfOutputVars} changeNumberOfInputVars = {this.changeNumberOfInputVars} numberOfInputVars = {this.state.numberOfInpVars} setMouseMode = {this.setMouseMode} mouseMode = {this.state.mouseMode}/>
+                            <TopBar resetAll = {this.resetAll} deleteSelected = {this.deleteSelected} circuitMode = {this.state.circuitMode} changeCircuitMode = {this.chnageCircuitMode} changeSynthesis = {this.changeSynthesis} changeNumberOfOutputVars={this.changeNumberOfOutputVars} numberOfOutputVars={this.state.numberOfOutputVars} changeNumberOfInputVars = {this.changeNumberOfInputVars} numberOfInputVars = {this.state.numberOfInpVars} setMouseMode = {this.setMouseMode} mouseMode = {this.state.mouseMode}/>
                         </div>
                         <div className={styles.canvasContainer } ref={this.canvasContainerRef}  >
                             <canvas ref = {this.nodeCanvasRef} className={styles.canvas} />

@@ -465,10 +465,10 @@ class StateTableInput extends React.Component<Props, {
 
                         <div className = {minimizeFunctionStyles.introContainer} >
                             <h1>
-                                Synthesize Sequential Circuit From State Table 
+                                Design Sequential Circuit From State Table 
                             </h1>
                             <div>
-                                Alternatively, synthesize circuit directly from state diagram using the {' '}
+                                Alternatively, design circuit directly from state diagram using the {' '}
                                 <Link  href = '/statediagram'>
                                     <a>
                                         state diagram drawer
@@ -552,13 +552,20 @@ class StateTableInput extends React.Component<Props, {
                                 numberOfStates = {this.state.numberOfStates} numberOfOutputVars = {this.state.numberOfOutputVars} numberOfInputVars = {this.state.numberOfInputVars} 
                                 lastSelected = {this.state.lastSelected} error = {this.state.error} entries = {this.state.entries} changeStates = {this.chnageStates} />
                             </table>
+                            <div style = {{
+                                padding : '10px',
+                                color : 'gray',
+                                textAlign : 'end'
+                            }}>
+                               Use 'd' to denote don't care
+                            </div>
                         </div>
                         <div className = {styles.buttonContainer}>
                             <button onClick = {async ()=>{
                                 if(this.state.states.length === 0) return;
                                 if(this.chekcValidity()){
                                     let r = await nextStateMapFromStateTalbeInput(this.state.states,this.state.entries,this.state.outputs, this.state.circuiMode, this.state.numberOfInputVars, this.state.numberOfOutputVars);
-                                    console.log(r);
+                                    // console.log(r);
                                     this.setState({
                                         nextStateMap : r.nextStateMap,
                                         internalToOriginalMap : r.internalToOriginalMap,
@@ -566,11 +573,11 @@ class StateTableInput extends React.Component<Props, {
                                         showResults : true
                                     })
                                 }
-                            }}> Analyze</button>
+                            }}> Proceed</button>
                         </div>
                     </div>
                 }
-                { this.state.showResults && <FromNextStateMap circuitMode = {this.state.circuiMode} labelMap = {this.state.internalToOriginalMap} nextStateMap = {this.state.nextStateMap} labels = {this.state.internalLabels} changeSynthesis = {this.changeShowResult} />}
+                { this.state.showResults && <FromNextStateMap fromTable = {true} circuitMode = {this.state.circuiMode} labelMap = {this.state.internalToOriginalMap} nextStateMap = {this.state.nextStateMap} labels = {this.state.internalLabels} changeSynthesis = {this.changeShowResult} />}
             </div>
         )
     }

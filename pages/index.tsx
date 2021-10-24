@@ -208,7 +208,7 @@ function Index__(){
                     <div>
                         <Link href = '/statediagram' >
                             <a>
-                                Circuit synthesis from state diagram 
+                                Circuit design from state diagram 
                             </a>
                         </Link>
                     </div>
@@ -220,7 +220,7 @@ function Index__(){
                     <div>
                         <Link href = '/statetable'>
                             <a>
-                                Circuit synthesis from state table
+                                Circuit design from state table
                             </a>
                         </Link>
                     </div>
@@ -255,7 +255,7 @@ function Index__(){
                     <div>
                         <Link href = '/functionminimization/tabulation'>
                             <a>
-                                Generate steps of tabuation method 
+                                Generate steps of tabulation method 
                             </a>
                         </Link>
                     </div>
@@ -265,6 +265,57 @@ function Index__(){
                 </div>
 
             </div>
+
+            <div className = {styles.demosContainer}>
+                <div>
+                    <h2>Demos</h2>
+                </div>
+                <div>
+                    <div className = {styles.videoCaption}>
+                        Design a mod 12 counter
+                    </div>
+                    <iframe width="400" height="300"
+                    src="https://www.youtube.com/embed/_fgOZLyHeTM"
+                    title="YouTube video player" frameBorder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowFullScreen = {true}></iframe>
+                </div>
+                <div>
+                    <div className = {styles.videoCaption}>
+                        Design a sequence counter
+                    </div>
+                    <iframe width="400" height="300" src="https://www.youtube.com/embed/Ibfm3KYAUyU" 
+                    title="YouTube video player" frameBorder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
+                </div>
+                <div>
+                    <div className = {styles.videoCaption}>
+                        Design a sequence recognizer
+                    </div>
+
+                    <iframe width="400" height="300" src="https://www.youtube.com/embed/vOrcepEO7ZY" 
+                    title="YouTube video player" frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen></iframe>
+
+                </div>
+                <div>
+                    <div className = {styles.videoCaption}>
+                        State Minimization
+                    </div>
+                    <iframe width="400" height="300" src="https://www.youtube.com/embed/n36agf6S0Io" title="YouTube video player" 
+                    frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
+                </div>
+                <div>
+                    <div className = {styles.videoCaption}>
+                        Function simplification
+                    </div>
+                    <iframe width="400" height="300" src="https://www.youtube.com/embed/P5ppubJH0x8" title="YouTube video player" 
+                    frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
+                </div>
+            </div>
+
+            
             
         </div>
     )

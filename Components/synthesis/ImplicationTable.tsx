@@ -20,33 +20,47 @@ const ImplicationTable : React.FC<{
         let cols : React.ReactNode[] = [];
         for(let j = 0; j < i ; ++j){
             let s1 = props.labels[j];
-            let txt : React.ReactNode;
+            let txt : React.ReactNode = <TiTick />;
             let entry = props.entries[s1][s2];
+            let dependants : React.ReactNode = '';
+            if(entry.dependencies.length > 0){
+                entry.dependencies.forEach((e, index) => {
+                    let temp = e.split(' ').map(s => useLabelMap(s, props.labelMap)).reduce((prev, curr) =>{
+                            return prev + ' ' + curr;
+                        });
+                    dependants += ((index === entry.dependencies.length - 1) ? temp : (temp + '/')).replace(' ', ',')
+                });
+            }
             if(entry.isCompatible){
-
-                let t = {...props.labelMap}
-                // console.log(t);
-                
-                txt = <TiTick />
-                if(entry.dependencies.length > 0){
+                if(entry.dependencies.length > 0)
                     txt = '';
-                    entry.dependencies.forEach((e, index) => {
-                        let temp = e.split(' ').map(s => useLabelMap(s, props.labelMap)).reduce((prev, curr) =>{
-                                console.log(curr);
-                                return prev + ' ' + curr;
-                            });
-                        if(props.labelMap) console.log(props.labelMap['E']);
-                        txt += ((index === entry.dependencies.length - 1) ? temp : (temp + '/')).replace(' ', ',')
-                    });
-                    
-                }
             }
             else{
                 txt = <ImCross/>;
             }
             cols.push(
                 <td key={s1 + s2}>
-                    {txt}
+                    {/* {txt} */}
+                    {
+                        <div style = {{
+                            display : 'grid'
+                        }}>
+                            <div style = {{
+                                gridRow : 1,
+                                gridColumn : 1,
+                                zIndex : 10
+                            }}>
+                                {txt}
+                            </div>
+                            <div style = {{
+                                gridColumn : 1,
+                                gridRow : 1
+                            }}>
+                                    {dependants}
+                            </div>
+                            
+                        </div>
+                    }
                 </td>
             )
         }

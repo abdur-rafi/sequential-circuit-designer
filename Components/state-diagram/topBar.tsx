@@ -1,12 +1,14 @@
 import React from "react";
 import styles from '../../styles/topbar.module.scss'
 import {IoHandRightOutline} from 'react-icons/io5'
-import {GrSelect} from 'react-icons/gr'
+import {GrSelect, GrPowerReset} from 'react-icons/gr'
 import { MouseMode } from "./state-diagram-interfaces";
 import {AiFillCaretRight, AiOutlineDash, AiOutlinePlus} from 'react-icons/ai'
 import {RiDeleteBin6Line} from 'react-icons/ri'
 import { useMediaQuery } from "react-responsive";
 import { circuitMode } from "../synthesis/interfaces";
+
+
 interface Props{
     setMouseMode : (mode : MouseMode)=>void
     mouseMode : 'addNode' | 'drag' | 'edge' | 'select',
@@ -17,14 +19,15 @@ interface Props{
     changeSynthesis : (b : boolean) => void,
     changeCircuitMode : (c : circuitMode)=>void,
     circuitMode : circuitMode,
-    deleteSelected : ()=>void
+    deleteSelected : ()=>void,
+    resetAll : ()=>void
 }
 interface State{
 
 }
 const TopBar : React.FC<Props> = (props)=>{
 
-    const removeTextFromOptions = useMediaQuery({query : '(max-width:900px)'});
+    const removeTextFromOptions = useMediaQuery({query : '(max-width:980px)'});
 
     
     return(
@@ -87,6 +90,12 @@ const TopBar : React.FC<Props> = (props)=>{
                     title = 'Delete selected'>
                     { !removeTextFromOptions &&  "Delete"}
                     <RiDeleteBin6Line className = {styles.deleteIcon }/>
+                </div>
+                <div onClick = {()=>{
+                        props.resetAll();
+                    }} className = {styles.resultIconContainer } title = 'Reset canvas' >
+                    { !removeTextFromOptions &&  "Reset"}
+                    <GrPowerReset className = {styles.resultIcon}/>
                 </div>
                 <div onClick = {()=>{
                         props.changeSynthesis(true);

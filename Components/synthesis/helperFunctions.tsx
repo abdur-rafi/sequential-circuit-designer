@@ -177,7 +177,7 @@ export async function getExcitationsFromNextStateMap(stateLabels : string[], nex
                     row : numberOfStateBits,
                     col : numberOfInputVar
                 },
-                index : i,
+                index : i + 1,
                 rowLabels : getLabels(numberOfStateBits, 'y'),
                 colLabels : getLabels(numberOfInputVar, 'x'),
                 type : 'state',
@@ -191,7 +191,7 @@ export async function getExcitationsFromNextStateMap(stateLabels : string[], nex
                     row : numberOfStateBits,
                     col : numberOfInputVar
                 },
-                index : i,
+                index : i + 1,
                 rowLabels : getLabels(numberOfStateBits, 'y'),
                 colLabels : getLabels(numberOfInputVar, 'x'),
                 type : 'output',
@@ -690,12 +690,16 @@ export async function stateMinimization(stateLabels : string[], nextStateMap : n
         let arr = s.split(separator);
         let s1 = arr[0];
         let s2  = arr[1];
+        let d : string[] = [];
+        if(doesOutputMatch(s1, s2)){
+            d = dependency(s1, s2);
+        }
         if(!implicationEntries[s1]){
             implicationEntries[s1] = {}
         }
         implicationEntries[s1][s2] = {
             isCompatible : false,
-            dependencies : []
+            dependencies : d
         }
     })
 

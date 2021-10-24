@@ -1,6 +1,6 @@
 import { StateNode } from "../state-diagram/state-diagram-interfaces";
 import { circuitMode, nextStateMap, stringToStringMap } from "./interfaces";
-import { getInputCombination, useLabelMap } from "./helperFunctions";
+import { getInputCombination, getRequiredBitForStates, useLabelMap } from "./helperFunctions";
 import styles from '../../styles/design.module.scss'
 
 
@@ -8,10 +8,15 @@ const StateTable : React.FC<{
     stateLabels : string[],
     nextStateMap : nextStateMap,
     labelMap? : stringToStringMap,
-    circuitMode : circuitMode
+    circuitMode : circuitMode,
+    includeBinAtHeader? : boolean
 }> = (props)=>{
 
     let inpComb = getInputCombination(props.nextStateMap.numberOfInputVar, props.circuitMode);
+
+    let numberOfOutputVar = props.nextStateMap.numberOfOutputVar;
+
+    
 
     if(props.stateLabels.length == 0) 
         return(
@@ -19,13 +24,27 @@ const StateTable : React.FC<{
             </div>
         )
     
+    let stateBitCount = getRequiredBitForStates(props.stateLabels.length);
+
+    let l : React.ReactNode[] = [];
+    if(props.includeBinAtHeader){
+        l.push('(');
+        for(let i = 1; i <= stateBitCount; ++i){
+            l.push('y');
+            l.push(<sub key = {i} >{i}</sub>)
+        }
+        l.push(')');
+    }
+    
     return (
         <div className = {styles.stateTableContainer}>
             <table className = {styles.stateTable}>
                 <thead >
                     <tr>
-                        <th rowSpan={2}>previous state</th>
-                        <th colSpan={Math.pow(2,props.nextStateMap.numberOfInputVar)} > next state/output </th>
+                        <th rowSpan={2}>previous state {
+                            props.includeBinAtHeader && l
+                        } </th>
+                        <th colSpan={Math.pow(2,props.nextStateMap.numberOfInputVar)} > next state { numberOfOutputVar !== 0 ? '/output' : ''} </th>
                     </tr>
                     <tr>
                         {
@@ -46,7 +65,7 @@ const StateTable : React.FC<{
                             
                             return (
                                 <td key = {'s' + s + 'i' +  comb}>
-                                    {text + ( '/' + props.nextStateMap.nextStateMap[s][comb].output)}
+                                    {text + (numberOfOutputVar !== 0 ? ( '/' + props.nextStateMap.nextStateMap[s][comb].output) : '')}
                                 </td>
                             )
                         })

@@ -71,7 +71,7 @@ background: linear-gradient(0deg, hsla(221, 45%, 73%, 1) 0%, hsla(220, 78%, 29%,
 //     // color: #680707;
 // }
 .modeContainer, .produceContainer , .drawStateDiagramContainer , .implicantsCotainer,
- .simplifyContainer, .kmapContainer, .tabulationContainer{
+ .simplifyContainer, .kmapContainer, .tabulationContainer, .demosContainer{
     // background-color: red;
     padding: 20px;
     text-align: center;
@@ -110,4 +110,9 @@ background: linear-gradient(0deg, hsla(221, 45%, 73%, 1) 0%, hsla(220, 78%, 29%,
 
 .sequentialContainer, .combinationalContainer{
     text-align: center;
+}
+.videoCaption{
+    // background-color: red;
+    padding: 10px;
+    font-weight: bold;
 }

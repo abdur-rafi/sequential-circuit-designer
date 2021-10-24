@@ -86,7 +86,7 @@ class StateOrderTable extends React.Component<{
 
     render(){
         return(
-            <div className = {styles.room}>
+            <div className = {styles.root}>
                 <div ref = {this.containerRef} 
                     className = {styles.root}>
                     <div className = {styles.container} 

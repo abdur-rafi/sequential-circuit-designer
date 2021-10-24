@@ -21,7 +21,7 @@ const Header : React.FC<{
                 <div> 
                     <Link href='/'>
                         <a>
-                            Logo
+                            Home
                         </a>
                     </Link>
                 </div>

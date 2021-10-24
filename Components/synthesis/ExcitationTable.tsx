@@ -25,7 +25,7 @@ const ExcitaitonTable : React.FC<{
     let stateBitCount = getRequiredBitForStates(props.stateLabels.length);
     let inpComb = getInputCombination(numberOfInputVars, props.circuitMode);
     
-    for(let i = 0; i < stateBitCount; ++i){
+    for(let i = 1; i <= stateBitCount; ++i){
         upperHeadRow.push(
             <th key = {i} colSpan = { props.circuitMode === 'synch' ? Math.pow(2,numberOfInputVars) : numberOfInputVars}>
                 {props.latch.length === 2 ? 

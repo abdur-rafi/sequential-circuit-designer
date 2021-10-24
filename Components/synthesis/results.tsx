@@ -113,7 +113,8 @@ interface FNSMprops {
     nextStateMap : nextStateMap | null,
     changeSynthesis : (b : boolean) => void,
     labelMap? : {[label : string] : string},
-    circuitMode : circuitMode
+    circuitMode : circuitMode,
+    fromTable? : boolean
 
 }
 
@@ -407,8 +408,8 @@ export class FromNextStateMap extends React.Component<FNSMprops ,FNSMState >{
                 content = {this.state.newLabels && <StateAssignment changeBinRep
                 = {this.onBinRepChange} labelMap = {this.state.reducedLabelMap} binRep = {this.state.binRep} stateLabels = {this.state.newLabels}  />}/>
                 
-                <Details summary = {'Transition Table '} 
-                content = {this.state.newLabels && this.state.reducedNextStateMap && <StateTable circuitMode = {this.props.circuitMode} nextStateMap = {this.state.reducedNextStateMap} labelMap = {this.state.binRep} stateLabels = {this.state.newLabels}/>}/>
+                <Details  summary = {'Transition Table '} 
+                content = {this.state.newLabels && this.state.reducedNextStateMap && <StateTable includeBinAtHeader = {true} circuitMode = {this.props.circuitMode} nextStateMap = {this.state.reducedNextStateMap} labelMap = {this.state.binRep} stateLabels = {this.state.newLabels}/>}/>
                 
                 <Details summary = {'Excitation Table'} 
                 content = {this.state.newLabels && this.state.excitations && <ExcitaitonTable onLatchChange = {this.onLatchChange} latch = {this.state.latch} circuitMode = {this.props.circuitMode}  excitations = {this.state.excitations} stateLabels = {this.state.newLabels} binRep = {this.state.binRep} latchMap = {JKMap} />}/>
@@ -418,7 +419,7 @@ export class FromNextStateMap extends React.Component<FNSMprops ,FNSMState >{
                 content = {this.state.kMaps &&
                     this.state.kMaps.map((k, index)=>{
                         let r = simplifyFunction(this.state.truthTables![index], this.props.circuitMode,this.props.nextStateMap!.numberOfInputVar);
-                        console.log(r);
+                        // console.log(r);
                         // let s = '';
                         // r.selectedPIs.forEach(e=> s+= getLiteral(e.comb, truthTables![index].vars) + ' + ' );
                     // s = s.slice(0, s.length - 3);
@@ -447,7 +448,7 @@ export class FromNextStateMap extends React.Component<FNSMprops ,FNSMState >{
                 }/>
                 
                 <div className={styles.backButtonContainer}>
-                    <button onClick = {()=> this.props.changeSynthesis(false)}> back to diagram </button>
+                    <button onClick = {()=> this.props.changeSynthesis(false)}> back to {this.props.fromTable ? 'Table' : 'diagram'} </button>
                 </div>
             </div>
         )
