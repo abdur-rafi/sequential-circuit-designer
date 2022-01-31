@@ -10,18 +10,19 @@ const Footer : React.FC<{
         <div className = {styles.footer}>
             <div className = {styles.cardContainer}>
                 <div>
-                    Developped by Abdur Rafi
-                    <br/>
-                    Social links:
+                    Developed by Abdur Rafi
+                    {/* <br/> */}
                     <div className = {styles.linksContainer} >
                         <a target = "_blank" href="https://www.facebook.com/abdur08236.rafi" > <AiOutlineFacebook className = {styles.facebookIcon} /> </a>
-                        <a target = "_blank" href = "https://github.com/abdur-rafi" > <AiFillGithub className = {styles.githubIcon} /> </a>
-                    </div>
-                    <br/>
-                    Mail: rafi08236@gmail.com
-                </div>
-                <div>
+                        <a target = "_blank" href = "https://github.com/abdur-rafi/sequential-circuit-designer" > <AiFillGithub className = {styles.githubIcon} /> </a>
 
+                    </div>
+                    {/* <br/> */}
+                    Mail: rafi08236@gmail.com
+                    <br/>
+                    Feel free to provide any  
+                    <br/>
+                    suggestion or feedback
                 </div>
             </div>
             
