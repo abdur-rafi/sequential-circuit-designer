@@ -458,126 +458,129 @@ class StateTableInput extends React.Component<Props, {
 
     render(){
         return(
-            <div className = {styles.root}>
-                { 
-                    !this.state.showResults &&
-                    <div>
+            // <div className = {styles.root}>
+            //     { 
+            //         !this.state.showResults &&
+            //         <div>
 
-                        <div className = {minimizeFunctionStyles.introContainer} >
-                            <h1>
-                                Design Sequential Circuit From State Table 
-                            </h1>
-                            <div>
-                                Alternatively, design circuit directly from state diagram using the {' '}
-                                <Link  href = '/statediagram'>
-                                    <a>
-                                        state diagram drawer
-                                    </a>
-                                </Link>
-                            </div>
-                        </div>
+            //             <div className = {minimizeFunctionStyles.introContainer} >
+            //                 <h1>
+            //                     Design Sequential Circuit From State Table 
+            //                 </h1>
+            //                 <div>
+            //                     Alternatively, design circuit directly from state diagram using the {' '}
+            //                     <Link  href = '/statediagram'>
+            //                         <a>
+            //                             state diagram drawer
+            //                         </a>
+            //                     </Link>
+            //                 </div>
+            //             </div>
 
-                        <div className = {minimizeFunctionStyles.inputsContainer} >
-                            <div className = {minimizeFunctionStyles.inputContainer}>
-                                <div>
-                                    <label> inputs </label>
-                                    <input type = 'number' onChange = {e => {
-                                        let n = parseInt(e.target.value);
-                                        if(this.state.circuiMode === 'pulse' && n <= 0) return;
-                                        if(n >= 0 && n < 5){
-                                            this.onInputVarChange(n);
-                                        }
-                                    }} value = {this.state.numberOfInputVars}></input>
-                                </div>
-                                <div>
-                                    Specify number of input bits({this.state.circuiMode === 'synch'? '0' : '1'} to 4)
-                                </div>
+            //             <div className = {minimizeFunctionStyles.inputsContainer} >
+            //                 <div className = {minimizeFunctionStyles.inputContainer}>
+            //                     <div>
+            //                         <label> inputs </label>
+            //                         <input type = 'number' onChange = {e => {
+            //                             let n = parseInt(e.target.value);
+            //                             if(this.state.circuiMode === 'pulse' && n <= 0) return;
+            //                             if(n >= 0 && n < 5){
+            //                                 this.onInputVarChange(n);
+            //                             }
+            //                         }} value = {this.state.numberOfInputVars}></input>
+            //                     </div>
+            //                     <div>
+            //                         Specify number of input bits({this.state.circuiMode === 'synch'? '0' : '1'} to 4)
+            //                     </div>
                                 
-                            </div>
-                            <div className = {minimizeFunctionStyles.outputsContainer}>
-                                <div>
-                                    <label> outputs </label>
-                                    <input type = 'number' onChange = {e => {
-                                        let n = parseInt(e.target.value);
-                                        if(n >= 0){
-                                            this.onOutputChange(n);
-                                        }
-                                    }}
-                                    value = {this.state.numberOfOutputVars} 
-                                    ></input>
-                                </div>
-                                <div>
-                                    Specify number of output bits(0 to 4)
-                                </div>
+            //                 </div>
+            //                 <div className = {minimizeFunctionStyles.outputsContainer}>
+            //                     <div>
+            //                         <label> outputs </label>
+            //                         <input type = 'number' onChange = {e => {
+            //                             let n = parseInt(e.target.value);
+            //                             if(n >= 0){
+            //                                 this.onOutputChange(n);
+            //                             }
+            //                         }}
+            //                         value = {this.state.numberOfOutputVars} 
+            //                         ></input>
+            //                     </div>
+            //                     <div>
+            //                         Specify number of output bits(0 to 4)
+            //                     </div>
                                
-                            </div>
-                            <div className = {minimizeFunctionStyles.statesContainer}>
-                                <div>
-                                    <label> states </label>
-                                    <input type = 'number' onChange = {e => {
-                                        let n = parseInt(e.target.value);
-                                        if(n >= 0){
-                                            this.onStateChange(n);
-                                        }
-                                    }} value = {this.state.numberOfStates} ></input>
-                                </div>
-                                <div>
-                                    Specify number of states
-                                </div>
+            //                 </div>
+            //                 <div className = {minimizeFunctionStyles.statesContainer}>
+            //                     <div>
+            //                         <label> states </label>
+            //                         <input type = 'number' onChange = {e => {
+            //                             let n = parseInt(e.target.value);
+            //                             if(n >= 0){
+            //                                 this.onStateChange(n);
+            //                             }
+            //                         }} value = {this.state.numberOfStates} ></input>
+            //                     </div>
+            //                     <div>
+            //                         Specify number of states
+            //                     </div>
                                 
-                            </div>
-                            <div className = {minimizeFunctionStyles.modeContainer}>
-                                <div>
-                                    <label>Mode</label>
-                                    <select onChange = {(e)=>{
-                                        if(e.target.value === 'synch' || e.target.value === 'pulse'){
-                                            this.onModeChange(e.target.value);
-                                        }
-                                    }} value = {this.state.circuiMode}>
-                                        <option>synch</option>
-                                        <option>pulse</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    synchronous or asynchronous pulse mode
-                                </div>
+            //                 </div>
+            //                 <div className = {minimizeFunctionStyles.modeContainer}>
+            //                     <div>
+            //                         <label>Mode</label>
+            //                         <select onChange = {(e)=>{
+            //                             if(e.target.value === 'synch' || e.target.value === 'pulse'){
+            //                                 this.onModeChange(e.target.value);
+            //                             }
+            //                         }} value = {this.state.circuiMode}>
+            //                             <option>synch</option>
+            //                             <option>pulse</option>
+            //                         </select>
+            //                     </div>
+            //                     <div>
+            //                         synchronous or asynchronous pulse mode
+            //                     </div>
 
                                 
-                            </div>
-                        </div>
-                        <div className = {styles.stateTableInputContainer}>
-                            <table>
-                                <TableHeader numberOfOutputVars = {this.state.numberOfOutputVars} circuitMode = {this.state.circuiMode} numberOfInputVars = {this.state.numberOfInputVars} />
-                                <TableBody circuitMode = {this.state.circuiMode} changeEntry = {this.changeEntry} changeOutput = {this.changeOutput} states = {this.state.states} outputs = {this.state.outputs}
-                                numberOfStates = {this.state.numberOfStates} numberOfOutputVars = {this.state.numberOfOutputVars} numberOfInputVars = {this.state.numberOfInputVars} 
-                                lastSelected = {this.state.lastSelected} error = {this.state.error} entries = {this.state.entries} changeStates = {this.chnageStates} />
-                            </table>
-                            <div style = {{
-                                padding : '10px',
-                                color : 'gray',
-                                textAlign : 'end'
-                            }}>
-                               Use 'd' to denote don't care
-                            </div>
-                        </div>
-                        <div className = {styles.buttonContainer}>
-                            <button onClick = {async ()=>{
-                                if(this.state.states.length === 0) return;
-                                if(this.chekcValidity()){
-                                    let r = await nextStateMapFromStateTalbeInput(this.state.states,this.state.entries,this.state.outputs, this.state.circuiMode, this.state.numberOfInputVars, this.state.numberOfOutputVars);
-                                    // console.log(r);
-                                    this.setState({
-                                        nextStateMap : r.nextStateMap,
-                                        internalToOriginalMap : r.internalToOriginalMap,
-                                        internalLabels : r.internalLabels,
-                                        showResults : true
-                                    })
-                                }
-                            }}> Proceed</button>
-                        </div>
-                    </div>
-                }
-                { this.state.showResults && <FromNextStateMap fromTable = {true} circuitMode = {this.state.circuiMode} labelMap = {this.state.internalToOriginalMap} nextStateMap = {this.state.nextStateMap} labels = {this.state.internalLabels} changeSynthesis = {this.changeShowResult} />}
+            //                 </div>
+            //             </div>
+            //             <div className = {styles.stateTableInputContainer}>
+            //                 <table>
+            //                     <TableHeader numberOfOutputVars = {this.state.numberOfOutputVars} circuitMode = {this.state.circuiMode} numberOfInputVars = {this.state.numberOfInputVars} />
+            //                     <TableBody circuitMode = {this.state.circuiMode} changeEntry = {this.changeEntry} changeOutput = {this.changeOutput} states = {this.state.states} outputs = {this.state.outputs}
+            //                     numberOfStates = {this.state.numberOfStates} numberOfOutputVars = {this.state.numberOfOutputVars} numberOfInputVars = {this.state.numberOfInputVars} 
+            //                     lastSelected = {this.state.lastSelected} error = {this.state.error} entries = {this.state.entries} changeStates = {this.chnageStates} />
+            //                 </table>
+            //                 <div style = {{
+            //                     padding : '10px',
+            //                     color : 'gray',
+            //                     textAlign : 'end'
+            //                 }}>
+            //                    Use 'd' to denote don't care
+            //                 </div>
+            //             </div>
+            //             <div className = {styles.buttonContainer}>
+            //                 <button onClick = {async ()=>{
+            //                     if(this.state.states.length === 0) return;
+            //                     if(this.chekcValidity()){
+            //                         let r = await nextStateMapFromStateTalbeInput(this.state.states,this.state.entries,this.state.outputs, this.state.circuiMode, this.state.numberOfInputVars, this.state.numberOfOutputVars);
+            //                         // console.log(r);
+            //                         this.setState({
+            //                             nextStateMap : r.nextStateMap,
+            //                             internalToOriginalMap : r.internalToOriginalMap,
+            //                             internalLabels : r.internalLabels,
+            //                             showResults : true
+            //                         })
+            //                     }
+            //                 }}> Proceed</button>
+            //             </div>
+            //         </div>
+            //     }
+            //     { this.state.showResults && <FromNextStateMap fromTable = {true} circuitMode = {this.state.circuiMode} labelMap = {this.state.internalToOriginalMap} nextStateMap = {this.state.nextStateMap} labels = {this.state.internalLabels} changeSynthesis = {this.changeShowResult} />}
+            // </div>
+            <div>
+                Currently down for evaluation
             </div>
         )
     }

@@ -23,6 +23,10 @@ const Footer : React.FC<{
                     Feel free to provide any  
                     <br/>
                     suggestion or feedback
+                    <br/>
+                    <span style={{
+                        "color" : "red"
+                    }}>Please refrain from using this site to cheat </span>
                 </div>
             </div>
             

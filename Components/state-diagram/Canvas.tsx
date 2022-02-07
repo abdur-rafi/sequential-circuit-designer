@@ -1445,54 +1445,56 @@ class Canvas extends React.Component<Props, State>{
 
     render() : React.ReactNode{
         return (
-            <div className = {styles.stateDiagramRoot} >
-                { this.state.message && !this.state.synthesis && <MessageBar setMessage = {this.setMessage} message = {this.state.message} />}
-                { !this.state.synthesis && <StateTut createStateNodeObject={this.createStateNodeObject} drawStateNode={this.drawStateNode}  />}
+            // <div className = {styles.stateDiagramRoot} >
+            //     { this.state.message && !this.state.synthesis && <MessageBar setMessage = {this.setMessage} message = {this.state.message} />}
+            //     { !this.state.synthesis && <StateTut createStateNodeObject={this.createStateNodeObject} drawStateNode={this.drawStateNode}  />}
                 
-                {
+            //     {
                     
-                    <div style={{
-                        display : this.state.synthesis ? 'none' : 'flex'
-                    }} className = {styles.main} >
-                        <div className={styles.topBarContainer}>
-                            <TopBar resetAll = {this.resetAll} deleteSelected = {this.deleteSelected} circuitMode = {this.state.circuitMode} changeCircuitMode = {this.chnageCircuitMode} changeSynthesis = {this.changeSynthesis} changeNumberOfOutputVars={this.changeNumberOfOutputVars} numberOfOutputVars={this.state.numberOfOutputVars} changeNumberOfInputVars = {this.changeNumberOfInputVars} numberOfInputVars = {this.state.numberOfInpVars} setMouseMode = {this.setMouseMode} mouseMode = {this.state.mouseMode}/>
-                        </div>
-                        <div className={styles.canvasContainer } ref={this.canvasContainerRef}  >
-                            <canvas ref = {this.nodeCanvasRef} className={styles.canvas} />
-                            <canvas ref={this.edgeCanvasRef} className={styles.canvas} />
-                            <canvas ref={this.tempCanvasRef} className={styles.canvas} style={{
-                                zIndex : 5
-                            }} />
-                        </div>
-                        {/* <div onClick={()=>this.setState({synthesis : true})} className={styles.synthesisButtonContainer}>
-                            <button className={styles.synthesisButton}>
-                                synthesis
-                            </button>
-                        </div>
+            //         <div style={{
+            //             display : this.state.synthesis ? 'none' : 'flex'
+            //         }} className = {styles.main} >
+            //             <div className={styles.topBarContainer}>
+            //                 <TopBar resetAll = {this.resetAll} deleteSelected = {this.deleteSelected} circuitMode = {this.state.circuitMode} changeCircuitMode = {this.chnageCircuitMode} changeSynthesis = {this.changeSynthesis} changeNumberOfOutputVars={this.changeNumberOfOutputVars} numberOfOutputVars={this.state.numberOfOutputVars} changeNumberOfInputVars = {this.changeNumberOfInputVars} numberOfInputVars = {this.state.numberOfInpVars} setMouseMode = {this.setMouseMode} mouseMode = {this.state.mouseMode}/>
+            //             </div>
+            //             <div className={styles.canvasContainer } ref={this.canvasContainerRef}  >
+            //                 <canvas ref = {this.nodeCanvasRef} className={styles.canvas} />
+            //                 <canvas ref={this.edgeCanvasRef} className={styles.canvas} />
+            //                 <canvas ref={this.tempCanvasRef} className={styles.canvas} style={{
+            //                     zIndex : 5
+            //                 }} />
+            //             </div>
+            //             {/* <div onClick={()=>this.setState({synthesis : true})} className={styles.synthesisButtonContainer}>
+            //                 <button className={styles.synthesisButton}>
+            //                     synthesis
+            //                 </button>
+            //             </div>
 
-                        <div onClick={()=>this.setMouseMode('addNode')} className={styles.addNodeButtonContainer}>
-                            <button className={styles.addNodeButton}>Add Node</button>
-                        </div> */}
+            //             <div onClick={()=>this.setMouseMode('addNode')} className={styles.addNodeButtonContainer}>
+            //                 <button className={styles.addNodeButton}>Add Node</button>
+            //             </div> */}
                         
                         
-                        {
-                            this.state.showSideBar &&
-                        <div className = {styles.sideBarContainer}>
-                            <SideBar onLabelChange = {this.onLabelChange} circuitMode = {this.state.circuitMode} 
-                            changeOutput={this.changeOutput} numberOfOutputVars={this.state.numberOfOutputVars} 
-                            changeNumberOfOutputVars={this.changeNumberOfOutputVars} changeIoNodeColor = {this.changeIoNodeColor} 
-                            changeStateColor = {this.changeStateColor} changeStateNodeRadius = {this.changeStateNodeRadius} 
-                            addIoNodeWithStateChange = {this.addIoNodeWithStateChange} ioNode = {this.state.ioNodeToSideBar} 
-                            stateNode = {this.state.stateNodeToSideBar} toggleSideBar = {this.toggleSideBar} />
-                        </div>}
-                    </div>
-                }
-                    {
-                        this.state.synthesis &&
-                        <Design changeStateNodeOrder = {this.changeStateNodeOrder} circuitMode = {this.state.circuitMode} numberOfOutputVars = {this.state.numberOfOutputVars} changeSynthesis={this.changeSynthesis} numberOfInpVar = {this.state.numberOfInpVars} stateNodes={this.stateNodes} edges = {this.edges} />    
-                    }
+            //             {
+            //                 this.state.showSideBar &&
+            //             <div className = {styles.sideBarContainer}>
+            //                 <SideBar onLabelChange = {this.onLabelChange} circuitMode = {this.state.circuitMode} 
+            //                 changeOutput={this.changeOutput} numberOfOutputVars={this.state.numberOfOutputVars} 
+            //                 changeNumberOfOutputVars={this.changeNumberOfOutputVars} changeIoNodeColor = {this.changeIoNodeColor} 
+            //                 changeStateColor = {this.changeStateColor} changeStateNodeRadius = {this.changeStateNodeRadius} 
+            //                 addIoNodeWithStateChange = {this.addIoNodeWithStateChange} ioNode = {this.state.ioNodeToSideBar} 
+            //                 stateNode = {this.state.stateNodeToSideBar} toggleSideBar = {this.toggleSideBar} />
+            //             </div>}
+            //         </div>
+            //     }
+            //         {
+            //             this.state.synthesis &&
+            //             <Design changeStateNodeOrder = {this.changeStateNodeOrder} circuitMode = {this.state.circuitMode} numberOfOutputVars = {this.state.numberOfOutputVars} changeSynthesis={this.changeSynthesis} numberOfInpVar = {this.state.numberOfInpVars} stateNodes={this.stateNodes} edges = {this.edges} />    
+            //         }
+            // </div>
+            <div>
+                Currently down for evaluation
             </div>
-            
         )
     }
 }
